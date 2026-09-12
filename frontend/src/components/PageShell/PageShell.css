@@ -1,0 +1,73 @@
+.page-shell{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at 7% 8%,color-mix(in srgb,var(--color-primary) 6%,transparent),transparent 19%),
+        radial-gradient(circle at 93% 14%,color-mix(in srgb,var(--color-neon-purple) 5%,transparent),transparent 17%),
+        var(--color-background);
+    color:var(--color-text);
+    overflow-x:clip;
+}
+.page-hero{
+    position:relative;
+    padding:92px 0 78px;
+    border-bottom:1px solid var(--color-border);
+    background:
+        radial-gradient(circle at 86% 22%,color-mix(in srgb,var(--color-primary) 12%,transparent),transparent 31%),
+        linear-gradient(120deg,color-mix(in srgb,var(--color-background) 95%,transparent),var(--color-surface));
+    overflow:hidden;
+}
+.page-hero::after{
+    content:"";
+    position:absolute;
+    width:320px;
+    height:320px;
+    right:-170px;
+    top:-180px;
+    border:1px solid color-mix(in srgb,var(--color-primary) 26%,transparent);
+    border-radius:50%;
+    box-shadow:0 0 80px color-mix(in srgb,var(--color-primary) 8%,transparent);
+}
+.page-hero--vehicles{
+    background:
+        radial-gradient(circle at 14% 26%,color-mix(in srgb,var(--color-primary) 9%,transparent),transparent 25%),
+        radial-gradient(circle at 85% 20%,color-mix(in srgb,var(--color-neon-purple) 8%,transparent),transparent 24%),
+        linear-gradient(120deg,var(--color-background),var(--color-surface));
+}
+.page-hero__eyebrow,.page-section__eyebrow{
+    display:inline-block;
+    margin-bottom:16px;
+    color:var(--color-primary);
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:2.2px;
+    text-transform:uppercase;
+}
+.page-hero h1{
+    position:relative;
+    z-index:1;
+    max-width:900px;
+    margin-bottom:20px;
+    font-size:clamp(44px,7vw,78px);
+    line-height:.98;
+    letter-spacing:-3px;
+}
+.page-hero p{
+    position:relative;
+    z-index:1;
+    max-width:700px;
+    color:var(--color-text-secondary);
+    font-size:18px;
+    line-height:1.75;
+}
+.page-section{
+    position:relative;
+    padding:90px 0;
+    background:
+        linear-gradient(180deg,color-mix(in srgb,var(--color-surface) 42%,transparent),transparent 30%),
+        transparent;
+}
+@media(max-width:700px){
+    .page-hero{padding:64px 0 58px}
+    .page-hero h1{letter-spacing:-2px}
+    .page-section{padding:70px 0}
+}

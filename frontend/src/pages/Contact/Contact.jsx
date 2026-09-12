@@ -1,0 +1,6 @@
+import { useState } from "react";
+import PageShell from "../../components/PageShell/PageShell";
+import { useApp } from "../../context/AppContext";
+import "../SimplePages.css";
+function Contact(){const {translations:t}=useApp();const [sent,setSent]=useState(false);return <PageShell><section className="page-hero"><div className="container"><span className="page-hero__eyebrow">{t.contact.eyebrow}</span><h1>{t.contact.title}</h1><p>{t.contact.description}</p></div></section><section className="page-section"><div className="container simple-page__content"><article className="info-card"><h2>EcoFusion RentalCars</h2><p>{t.contact.description}</p><p style={{marginTop:15}}>California · USA</p></article><form className="info-card simple-form" onSubmit={e=>{e.preventDefault();setSent(true)}}><label>{t.contact.name}<input required type="text"/></label><label>{t.contact.email}<input required type="email"/></label><label>{t.contact.phone}<input type="tel"/></label><label>{t.contact.subject}<input required type="text"/></label><label>{t.contact.message}<textarea required/></label><button type="submit">{t.contact.send}</button>{sent&&<small style={{color:"var(--color-primary)",fontWeight:800}}>{t.contact.success}</small>}</form></div></section></PageShell>}
+export default Contact;
