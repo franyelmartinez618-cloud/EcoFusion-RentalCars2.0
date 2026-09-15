@@ -30,7 +30,9 @@ function getInitialTheme() {
 function getInitialLanguage() {
     const savedLanguage = localStorage.getItem("ecofusion-language");
 
-    return savedLanguage === "es" ? "es" : "en";
+    if (savedLanguage === "es" || savedLanguage === "en") return savedLanguage;
+    const browserLanguage = navigator.language?.toLowerCase() || "en";
+    return browserLanguage.startsWith("es") ? "es" : "en";
 }
 
 export function AppProvider({ children }) {

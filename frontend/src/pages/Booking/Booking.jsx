@@ -11,7 +11,7 @@ function Booking() {
         <PageShell>
             <section className="page-hero">
                 <div className="container">
-                    <span className="page-hero__eyebrow">BOOK YOUR TOYOTA</span>
+                    <span className="page-hero__eyebrow">{t.bookingSearch.eyebrow}</span>
                     <h1>{t.booking.title}</h1>
                     <p>{t.booking.subtitle}</p>
                 </div>

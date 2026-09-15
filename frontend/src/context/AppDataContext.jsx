@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { vehicles as seedVehicles } from "../data";
 import { adminSeed } from "../utils/adminData";
+import { apiClient } from "../services/api";
 
-const STORAGE_KEY = "ecofusion-app-data-v2";
+const STORAGE_KEY = "ecofusion-app-data-v4";
 const AppDataContext = createContext(null);
 
 const seedContent = {
@@ -13,11 +14,7 @@ const seedContent = {
     offerImageUrls: ["", "", ""],
 };
 
-const seedReviews = [
-    { id: "RV-001", name: "Michael R.", location: "Los Angeles, CA", trip: "Weekend rental", rating: 5, status: "Published", quote: "The booking process was clear, the vehicle was comfortable and everything felt straightforward from start to finish." },
-    { id: "RV-002", name: "Sarah T.", location: "San Diego, CA", trip: "Family trip", rating: 5, status: "Published", quote: "I liked how easy it was to compare vehicles and understand what was included before making the reservation." },
-    { id: "RV-003", name: "Daniel K.", location: "Orange County, CA", trip: "Business rental", rating: 4, status: "Published", quote: "A clean Toyota, an easy pickup experience and no unnecessary complications. Exactly what I needed." },
-];
+const seedReviews = [];
 
 const seedLocations = [
     { id: "LOC-001", name: "Los Angeles", region: "California", status: "Active", description: "City, airport and Southern California access." },
@@ -32,11 +29,12 @@ const seedOffers = [
     { id: "OFF-003", title: "Drive with confidence", badge: "BUSINESS", status: "Active", description: "Comfort-focused options for business travel." },
 ];
 
-const seedSupport = [
-    { id: "ST-001", customer: "Michael R.", subject: "Pickup question", priority: "Normal", status: "Open", updated: "Today" },
-    { id: "ST-002", customer: "Sarah T.", subject: "Reservation change", priority: "High", status: "Open", updated: "Today" },
-    { id: "ST-003", customer: "Jordan P.", subject: "Return instructions", priority: "Normal", status: "Pending", updated: "Yesterday" },
-];
+const seedSupport = [];
+
+
+const seedPayments = [];
+
+const seedAccount = { currentUser: null, favoriteVehicleIds: [] };
 
 const seedSettings = {
     companyName: "EcoFusion RentalCars",
@@ -84,10 +82,12 @@ function getInitialData() {
             offers: stored.offers || seedOffers,
             support: stored.support || seedSupport,
             settings: { ...seedSettings, ...(stored.settings || {}) },
-            reservations: stored.reservations || adminSeed.reservations,
-            customers: stored.customers || adminSeed.customers,
-            maintenance: stored.maintenance || adminSeed.maintenance,
-            gps: stored.gps || adminSeed.gps,
+            reservations: stored.reservations || [],
+            payments: stored.payments || seedPayments,
+            account: { ...seedAccount, ...(stored.account || {}) },
+            customers: stored.customers || [],
+            maintenance: stored.maintenance || [],
+            gps: stored.gps || [],
             dbRecords: stored.dbRecords || {},
         };
     }
@@ -100,16 +100,32 @@ function getInitialData() {
         offers: seedOffers,
         support: seedSupport,
         settings: seedSettings,
-        reservations: adminSeed.reservations,
-        customers: adminSeed.customers,
-        maintenance: adminSeed.maintenance,
-        gps: adminSeed.gps,
+        reservations: [],
+        payments: seedPayments,
+        account: seedAccount,
+        customers: [],
+        maintenance: [],
+        gps: [],
         dbRecords: {},
     };
 }
 
 export function AppDataProvider({ children }) {
     const [data, setData] = useState(getInitialData);
+    const [serverData, setServerData] = useState({ vehicles: [], reservations: [], payments: [], customers: [], invoices: [] });
+    const refreshServerData = async () => {
+        const results = await Promise.allSettled([apiClient.vehicles(), apiClient.myReservations(), apiClient.myPayments(), apiClient.adminCustomers(), apiClient.adminInvoices()]);
+        setServerData({
+            vehicles: results[0].status === "fulfilled" ? results[0].value : [],
+            reservations: results[1].status === "fulfilled" ? results[1].value : [],
+            payments: results[2].status === "fulfilled" ? results[2].value : [],
+            customers: results[3].status === "fulfilled" ? results[3].value : [],
+            invoices: results[4].status === "fulfilled" ? results[4].value : [],
+        });
+    };
+    useEffect(() => {
+        refreshServerData();
+    }, []);
 
     useEffect(() => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -133,15 +149,17 @@ export function AppDataProvider({ children }) {
 
     const value = useMemo(() => ({
         data,
-        vehicles: data.vehicles,
+        vehicles: serverData.vehicles.length ? serverData.vehicles : data.vehicles,
         reviews: data.reviews,
         content: data.content,
         locations: data.locations,
         offers: data.offers,
         support: data.support,
         settings: data.settings,
-        reservations: data.reservations,
-        customers: data.customers,
+        reservations: serverData.reservations.length ? serverData.reservations : data.reservations,
+        payments: serverData.payments.length ? serverData.payments : data.payments,
+        account: data.account,
+        customers: serverData.customers.length ? serverData.customers : data.customers,
         maintenance: data.maintenance,
         gps: data.gps,
         addRecord,
@@ -151,11 +169,15 @@ export function AppDataProvider({ children }) {
         addVehicle: (vehicle) => addRecord("vehicles", normalizeVehicle(vehicle)),
         updateVehicle: (id, patch) => setData((current) => ({ ...current, vehicles: current.vehicles.map((vehicle) => vehicle.id === id ? normalizeVehicle({ ...vehicle, ...patch }) : vehicle) })),
         deleteVehicle: (id) => deleteRecord("vehicles", id),
+        addPayment: (payment) => addRecord("payments", payment),
+        updatePayment: (id, patch) => updateRecord("payments", id, patch),
         setContent: (patch) => setData((current) => ({ ...current, content: { ...current.content, ...patch } })),
         setSettings: (patch) => setData((current) => ({ ...current, settings: { ...current.settings, ...patch } })),
         dbRecords: data.dbRecords || {},
         setDbEntityRecords: (entity, rows) => setData((current) => ({ ...current, dbRecords: { ...(current.dbRecords || {}), [entity]: rows } })),
         resetData: () => setData(getInitialData()),
+        invoices: serverData.invoices,
+        refreshServerData,
     }), [data]);
 
     return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

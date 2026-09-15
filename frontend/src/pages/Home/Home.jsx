@@ -33,7 +33,7 @@ function Home() {
                             action={<Link to="/vehicles">{t.fleet.viewAll}<span>→</span></Link>}
                         />
                         <div className="vehicle-grid">
-                            {featured.map((vehicle) => <VehicleCard key={vehicle.id} vehicle={vehicle} />)}
+                            {featured.map((vehicle, index) => <VehicleCard key={vehicle.id} vehicle={vehicle} index={index} />)}
                         </div>
                     </div>
                 </section>

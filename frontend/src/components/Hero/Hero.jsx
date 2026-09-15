@@ -29,14 +29,14 @@ function Hero() {
                     <div className="hero__orb hero__orb--large" /><div className="hero__orb hero__orb--small" />
                     <div className="hero__vehicle-stage">
                         {heroImage ? (
-                            <img className="hero__real-car" src={heroImage} alt={featured?.name || "Toyota"} onError={(event) => { event.currentTarget.src = getVehicleImage(featured); }} />
+                            <img className="hero__real-car" src={heroImage} alt={featured?.name || translations.common.toyota} onError={(event) => { event.currentTarget.src = getVehicleImage(featured); }} />
                         ) : (
-                            <div className="hero__vehicle"><div className="hero__vehicle-roof" /><div className="hero__vehicle-window" /><div className="hero__vehicle-body"><span className="hero__vehicle-logo">TOYOTA</span><strong>RAV4</strong></div><div className="hero__wheel hero__wheel--left" /><div className="hero__wheel hero__wheel--right" /></div>
+                            <div className="hero__vehicle"><div className="hero__vehicle-roof" /><div className="hero__vehicle-window" /><div className="hero__vehicle-body"><span className="hero__vehicle-logo">{translations.common.toyota}</span><strong>RAV4</strong></div><div className="hero__wheel hero__wheel--left" /><div className="hero__wheel hero__wheel--right" /></div>
                         )}
                         <div className="hero__vehicle-floor" />
                     </div>
 
-                    <div className="hero__info-card hero__info-card--top"><span className="hero__info-label">AVAILABLE NOW</span><strong>{featured?.name || "Toyota RAV4"}</strong><small>{translations.featured.from} ${featured?.price || 79} {translations.featured.perDay}</small></div>
+                    <div className="hero__info-card hero__info-card--top"><span className="hero__info-label">{translations.common.availableNow}</span><strong>{featured?.name || "Toyota RAV4"}</strong><small>{translations.featured.from} ${featured?.price || 79} {translations.featured.perDay}</small></div>
                     <div className="hero__info-card hero__info-card--bottom"><div className="hero__info-icon">✓</div><div><strong>{translations.hero.bottom.support}</strong><small>{translations.hero.badge.text}</small></div></div>
                 </div>
             </div>

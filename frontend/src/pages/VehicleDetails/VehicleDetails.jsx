@@ -18,20 +18,20 @@ function VehicleDetails({ path }) {
             <section className="vehicle-detail">
                 <div className="container vehicle-detail__grid">
                     <div className="vehicle-detail__visual">
-                        <span className="vehicle-detail__badge">TOYOTA · {vehicle.operationalStatus || "READY"}</span>
+                        <span className="vehicle-detail__badge">TOYOTA · {vehicle.operationalStatus || t.vehicleDetails.badgeReady}</span>
                         <VehicleViewer vehicle={vehicle} alt={translated.name || vehicle.name} />
                     </div>
                     <div className="vehicle-detail__copy">
-                        <span className="page-hero__eyebrow">TOYOTA RENTAL</span>
+                        <span className="page-hero__eyebrow">{t.vehicleDetails.eyebrow}</span>
                         <h1>{translated.name || vehicle.name}</h1>
-                        <p>{translated.description || "Reliable, comfortable and prepared for your California journey."}</p>
+                        <p>{translated.description || t.vehicleDetails.descriptionFallback}</p>
                         <div className="detail-specs">
-                            <div><small>Capacity</small><strong>{vehicle.seats} seats</strong></div>
-                            <div><small>Luggage</small><strong>{vehicle.luggage} bags</strong></div>
-                            <div><small>Transmission</small><strong>{vehicle.transmission}</strong></div>
-                            <div><small>Efficiency</small><strong>{vehicle.efficiency}</strong></div>
-                            <div><small>Model year</small><strong>{vehicle.year}</strong></div>
-                            <div><small>Location</small><strong>{vehicle.location}</strong></div>
+                            <div><small>{t.vehicleDetails.capacity}</small><strong>{vehicle.seats} {t.vehicleDetails.seats}</strong></div>
+                            <div><small>{t.vehicleDetails.luggage}</small><strong>{vehicle.luggage} {t.vehicleDetails.bags}</strong></div>
+                            <div><small>{t.vehicleDetails.transmission}</small><strong>{vehicle.transmission}</strong></div>
+                            <div><small>{t.vehicleDetails.efficiency}</small><strong>{vehicle.efficiency}</strong></div>
+                            <div><small>{t.vehicleDetails.modelYear}</small><strong>{vehicle.year}</strong></div>
+                            <div><small>{t.vehicleDetails.location}</small><strong>{vehicle.location}</strong></div>
                         </div>
                         <div className="vehicle-detail__price"><span>{t.featured.from}</span><strong>${vehicle.price}</strong><small>{t.featured.perDay}</small></div>
                         <div className="button-row"><Link className="button button--primary" to="/book">{t.featured.bookVehicle} <span>→</span></Link><Link className="button button--ghost" to="/vehicles">{t.fleet.viewAll}</Link></div>

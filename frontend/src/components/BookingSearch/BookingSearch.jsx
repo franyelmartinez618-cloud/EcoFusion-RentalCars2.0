@@ -11,13 +11,13 @@ function BookingSearch() {
         <section className="booking-search">
             <div className="booking-search__heading">
                 <div>
-                    <span>BOOK YOUR TOYOTA</span>
+                    <span>{t.bookingSearch.eyebrow}</span>
                     <h2>{t.booking.title}</h2>
                     <p>{t.booking.subtitle}</p>
                 </div>
                 <div className="booking-search__step">
                     <span>01</span>
-                    <small>Search</small>
+                    <small>{t.bookingSearch.step}</small>
                 </div>
             </div>
 
@@ -73,7 +73,7 @@ function BookingSearch() {
                     />
                     <span>{t.booking.sameLocation}</span>
                 </label>
-                <Link to="/vehicles">Browse fleet instead <span>→</span></Link>
+                <Link to="/vehicles">{t.bookingSearch.browseFleet} <span>→</span></Link>
             </div>
         </section>
     );

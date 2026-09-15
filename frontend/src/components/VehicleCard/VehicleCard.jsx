@@ -1,18 +1,33 @@
+import { useEffect, useState } from "react";
 import { useApp } from "../../context/AppContext";
+import { useToast } from "../../context/ToastContext";
 import { Link } from "../../utils/router";
 import { getVehicleImage } from "../../utils/vehicleImage";
 import "./VehicleCard.css";
 
-function VehicleCard({ vehicle, compact = false }) {
-    const { translations } = useApp();
+function VehicleCard({ vehicle, compact = false, index = 0 }) {
+    const { translations: t } = useApp();
+    const { showToast } = useToast();
     const translationKey = vehicle.slug.replace("toyota-", "");
-    const translated = translations.fleet?.[translationKey] || {};
+    const translated = t.fleet?.[translationKey] || {};
     const category = translated.category || vehicle.categoryLabel;
     const image = getVehicleImage(vehicle);
+    const favoriteKey = `ecofusion-favorite-${vehicle.id}`;
+    const [favorite, setFavorite] = useState(() => localStorage.getItem(favoriteKey) === "1");
+
+    useEffect(() => {
+        localStorage.setItem(favoriteKey, favorite ? "1" : "0");
+    }, [favorite, favoriteKey]);
+
+    const toggleFavorite = () => {
+        const next = !favorite;
+        setFavorite(next);
+        showToast(next ? `${translated.name || vehicle.name} ${t.vehiclesPage.favoriteAdded}` : `${translated.name || vehicle.name} ${t.vehiclesPage.favoriteRemoved}`, "success");
+    };
 
     return (
-        <article className={`vehicle-card ${compact ? "vehicle-card--compact" : ""}`}>
-            <Link to={`/vehicles/${vehicle.slug}`} className="vehicle-card__media-link" aria-label={`${translated.name || vehicle.name} details`}>
+        <article className={`vehicle-card reveal reveal--delay-${Math.min(index + 1, 4)} ${compact ? "vehicle-card--compact" : ""}`}>
+            <Link to={`/vehicles/${vehicle.slug}`} className="vehicle-card__media-link" aria-label={`${translated.name || vehicle.name} ${t.vehiclesPage.details}`}>
                 <div className="vehicle-card__media">
                     <img
                         src={image}
@@ -23,8 +38,11 @@ function VehicleCard({ vehicle, compact = false }) {
                         }}
                     />
                     <span className={`vehicle-card__badge vehicle-card__badge--${vehicle.accent || "green"}`}>
-                        <i>✦</i> {vehicle.categoryLabel?.toLowerCase().includes("hybrid") ? "Eco-Hybrid" : "Toyota Fleet"}
+                        <i>✦</i> {vehicle.categoryLabel?.toLowerCase().includes("hybrid") ? t.vehiclesPage.badgeHybrid : t.vehiclesPage.badgeFleet}
                     </span>
+                    <button type="button" className={`vehicle-card__favorite ${favorite ? "is-active" : ""}`} onClick={(event) => { event.preventDefault(); event.stopPropagation(); toggleFavorite(); }} aria-label={favorite ? `${t.vehiclesPage.removeFavorite}: ${translated.name || vehicle.name}` : `${t.vehiclesPage.addFavorite}: ${translated.name || vehicle.name}`} aria-pressed={favorite}>
+                        {favorite ? "♥" : "♡"}
+                    </button>
                     <span className="vehicle-card__zoom">＋</span>
                     <span className="vehicle-card__media-glow" />
                 </div>
@@ -33,24 +51,24 @@ function VehicleCard({ vehicle, compact = false }) {
             <div className="vehicle-card__content">
                 <div className="vehicle-card__top">
                     <div>
-                        <span className="vehicle-card__eyebrow">TOYOTA</span>
+                        <span className="vehicle-card__eyebrow">{t.common.toyota}</span>
                         <h3>{translated.name || vehicle.name}</h3>
-                        <p>{translated.description || "Reliable, comfortable and ready for your California journey."}</p>
+                        <p>{translated.description || t.vehiclesPage.descriptionFallback}</p>
                     </div>
                     <div className="vehicle-card__category">{category}</div>
                 </div>
 
                 <div className="vehicle-card__specs">
-                    <span><b>◉</b><em>Transmission</em>{vehicle.transmission}</span>
-                    <span><b>♧</b><em>Capacity</em>{vehicle.seats} {vehicle.seats === 1 ? "seat" : "seats"}</span>
-                    <span><b>↗</b><em>Efficiency</em>{vehicle.efficiency}</span>
+                    <span><b>◉</b><em>{t.vehiclesPage.transmission}</em>{vehicle.transmission}</span>
+                    <span><b>♧</b><em>{t.vehiclesPage.capacity}</em>{vehicle.seats} {vehicle.seats === 1 ? t.vehiclesPage.seatsOne : t.vehiclesPage.seatsMany}</span>
+                    <span><b>↗</b><em>{t.vehiclesPage.efficiency}</em>{vehicle.efficiency}</span>
                 </div>
 
                 <div className="vehicle-card__bottom">
                     <div className="vehicle-card__price">
-                        <small>{translations.featured?.from || "From"}</small>
+                        <small>{t.featured?.from || "From"}</small>
                         <strong>${vehicle.price}</strong>
-                        <span>{translations.featured?.perDay || "/ day"}</span>
+                        <span>{t.featured?.perDay || "/ day"}</span>
                     </div>
                     <Link to={`/vehicles/${vehicle.slug}`} className="vehicle-card__button">
                         <span>{translated.button || "View details"}</span>

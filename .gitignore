@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Frontend environment
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Backend environment
+backend/.env
+
+# Python
+backend/.venv/
+backend/__pycache__/
+*.pyc
+
+# Local databases
+*.sqlite3
+*.sqlite3-journal
+
+# Build output
+frontend/dist/
+dist/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,1 @@
+This migration creates all 69 domain tables. The core tables used by the running API are typed; extension tables start with a JSON data column so the schema contract exists while their domain-specific columns are added through subsequent migrations as each module is finalized. Do not treat the JSON extension tables as the final canonical shape for production reporting.

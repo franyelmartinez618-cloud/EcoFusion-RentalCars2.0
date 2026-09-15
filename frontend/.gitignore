@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.env
+backend/.env
+backend/*.json
+backend/ecofusion_identity.sqlite3
+backend/.venv/

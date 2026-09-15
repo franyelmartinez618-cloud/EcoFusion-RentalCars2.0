@@ -65,3 +65,22 @@ html[data-theme="dark"]{
     --shadow-card:0 14px 38px rgba(0,0,0,.27);
     --shadow-hover:0 25px 65px rgba(0,0,0,.38);
 }
+
+/* Design System v2 */
+:root{
+    --space-1:4px;
+    --space-2:8px;
+    --space-3:12px;
+    --space-4:16px;
+    --space-5:20px;
+    --space-6:24px;
+    --space-8:32px;
+    --space-10:40px;
+    --space-12:48px;
+    --space-16:64px;
+    --space-20:80px;
+    --motion-fast:160ms;
+    --motion-base:280ms;
+    --motion-slow:500ms;
+    --ease-standard:cubic-bezier(.2,.7,.2,1);
+}

@@ -33,3 +33,11 @@ input,select,textarea{color:inherit}
         transition-duration:.01ms!important;
     }
 }
+
+/* Global interaction language */
+:where(button,a,input,select,textarea):focus-visible{outline:2px solid var(--color-primary);outline-offset:3px}
+:where(button,a){transition-duration:var(--motion-fast)}
+.reveal{opacity:0;transform:translateY(18px);animation:reveal-in var(--motion-slow) var(--ease-standard) both}
+.reveal--delay-1{animation-delay:40ms}.reveal--delay-2{animation-delay:80ms}.reveal--delay-3{animation-delay:120ms}.reveal--delay-4{animation-delay:160ms}
+@keyframes reveal-in{to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.reveal,.toast{animation:none;opacity:1;transform:none}}

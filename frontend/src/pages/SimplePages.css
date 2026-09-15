@@ -85,3 +85,17 @@ html[data-theme="dark"] .vehicle-detail__visual img{
 html[data-theme="dark"] .vehicle-detail__price strong{
     text-shadow:0 0 22px color-mix(in srgb,var(--color-primary) 28%,transparent);
 }
+.auth-screen{min-height:100vh;display:grid;place-items:center;padding:32px;background:var(--color-background)}
+.auth-card{width:min(100%,560px);padding:42px;border:1px solid var(--color-border);border-radius:24px;background:var(--color-card);box-shadow:0 24px 80px rgba(0,0,0,.08)}
+.auth-brand{display:flex;gap:12px;align-items:center;margin-bottom:36px}.auth-brand span{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--color-primary);color:#fff;font-weight:700}.auth-brand strong{display:block}.auth-brand small{display:block;color:var(--color-text-secondary);margin-top:2px}.auth-card h1{font-size:clamp(38px,6vw,58px);letter-spacing:-2px;margin:8px 0 12px}.auth-card>p{color:var(--color-text-secondary);line-height:1.7}.auth-error{color:#c23b54;font-size:13px}.auth-footer{margin-top:20px;font-size:13px}.auth-footer a{color:var(--color-primary);font-weight:600}
+.route-loading{min-height:100vh;display:grid;place-items:center;background:var(--color-background);color:var(--color-text-secondary)}
+.auth-modern-card{max-width:760px;margin-inline:auto;padding:clamp(28px,5vw,52px)}
+.auth-modern-card h1{font-size:clamp(42px,7vw,72px)}
+.auth-provider-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:26px 0 18px}
+.auth-provider{min-height:52px;border:1px solid var(--color-border);border-radius:14px;background:var(--color-surface);color:var(--color-text);font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 16px}
+.auth-provider:hover,.auth-provider.is-active{border-color:var(--color-primary);background:var(--color-primary-light)}
+.auth-provider span{width:26px;height:26px;display:grid;place-items:center;border-radius:50%;font-weight:950}
+.auth-provider--google span{background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.12)}
+.auth-divider{display:flex;align-items:center;gap:12px;color:var(--color-text-secondary);font-size:12px;margin:20px 0}.auth-divider::before,.auth-divider::after{content:"";height:1px;background:var(--color-border);flex:1}.auth-tabs{display:flex;gap:4px;padding:4px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:14px;margin-bottom:18px}.auth-tabs button{flex:1;border:0;border-radius:10px;padding:10px;background:transparent;color:var(--color-text-secondary);font-weight:800}.auth-tabs button.is-active{background:var(--color-card);color:var(--color-text);box-shadow:var(--shadow-sm)}.auth-helper{margin-top:14px;color:var(--color-text-secondary);font-size:12px;line-height:1.6}.auth-success{color:var(--color-primary);font-size:13px}
+@media(max-width:600px){.auth-provider-grid{grid-template-columns:1fr}.auth-modern-card{padding:24px}}
+.auth-error--setup{margin:14px 0;padding:12px 14px;border-radius:12px;border:1px solid color-mix(in srgb,var(--color-danger,#d64f4f) 35%,transparent);background:color-mix(in srgb,var(--color-danger,#d64f4f) 8%,transparent);font-size:.92rem;line-height:1.45}
