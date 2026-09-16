@@ -5,8 +5,7 @@ import {
     onAuthStateChanged,
     sendEmailVerification,
     signInWithEmailAndPassword,
-    signInWithRedirect,
-    getRedirectResult,
+    signInWithPopup,
     signOut,
     updateProfile,
     RecaptchaVerifier,
@@ -106,16 +105,6 @@ export function AuthProvider({ children }) {
                 if (mounted) setLoading(false);
             }
         };
-        // Consume the Google redirect result explicitly so errors such as
-        // unauthorized-domain are surfaced instead of leaving the button apparently inert.
-        getRedirectResult(auth).then((result) => {
-            if (result?.user) finish(result.user);
-        }).catch((error) => {
-            if (mounted) {
-                setAuthError(firebaseError(error, latestTranslations.current));
-                setLoading(false);
-            }
-        });
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => finish(firebaseUser));
         return () => { mounted = false; unsubscribe(); };
     }, []);
@@ -153,13 +142,20 @@ export function AuthProvider({ children }) {
 
     const loginGoogle = useCallback(async () => {
         ensureConfigured();
+        setAuthError("");
         try {
-            // Redirect is more reliable than popups (especially with popup blockers/mobile).
-            // Firebase restores the authenticated user when the browser returns to this app.
-            await signInWithRedirect(auth, googleProvider);
-            return null;
+            const credential = await signInWithPopup(auth, googleProvider);
+            const backendUser = await exchangeFirebaseSession(credential.user);
+            setUser(backendUser);
+            return backendUser;
         } catch (error) {
-            throw new Error(firebaseError(error, latestTranslations.current));
+            if (error?.response) {
+                throw error;
+            }
+            const message = error?.code?.startsWith("auth/")
+                ? firebaseError(error, latestTranslations.current)
+                : (error?.message || "No se pudo completar el inicio de sesión.");
+            throw new Error(message);
         }
     }, []);
 
