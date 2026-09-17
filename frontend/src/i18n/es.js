@@ -44,7 +44,7 @@ const es = {
         setupTerms: "Acepto los Términos y condiciones del servicio.",
         setupMarketing: "Quiero recibir comunicaciones comerciales y novedades. (Opcional)",
         setupSecurityTitle: "Protección de la cuenta",
-        setupSecurityText: "El acceso se mantiene detrás de Firebase Authentication y una sesión del servidor. Para acciones sensibles podremos pedir una nueva autenticación o verificación adicional."
+        setupSecurityText: "El acceso se mantiene detrás de Firebase Authentication y una sesión del servidor. Para acciones sensibles podremos pedir una nueva autenticación o verificación adicional.",
         featuredFleet: "Flota destacada",
         perDay: "/ día",
         emailLabel: "Correo electrónico",

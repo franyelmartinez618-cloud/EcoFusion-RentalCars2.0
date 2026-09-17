@@ -44,8 +44,8 @@ const en = {
         setupTerms: "I accept the Terms and Conditions.",
         setupMarketing: "I want to receive commercial communications and updates. (Optional)",
         setupSecurityTitle: "Account protection",
-        setupSecurityText: "Access is protected by Firebase Authentication and a server-side session. Sensitive actions may require re-authentication or additional verification."
-        featuredFleet: "Featured fleet",
+        setupSecurityText: "El acceso se mantiene detrás de Firebase Authentication y una sesión del servidor. Para acciones sensibles podremos pedir una nueva autenticación o verificación adicional.",
+        featuredFleet: "Flota destacada",
         perDay: "/ day",
         emailLabel: "Email address",
         phoneLabel: "Phone",
