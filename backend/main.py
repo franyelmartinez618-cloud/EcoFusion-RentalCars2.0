@@ -37,6 +37,7 @@ from sqlalchemy import (
     or_,
     func,
 )
+from sqlalchemy.dialects.mysql import BIGINT
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -220,7 +221,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(
-        Integer,
+        BIGINT(unsigned=True),
         primary_key=True,
         autoincrement=True,
     )
@@ -299,6 +300,7 @@ class UserSession(Base):
     )
 
     user_id: Mapped[int] = mapped_column(
+        BIGINT(unsigned=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
     )
@@ -326,7 +328,7 @@ class Vehicle(Base):
     __tablename__ = "vehicles"
 
     id: Mapped[int] = mapped_column(
-        Integer,
+        BIGINT(unsigned=True),
         primary_key=True,
         autoincrement=True,
     )
@@ -397,8 +399,8 @@ class Vehicle(Base):
 class UserConsent(Base):
     __tablename__ = "user_consents"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
+    id: Mapped[int] = mapped_column(BIGINT(unsigned=True), primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BIGINT(unsigned=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
     privacy_version: Mapped[str] = mapped_column(String(40), default="2026-09-16")
     terms_version: Mapped[str] = mapped_column(String(40), default="2026-09-16")
     marketing_opt_in: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -411,12 +413,13 @@ class Customer(Base):
     __tablename__ = "customers"
 
     id: Mapped[int] = mapped_column(
-        Integer,
+        BIGINT(unsigned=True),
         primary_key=True,
         autoincrement=True,
     )
 
     user_id: Mapped[int] = mapped_column(
+        BIGINT(unsigned=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         unique=True,
         index=True,
@@ -453,7 +456,7 @@ class Reservation(Base):
     __tablename__ = "reservations"
 
     id: Mapped[int] = mapped_column(
-        Integer,
+        BIGINT(unsigned=True),
         primary_key=True,
         autoincrement=True,
     )
@@ -465,11 +468,13 @@ class Reservation(Base):
     )
 
     customer_id: Mapped[int] = mapped_column(
+        BIGINT(unsigned=True),
         ForeignKey("customers.id", ondelete="RESTRICT"),
         index=True,
     )
 
     vehicle_id: Mapped[int] = mapped_column(
+        BIGINT(unsigned=True),
         ForeignKey("vehicles.id", ondelete="RESTRICT"),
         index=True,
     )
@@ -530,7 +535,7 @@ class Payment(Base):
     __tablename__ = "payments"
 
     id: Mapped[int] = mapped_column(
-        Integer,
+        BIGINT(unsigned=True),
         primary_key=True,
         autoincrement=True,
     )
@@ -542,6 +547,7 @@ class Payment(Base):
     )
 
     reservation_id: Mapped[int] = mapped_column(
+        BIGINT(unsigned=True),
         ForeignKey("reservations.id", ondelete="RESTRICT"),
         index=True,
     )
@@ -599,7 +605,7 @@ class PaymentWebhookEvent(Base):
     __tablename__ = "payment_webhook_events"
 
     id: Mapped[int] = mapped_column(
-        Integer,
+        BIGINT(unsigned=True),
         primary_key=True,
         autoincrement=True,
     )
@@ -625,7 +631,7 @@ class Invoice(Base):
     __tablename__ = "invoices"
 
     id: Mapped[int] = mapped_column(
-        Integer,
+        BIGINT(unsigned=True),
         primary_key=True,
         autoincrement=True,
     )
@@ -637,6 +643,7 @@ class Invoice(Base):
     )
 
     reservation_id: Mapped[int] = mapped_column(
+        BIGINT(unsigned=True),
         ForeignKey("reservations.id", ondelete="RESTRICT"),
         index=True,
     )
@@ -676,13 +683,13 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     id: Mapped[int] = mapped_column(
-        Integer,
+        BIGINT(unsigned=True),
         primary_key=True,
         autoincrement=True,
     )
 
     user_id: Mapped[Optional[int]] = mapped_column(
-        BigInteger,
+        BIGINT(unsigned=True),
         nullable=True,
         index=True,
     )
