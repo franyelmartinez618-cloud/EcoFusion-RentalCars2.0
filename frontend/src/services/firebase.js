@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
 
 const required = [
     "VITE_FIREBASE_API_KEY",
@@ -15,6 +16,7 @@ export const firebaseConfigured = missing.length === 0;
 let app = null;
 let auth = null;
 let googleProvider = null;
+let appCheck = null;
 
 if (firebaseConfigured) {
     app = initializeApp({
@@ -30,6 +32,17 @@ if (firebaseConfigured) {
     setPersistence(auth, browserLocalPersistence).catch(() => {});
     googleProvider = new GoogleAuthProvider();
     googleProvider.setCustomParameters({ prompt: "select_account" });
+    const recaptchaSiteKey = import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY?.trim();
+    if (recaptchaSiteKey) {
+        try {
+            appCheck = initializeAppCheck(app, {
+                provider: new ReCaptchaEnterpriseProvider(recaptchaSiteKey),
+                isTokenAutoRefreshEnabled: true,
+            });
+        } catch {
+            appCheck = null;
+        }
+    }
 }
 
-export { app, auth, googleProvider, missing };
+export { app, auth, googleProvider, appCheck, missing };

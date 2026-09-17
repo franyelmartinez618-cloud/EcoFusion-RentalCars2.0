@@ -1,3 +1,6 @@
+import { appCheck } from "./firebase";
+import { getToken } from "firebase/app-check";
+
 const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
 
 function csrf() {
@@ -8,6 +11,14 @@ export async function api(path, options = {}) {
   const method = (options.method || "GET").toUpperCase();
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
   if (!["GET", "HEAD", "OPTIONS"].includes(method)) headers["X-CSRF-Token"] = csrf();
+  if (appCheck) {
+    try {
+      const token = await getToken(appCheck, false);
+      if (token?.token) headers["X-Firebase-AppCheck"] = token.token;
+    } catch {
+      // Optional until App Check enforcement is enabled.
+    }
+  }
   const response = await fetch(`${API}${path}`, { credentials: "include", ...options, headers });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.detail || "Request failed");
@@ -31,6 +42,7 @@ export const apiClient = {
   adminCreateVehicle: (payload) => api("/admin/vehicles", { method: "POST", body: JSON.stringify(payload) }),
   adminUpdateVehicle: (id, payload) => api(`/admin/vehicles/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(payload) }),
   adminDeleteVehicle: (id) => api(`/admin/vehicles/${encodeURIComponent(id)}`, { method: "DELETE" }),
-  updateProfile: (name) => api("/auth/profile", { method: "PATCH", body: JSON.stringify({ name }) }),
+  updateProfile: (name, phone="") => api("/auth/profile", { method: "PATCH", body: JSON.stringify({ name, phone }) }),
+  consent: (payload) => api("/auth/consent", { method: "POST", body: JSON.stringify(payload) }),
   security: () => api("/admin/security"),
 };

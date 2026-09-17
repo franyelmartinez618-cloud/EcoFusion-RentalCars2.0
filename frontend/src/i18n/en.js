@@ -422,7 +422,7 @@ const en = {
     },
 
     account: {
-        signInTitle: "Welcome back",
+        signInTitle: "Sign in",
         signInDescription:
             "Sign in to manage your reservations and account.",
         email: "Email address",
@@ -446,8 +446,6 @@ const en = {
         verifyCode: "Verify code",
         alreadyAccount: "Already have an account?",
         emailVerificationNotice: "Account created. Check your email to verify it before signing in.",
-        googleWelcomeNotice: "Account created with Google. Your identity was verified by Firebase. A confirmation email is also sent when the mail service is enabled.",
-        googleLinkedSuccess: "Google is now linked to your account.",
         clientOnly: "This account is not available in the customer area.",
         authHelper: "Email accounts must be verified before sign-in. Phone authentication uses an SMS code and reCAPTCHA protection.",
     },
@@ -460,7 +458,7 @@ const en = {
         checking: "Checking…",
         signIn: "Sign in securely",
         authErrors: {
-            emailExists: "An account already exists with this email.", invalidCredential: "The email or password is incorrect.", googleClosed: "The Google sign-in window was closed.", popupBlocked: "Your browser blocked the sign-in popup.", providerDisabled: "This sign-in method is not enabled yet.", tooMany: "Too many attempts. Please try again later.", invalidPhone: "Enter a valid phone number in international format.", quota: "SMS quota exceeded for this project.", invalidCode: "The verification code is invalid.", generic: "Authentication failed.", credentialInUse: "That Google account is already linked to another account.", providerLinked: "This Google account is already linked.", recentLogin: "For security, sign in again before changing account access.", adminOnly: "This account does not have administrator access.", clientOnly: "Use the customer sign-in area for this account."
+            emailExists: "An account already exists with this email.", invalidCredential: "The email or password is incorrect.", googleClosed: "The Google sign-in window was closed.", popupBlocked: "Your browser blocked the sign-in popup.", providerDisabled: "This sign-in method is not enabled yet.", tooMany: "Too many attempts. Please try again later.", invalidPhone: "Enter a valid phone number in international format.", quota: "SMS quota exceeded for this project.", invalidCode: "The verification code is invalid.", generic: "Authentication failed.", adminOnly: "This account does not have administrator access.", clientOnly: "Use the customer sign-in area for this account."
         },
     },
 
@@ -568,8 +566,9 @@ const en = {
 
     accountPage: {
         eyebrow: "MY ACCOUNT",
-        welcome: "Welcome back,",
-        description: "Manage your reservations, payments and rental profile in one place.",
+        welcome: "",
+        accountTitle: "Your account",
+        description: "Manage your reservations, payments, security and rental profile in one place.",
         bookAnother: "Book another vehicle",
         overview: "Overview",
         reservations: "My reservations",

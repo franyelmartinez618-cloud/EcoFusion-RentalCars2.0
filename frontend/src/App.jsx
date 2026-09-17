@@ -14,6 +14,8 @@ import { ToastProvider } from "./context/ToastContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Register from "./pages/Auth/Register";
 import AdminLogin from "./pages/Admin/AdminLogin";
+import AccountSetup from "./pages/Auth/AccountSetup";
+import LegalPage from "./pages/Legal/LegalPage";
 import { normalizePath, useLocation, Link, navigate } from "./utils/router";
 import { useEffect } from "react";
 import "./styles/variables.css";
@@ -24,15 +26,22 @@ function NotFound() {
     const { translations:t } = useApp(); return <div className="not-found"><div><span>404</span><h1>{t.notFound.title}</h1><p>{t.notFound.description}</p><Link to="/">{t.notFound.back}</Link></div></div>;
 }
 
-function GuardedRoute({ role, children, loginPath }) {
+function GuardedRoute({ role, children, loginPath, allowSetup = false }) {
     const { user, loading } = useAuth();
     useEffect(() => {
         if (!loading && !user) {
             sessionStorage.setItem("ecofusion-auth-return", window.location.pathname + window.location.search);
             navigate(loginPath);
+            return;
         }
-        if (!loading && user && role && user.role !== role) navigate(user.role === "admin" ? "/admin" : "/account");
-    }, [loading, user, role, loginPath]);
+        if (!loading && user && role && user.role !== role) {
+            navigate(user.role === "admin" ? "/admin" : "/account");
+            return;
+        }
+        if (!loading && user?.role === "client" && user.privacyRequired && !allowSetup) {
+            navigate("/complete-account");
+        }
+    }, [loading, user, role, loginPath, allowSetup]);
     if (loading || !user || (role && user.role !== role)) return <div className="route-loading">Loading…</div>;
     return children;
 }
@@ -47,6 +56,10 @@ function RouterView() {
     if (path === "/contact") return <Contact />;
     if (path === "/sign-in") return <SignIn />;
     if (path === "/register") return <Register />;
+    if (path === "/privacy") return <LegalPage type="privacy" />;
+    if (path === "/terms") return <LegalPage type="terms" />;
+    if (path === "/cookies") return <LegalPage type="cookies" />;
+    if (path === "/complete-account") return <GuardedRoute role="client" loginPath="/sign-in" allowSetup><AccountSetup /></GuardedRoute>;
     if (path === "/admin/login") return <AdminLogin />;
     if (path === "/book") return <Booking />;
     if (path === "/account" || path.startsWith("/account/")) return <GuardedRoute role="client" loginPath="/sign-in"><Account /></GuardedRoute>;

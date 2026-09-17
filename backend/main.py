@@ -1,6 +1,5 @@
 import base64
 import hashlib
-import html
 import hmac
 import json
 import os
@@ -49,11 +48,12 @@ from sqlalchemy.orm import (
 
 try:
     import firebase_admin
-    from firebase_admin import auth as firebase_auth, credentials
+    from firebase_admin import auth as firebase_auth, credentials, app_check as firebase_app_check
 except Exception:
     firebase_admin = None
     firebase_auth = None
     credentials = None
+    firebase_app_check = None
 
 
 # ============================================================
@@ -82,6 +82,7 @@ TRUSTED_HOSTS = [
 ]
 
 SESSION_TTL = int(os.getenv("SESSION_TTL_SECONDS", "28800"))
+FIREBASE_APPCHECK_REQUIRED = os.getenv("FIREBASE_APPCHECK_REQUIRED", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 MAX_BODY_BYTES = 1024 * 1024
 
@@ -165,44 +166,6 @@ PERSONA_WEBHOOK_SECRET = os.getenv(
 
 PERSONA_BASE = "https://api.withpersona.com/api/v1"
 
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
-RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "").strip()
-
-
-def send_welcome_email(email: str, name: str, provider: str, user_id: int):
-    """Best-effort welcome email. Authentication must never fail because email delivery is unavailable."""
-    if not email or not RESEND_API_KEY or not RESEND_FROM_EMAIL:
-        return False
-    provider_label = {
-        "google.com": "Google",
-        "password": "correo y contraseña",
-        "phone": "teléfono",
-    }.get(provider, "un método seguro")
-    safe_name = html.escape((name or "Cliente").strip()[:120])
-    payload = {
-        "from": RESEND_FROM_EMAIL,
-        "to": [email],
-        "subject": "Tu cuenta de EcoFusion Rental Cars fue creada",
-        "html": (
-            f"<div style='font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#101612'>"
-            f"<h1>Bienvenido a EcoFusion Rental Cars</h1>"
-            f"<p>Hola {safe_name}, tu cuenta se creó correctamente usando {provider_label}.</p>"
-            f"<p>Tu cuenta ya está protegida por Firebase Authentication. Para alquilar, completaremos las verificaciones requeridas dentro de EcoFusion.</p>"
-            f"</div>"
-        ),
-        "tags": [{"name": "category", "value": "welcome"}],
-    }
-    try:
-        with httpx.Client(timeout=5.0) as client:
-            resp = client.post(
-                "https://api.resend.com/emails",
-                headers={"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"},
-                json=payload,
-            )
-        return 200 <= resp.status_code < 300
-    except Exception:
-        return False
-
 
 # ============================================================
 # FIREBASE TOKEN VERIFICATION
@@ -230,6 +193,19 @@ def verify_firebase_id_token(id_token: str):
         issuer=FIREBASE_ISSUER,
         options={"require": ["exp", "iat", "sub", "aud", "iss"]},
     )
+
+
+def verify_firebase_app_check(request: Request):
+    """Optionally require a valid Firebase App Check token for custom backend calls."""
+    if not FIREBASE_APPCHECK_REQUIRED:
+        return None
+    token = request.headers.get("X-Firebase-AppCheck", "").strip()
+    if not token or firebase_app_check is None:
+        raise HTTPException(401, "App verification required")
+    try:
+        return firebase_app_check.verify_token(token)
+    except Exception as exc:
+        raise HTTPException(401, "App verification failed") from exc
 
 
 # ============================================================
@@ -416,6 +392,19 @@ class Vehicle(Base):
         JSON,
         default=dict,
     )
+
+
+class UserConsent(Base):
+    __tablename__ = "user_consents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
+    privacy_version: Mapped[str] = mapped_column(String(40), default="2026-09-16")
+    terms_version: Mapped[str] = mapped_column(String(40), default="2026-09-16")
+    marketing_opt_in: Mapped[bool] = mapped_column(Boolean, default=False)
+    accepted_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    ip: Mapped[str] = mapped_column(String(64), default="")
+    user_agent: Mapped[str] = mapped_column(String(500), default="")
 
 
 class Customer(Base):
@@ -909,7 +898,7 @@ def set_cookies(
         sid,
         httponly=True,
         secure=secure,
-        samesite="lax",
+        samesite=("none" if secure else "lax"),
         max_age=SESSION_TTL,
         path="/",
     )
@@ -919,7 +908,7 @@ def set_cookies(
         csrf,
         httponly=False,
         secure=secure,
-        samesite="lax",
+        samesite=("none" if secure else "lax"),
         max_age=SESSION_TTL,
         path="/",
     )
@@ -1087,10 +1076,14 @@ class ReservationIn(BaseModel):
 
 
 class ProfilePatch(BaseModel):
-    name: str = Field(
-        min_length=2,
-        max_length=160,
-    )
+    name: str = Field(min_length=2, max_length=160)
+    phone: str = Field(default="", max_length=40)
+
+
+class ConsentPayload(BaseModel):
+    privacy_version: str = Field(default="2026-09-16", min_length=1, max_length=40)
+    terms_version: str = Field(default="2026-09-16", min_length=1, max_length=40)
+    marketing_opt_in: bool = False
 
 
 class IdentityStart(BaseModel):
@@ -1111,6 +1104,7 @@ def health():
             else "sqlite-dev"
         ),
         "firebaseConfigured": firebase_ready(),
+        "appCheckRequired": FIREBASE_APPCHECK_REQUIRED,
         "squareConfigured": bool(
             SQUARE_TOKEN
             and SQUARE_LOCATION_ID
@@ -1163,6 +1157,7 @@ def exchange_firebase(
     response: Response,
     s: DBSession = Depends(db),
 ):
+    verify_firebase_app_check(request)
     try:
         decoded = verify_firebase_id_token(payload.id_token)
     except Exception as exc:
@@ -1218,8 +1213,6 @@ def exchange_firebase(
         ).split()
     )[:160]
 
-    created_new_user = False
-
     if u is None:
         role = (
             "admin"
@@ -1227,8 +1220,6 @@ def exchange_firebase(
             and email in ADMIN_EMAILS
             else "client"
         )
-
-        created_new_user = True
 
         u = User(
             firebase_uid=uid,
@@ -1285,9 +1276,6 @@ def exchange_firebase(
 
     s.commit()
 
-    if created_new_user:
-        send_welcome_email(u.email, u.name, u.provider, u.id)
-
     set_cookies(
         response,
         sid,
@@ -1304,8 +1292,35 @@ def exchange_firebase(
             "provider": u.provider,
             "identityStatus": u.identity_status,
             "identityProvider": u.identity_provider,
+            "privacyRequired": privacy_required,
+            "privacyVersion": consent_row.privacy_version if consent_row else "",
+            "termsVersion": consent_row.terms_version if consent_row else "",
         }
     }
+
+
+@app.post("/api/v1/auth/consent")
+def accept_consent(
+    payload: ConsentPayload,
+    request: Request,
+    s: DBSession = Depends(db),
+):
+    sess, u = require_auth(request, s)
+    require_csrf(request, sess)
+    existing = s.query(UserConsent).filter_by(user_id=u.id).first()
+    if existing is None:
+        existing = UserConsent(user_id=u.id)
+        s.add(existing)
+    existing.privacy_version = payload.privacy_version
+    existing.terms_version = payload.terms_version
+    existing.marketing_opt_in = bool(payload.marketing_opt_in)
+    existing.accepted_at = now()
+    existing.ip = request.client.host if request.client else ""
+    existing.user_agent = request.headers.get("user-agent", "")[:500]
+    u.last_login_at = now()
+    audit(s, request, u.id, "privacy_consent", "user_consents", u.id, {"privacyVersion": payload.privacy_version, "termsVersion": payload.terms_version, "marketingOptIn": bool(payload.marketing_opt_in)})
+    s.commit()
+    return {"ok": True, "privacyRequired": False, "privacyVersion": existing.privacy_version, "termsVersion": existing.terms_version}
 
 
 @app.post("/api/v1/auth/logout")
@@ -1371,15 +1386,21 @@ def profile(
         sess,
     )
 
-    u.name = " ".join(
-        payload.name.strip().split()
-    )
+    u.name = " ".join(payload.name.strip().split())
+    u.phone = payload.phone.strip()[:40]
+    customer = s.query(Customer).filter_by(user_id=u.id).first()
+    if customer:
+        parts = u.name.split(" ", 1)
+        customer.first_name = parts[0]
+        customer.last_name = parts[1] if len(parts) > 1 else ""
+        customer.phone = u.phone
 
     s.commit()
 
     return {
         "ok": True,
         "name": u.name,
+        "phone": u.phone,
     }
 
 

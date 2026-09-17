@@ -6,23 +6,31 @@ import {
     sendEmailVerification,
     signInWithEmailAndPassword,
     signInWithPopup,
-    linkWithPopup,
-    getAdditionalUserInfo,
     signOut,
     updateProfile,
     RecaptchaVerifier,
     signInWithPhoneNumber,
 } from "firebase/auth";
-import { auth, firebaseConfigured, googleProvider, missing } from "../services/firebase";
+import { auth, firebaseConfigured, googleProvider, appCheck, missing } from "../services/firebase";
+import { getToken } from "firebase/app-check";
 import { useApp } from "./AppContext";
 
 const AuthContext = createContext(null);
 const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
 
 async function req(path, options = {}) {
+    const headers = { "Content-Type": "application/json", ...options.headers };
+    if (appCheck) {
+        try {
+            const token = await getToken(appCheck, false);
+            if (token?.token) headers["X-Firebase-AppCheck"] = token.token;
+        } catch {
+            // App Check remains optional until production enforcement is enabled.
+        }
+    }
     const response = await fetch(`${API}${path}`, {
         credentials: "include",
-        headers: { "Content-Type": "application/json", ...options.headers },
+        headers,
         ...options,
     });
     const data = await response.json().catch(() => ({}));
@@ -49,9 +57,6 @@ function firebaseError(error, t) {
         "auth/invalid-api-key": t.account.authErrors.invalidApiKey || "The Firebase API key is invalid.",
         "auth/network-request-failed": t.account.authErrors.network || "Network error while contacting Firebase.",
         "auth/account-exists-with-different-credential": t.account.authErrors.accountExists || "An account already exists with another sign-in method. Use that method first.",
-        "auth/credential-already-in-use": t.account.authErrors.credentialInUse || "That Google account is already linked to another account.",
-        "auth/provider-already-linked": t.account.authErrors.providerLinked || "This Google account is already linked.",
-        "auth/requires-recent-login": t.account.authErrors.recentLogin || "For security, sign in again before changing account access.",
         "auth/invalid-phone-number": t.account.authErrors.invalidPhone,
         "auth/quota-exceeded": t.account.authErrors.quota,
         "auth/invalid-verification-code": t.account.authErrors.invalidCode,
@@ -80,21 +85,6 @@ export function AuthProvider({ children }) {
     latestTranslations.current = t;
     const recaptchaRef = useRef(null);
     const confirmationRef = useRef(null);
-    const exchangePromisesRef = useRef(new Map());
-    const googleBusyRef = useRef(false);
-
-
-    const exchangeOnce = useCallback((firebaseUser, profileName = "") => {
-        const key = firebaseUser?.uid;
-        if (!key) return Promise.reject(new Error("Authentication was not completed."));
-        const existing = exchangePromisesRef.current.get(key);
-        if (existing) return existing;
-        const promise = exchangeFirebaseSession(firebaseUser, profileName).finally(() => {
-            exchangePromisesRef.current.delete(key);
-        });
-        exchangePromisesRef.current.set(key, promise);
-        return promise;
-    }, []);
 
     const ensureConfigured = () => {
         if (!firebaseConfigured) {
@@ -114,7 +104,7 @@ export function AuthProvider({ children }) {
                     if (mounted) setUser(null);
                     return;
                 }
-                const backendUser = await exchangeOnce(firebaseUser);
+                const backendUser = await exchangeFirebaseSession(firebaseUser);
                 if (mounted) setUser(backendUser);
             } catch (error) {
                 if (mounted) {
@@ -127,7 +117,7 @@ export function AuthProvider({ children }) {
         };
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => finish(firebaseUser));
         return () => { mounted = false; unsubscribe(); };
-    }, [exchangeOnce]);
+    }, []);
 
     const login = useCallback(async (email, password) => {
         ensureConfigured();
@@ -138,13 +128,13 @@ export function AuthProvider({ children }) {
                 await signOut(auth);
                 throw new Error("Please verify your email before signing in.");
             }
-            const backendUser = await exchangeOnce(credential.user);
+            const backendUser = await exchangeFirebaseSession(credential.user);
             setUser(backendUser);
             return backendUser;
         } catch (error) {
             throw new Error(firebaseError(error, latestTranslations.current));
         }
-    }, [exchangeOnce]);
+    }, []);
 
     const register = useCallback(async (name, email, password) => {
         ensureConfigured();
@@ -158,44 +148,24 @@ export function AuthProvider({ children }) {
         } catch (error) {
             throw new Error(firebaseError(error, latestTranslations.current));
         }
-    }, [exchangeOnce]);
+    }, []);
 
     const loginGoogle = useCallback(async () => {
         ensureConfigured();
-        if (googleBusyRef.current) return null;
-        googleBusyRef.current = true;
         setAuthError("");
         try {
+            sessionStorage.setItem(
+                "ecofusion-auth-return",
+                window.location.pathname + window.location.search,
+            );
             const credential = await signInWithPopup(auth, googleProvider);
-            const backendUser = await exchangeOnce(credential.user);
-            const additionalInfo = getAdditionalUserInfo(credential);
+            const backendUser = await exchangeFirebaseSession(credential.user);
             setUser(backendUser);
-            return {
-                user: backendUser,
-                isNewUser: Boolean(additionalInfo?.isNewUser),
-            };
-        } catch (error) {
-            throw new Error(firebaseError(error, latestTranslations.current));
-        } finally {
-            googleBusyRef.current = false;
-        }
-    }, [exchangeOnce]);
-
-    const linkGoogle = useCallback(async () => {
-        ensureConfigured();
-        const current = auth?.currentUser;
-        if (!current) throw new Error("Sign in before linking Google.");
-        const linked = current.providerData.some((item) => item.providerId === "google.com");
-        if (linked) return current;
-        try {
-            const result = await linkWithPopup(current, googleProvider);
-            const backendUser = await exchangeOnce(result.user);
-            setUser(backendUser);
-            return result.user;
+            return backendUser;
         } catch (error) {
             throw new Error(firebaseError(error, latestTranslations.current));
         }
-    }, [exchangeOnce]);
+    }, []);
 
     const startPhoneSignIn = useCallback(async (phoneNumber, containerId = "recaptcha-container") => {
         ensureConfigured();
@@ -215,7 +185,7 @@ export function AuthProvider({ children }) {
         if (!confirmationRef.current) throw new Error("Request an SMS code first.");
         try {
             const credential = await confirmationRef.current.confirm(code.trim());
-            const backendUser = await exchangeOnce(credential.user, profileName);
+            const backendUser = await exchangeFirebaseSession(credential.user, profileName);
             setUser(backendUser);
             confirmationRef.current = null;
             if (recaptchaRef.current) recaptchaRef.current.clear();
@@ -224,7 +194,7 @@ export function AuthProvider({ children }) {
         } catch (error) {
             throw new Error(firebaseError(error, latestTranslations.current));
         }
-    }, [exchangeOnce]);
+    }, []);
 
     const logout = useCallback(async () => {
         try {
@@ -237,18 +207,16 @@ export function AuthProvider({ children }) {
 
     const value = useMemo(() => ({
         user,
-        firebaseUser: auth?.currentUser || null,
         loading,
         authError,
         firebaseConfigured,
         login,
         register,
         loginGoogle,
-        linkGoogle,
         startPhoneSignIn,
         confirmPhoneCode,
         logout,
-    }), [user, loading, authError, login, register, loginGoogle, linkGoogle, startPhoneSignIn, confirmPhoneCode, logout]);
+    }), [user, loading, authError, login, register, loginGoogle, startPhoneSignIn, confirmPhoneCode, logout]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
