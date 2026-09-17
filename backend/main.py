@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import html
 import hmac
 import json
 import os
@@ -163,6 +164,44 @@ PERSONA_WEBHOOK_SECRET = os.getenv(
 ).strip()
 
 PERSONA_BASE = "https://api.withpersona.com/api/v1"
+
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "").strip()
+
+
+def send_welcome_email(email: str, name: str, provider: str, user_id: int):
+    """Best-effort welcome email. Authentication must never fail because email delivery is unavailable."""
+    if not email or not RESEND_API_KEY or not RESEND_FROM_EMAIL:
+        return False
+    provider_label = {
+        "google.com": "Google",
+        "password": "correo y contraseña",
+        "phone": "teléfono",
+    }.get(provider, "un método seguro")
+    safe_name = html.escape((name or "Cliente").strip()[:120])
+    payload = {
+        "from": RESEND_FROM_EMAIL,
+        "to": [email],
+        "subject": "Tu cuenta de EcoFusion Rental Cars fue creada",
+        "html": (
+            f"<div style='font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#101612'>"
+            f"<h1>Bienvenido a EcoFusion Rental Cars</h1>"
+            f"<p>Hola {safe_name}, tu cuenta se creó correctamente usando {provider_label}.</p>"
+            f"<p>Tu cuenta ya está protegida por Firebase Authentication. Para alquilar, completaremos las verificaciones requeridas dentro de EcoFusion.</p>"
+            f"</div>"
+        ),
+        "tags": [{"name": "category", "value": "welcome"}],
+    }
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            resp = client.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"},
+                json=payload,
+            )
+        return 200 <= resp.status_code < 300
+    except Exception:
+        return False
 
 
 # ============================================================
@@ -1179,6 +1218,8 @@ def exchange_firebase(
         ).split()
     )[:160]
 
+    created_new_user = False
+
     if u is None:
         role = (
             "admin"
@@ -1186,6 +1227,8 @@ def exchange_firebase(
             and email in ADMIN_EMAILS
             else "client"
         )
+
+        created_new_user = True
 
         u = User(
             firebase_uid=uid,
@@ -1241,6 +1284,9 @@ def exchange_firebase(
     )
 
     s.commit()
+
+    if created_new_user:
+        send_welcome_email(u.email, u.name, u.provider, u.id)
 
     set_cookies(
         response,

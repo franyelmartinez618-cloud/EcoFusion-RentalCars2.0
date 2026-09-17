@@ -450,8 +450,10 @@ const es = {
         verifyCode: "Verificar código",
         alreadyAccount: "¿Ya tienes una cuenta?",
         emailVerificationNotice: "Cuenta creada. Revisa tu correo para verificarla antes de iniciar sesión.",
+        googleWelcomeNotice: "Cuenta creada con Google. Tu identidad fue verificada por Firebase. También te enviaremos una confirmación por correo cuando el servicio de correo esté habilitado.",
+        googleLinkedSuccess: "Google quedó vinculado a tu cuenta.",
         clientOnly: "Esta cuenta no está disponible en el área del cliente.",
-        authHelper: "Las cuentas de correo deben verificarse antes de iniciar sesión. La autenticación por teléfono usa un código SMS y protección reCAPTCHA.",
+        authHelper: "Las cuentas de correo deben verificarse antes de iniciar sesión. Google usa OAuth seguro y la autenticación por teléfono usa código SMS y reCAPTCHA.",
     },
 
 
@@ -462,7 +464,7 @@ const es = {
         checking: "Comprobando…",
         signIn: "Iniciar sesión de forma segura",
         authErrors: {
-            emailExists: "Ya existe una cuenta con este correo.", invalidCredential: "El correo o la contraseña no son correctos.", googleClosed: "Se cerró la ventana de acceso con Google.", popupBlocked: "El navegador bloqueó la ventana de acceso.", providerDisabled: "Este método de acceso todavía no está habilitado.", tooMany: "Demasiados intentos. Inténtalo más tarde.", invalidPhone: "Ingresa un número de teléfono válido en formato internacional.", quota: "Se excedió la cuota de SMS de este proyecto.", invalidCode: "El código de verificación no es válido.", generic: "La autenticación falló.", adminOnly: "Esta cuenta no tiene acceso administrativo.", clientOnly: "Usa el acceso de clientes para esta cuenta."
+            emailExists: "Ya existe una cuenta con este correo.", invalidCredential: "El correo o la contraseña no son correctos.", googleClosed: "Se cerró la ventana de acceso con Google.", popupBlocked: "El navegador bloqueó la ventana de acceso.", providerDisabled: "Este método de acceso todavía no está habilitado.", tooMany: "Demasiados intentos. Inténtalo más tarde.", invalidPhone: "Ingresa un número de teléfono válido en formato internacional.", quota: "Se excedió la cuota de SMS de este proyecto.", invalidCode: "El código de verificación no es válido.", generic: "La autenticación falló.", credentialInUse: "Esa cuenta de Google ya está vinculada a otra cuenta.", providerLinked: "Esta cuenta de Google ya está vinculada.", recentLogin: "Por seguridad, vuelve a iniciar sesión antes de cambiar el acceso de la cuenta.", adminOnly: "Esta cuenta no tiene acceso administrativo.", clientOnly: "Usa el acceso de clientes para esta cuenta."
         },
     },
 
@@ -606,8 +608,19 @@ const es = {
         fullName: "Nombre completo",
         phone: "Teléfono",
         memberSince: "Miembro desde",
-        prototypeProfile: "Perfil de prototipo",
-        profileLater: "Más adelante, estos campos podrán editarse mediante la API autenticada de FastAPI.",
+        prototypeProfile: "Perfil de cuenta",
+        profileLater: "Los cambios sensibles requieren una sesión reciente y validación del backend.",
+        securityKicker: "SEGURIDAD DE CUENTA",
+        securityTitle: "Métodos y verificación",
+        emailStatus: "Correo",
+        providerStatus: "Google",
+        verified: "Verificado",
+        unverified: "Pendiente de verificación",
+        googleLinked: "Vinculado",
+        googleNotLinked: "No vinculado",
+        linkGoogle: "Vincular Google",
+        linkingGoogle: "Vinculando…",
+        securityDescription: "Vincular otro método requiere que la acción sea iniciada por ti y que Firebase vuelva a autenticar la cuenta. Para reservas, la verificación de identidad se realiza por separado.",
     },
 
 

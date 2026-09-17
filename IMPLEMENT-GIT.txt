@@ -1,12 +1,20 @@
-EcoFusion RentalCars - Google Auth Git-ready patch
+EcoFusion RentalCars — Auth/Mobile Security Update
 
-Replace the listed frontend files in your local clone, then commit and push.
-This version uses Firebase signInWithPopup(), exchanges the Firebase ID token with the Railway FastAPI backend, and preserves returnTo for protected routes.
+Included in this full project package:
+- Google sign-in via signInWithPopup with a single user-initiated popup.
+- Deduplicated Firebase -> FastAPI session exchange to avoid duplicate auth POSTs.
+- Friendly handling for popup blocked/closed, provider already linked, credential already in use, and recent-login errors.
+- Account return-path preservation after authentication.
+- Account page with visible logout action.
+- Desktop and mobile navbar with Mi cuenta/Iniciar sesión and logout controls.
+- Compact EcoFusion symbol on small screens while keeping the full logo on desktop.
+- Security panel in the account profile showing email verification and Google-link status.
+- User-driven Google account linking through Firebase linkWithPopup.
+- First-time backend account creation can send a welcome email through Resend when RESEND_API_KEY and RESEND_FROM_EMAIL are configured server-side. Email delivery never blocks authentication.
+- Backend session creation flush fix remains included.
 
-Git commands (run from the repository root):
-  git status
-  git add frontend/src/context/AuthContext.jsx frontend/src/pages/SignIn/SignIn.jsx frontend/src/pages/Auth/Register.jsx frontend/src/App.jsx frontend/src/services/firebase.js
-  git commit -m "fix: complete Google authentication flow"
-  git push origin main
-
-Do NOT add frontend/.env.local or any Firebase service-account JSON.
+Important:
+- Do NOT commit frontend/.env.production or frontend/.wrangler/.
+- Do NOT commit the Firebase service-account JSON.
+- Keep Firebase Admin and any email API keys only in Railway environment variables/secrets.
+- Google OAuth itself provides the provider's anti-abuse controls; phone authentication continues to use Firebase reCAPTCHA. Do not add a fake "I'm not a robot" checkbox.
