@@ -38,7 +38,7 @@ function Account() {
             <div className="account-layout">
                 <aside className="account-sidebar"><div className="account-profile"><div className="account-avatar">{profile.name.slice(0,2).toUpperCase()}</div><strong>{profile.name}</strong><span>{profile.email}</span><button type="button" className="account-link-button" onClick={async()=>{await logout();navigate("/sign-in")}}>{t.common.signOut}</button></div><nav>{tabs.map(([key,label]) => <button key={key} className={active===key?"is-active":""} type="button" onClick={()=>setActive(key)}>{label}<span>→</span></button>)}</nav></aside>
                 <main className="account-main">
-                    {active === "overview" && <Overview t={t} user={profile} next={next} payments={myPayments} reservations={myReservations} />}
+                    {active === "overview" && <Overview t={t} user={profile} next={next} payments={myPayments} reservations={myReservations} serverLoading={serverLoading} />}
                     {active === "reservations" && <Reservations t={t} reservations={myReservations} vehicles={vehicles} />}
                     {active === "payments" && <Payments t={t} payments={myPayments} />}
                     {active === "profile" && <><Profile t={t} user={profile} /><IdentityVerification /></>}
@@ -48,7 +48,7 @@ function Account() {
     </PageShell>;
 }
 
-function Overview({ t, user, next, payments, reservations }) {
+function Overview({ t, user, next, payments, reservations, serverLoading }) {
     const paid = payments.filter((p) => p.status === "PAID").reduce((sum,p)=>sum+p.amount,0);
     return <>
         <div className="account-stat-grid">{serverLoading && <div className="account-loading" role="status">{t.accountPage.loading || "Loading..."}</div>}<article><span>{t.accountPage.upcoming}</span><strong>{next?"1":"0"}</strong><small>{t.accountPage.activeBooking}</small></article><article><span>{t.accountPage.trips}</span><strong>{reservations.length}</strong><small>{t.accountPage.reservationsCount}</small></article><article><span>{t.accountPage.paid}</span><strong>${paid}</strong><small>{t.accountPage.lifetimeDemoTotal}</small></article></div>
