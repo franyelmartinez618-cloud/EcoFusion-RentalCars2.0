@@ -17,10 +17,30 @@ import AdminLogin from "./pages/Admin/AdminLogin";
 import AccountSetup from "./pages/Auth/AccountSetup";
 import LegalPage from "./pages/Legal/LegalPage";
 import { normalizePath, useLocation, Link, navigate } from "./utils/router";
-import { useEffect } from "react";
+import { Component, useEffect } from "react";
 import "./styles/variables.css";
 import "./styles/global.css";
 import "./App.css";
+
+
+class AppErrorBoundary extends Component {
+    state = { hasError: false };
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="route-loading" role="alert">
+                    <strong>EcoFusion</strong>
+                    <p>Something went wrong loading this page.</p>
+                    <button type="button" onClick={() => window.location.reload()}>Reload</button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 function NotFound() {
     const { translations:t } = useApp(); return <div className="not-found"><div><span>404</span><h1>{t.notFound.title}</h1><p>{t.notFound.description}</p><Link to="/">{t.notFound.back}</Link></div></div>;
@@ -68,7 +88,19 @@ function RouterView() {
 }
 
 function App() {
-    return <AppProvider><AuthProvider><AppDataProvider><ToastProvider><RouterView /></ToastProvider></AppDataProvider></AuthProvider></AppProvider>;
+    return (
+        <AppErrorBoundary>
+            <AppProvider>
+                <AuthProvider>
+                    <AppDataProvider>
+                        <ToastProvider>
+                            <RouterView />
+                        </ToastProvider>
+                    </AppDataProvider>
+                </AuthProvider>
+            </AppProvider>
+        </AppErrorBoundary>
+    );
 }
 
 export default App;

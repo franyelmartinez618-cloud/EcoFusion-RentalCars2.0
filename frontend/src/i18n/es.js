@@ -1,5 +1,7 @@
 const es = {
     nav: {
+        reservations: "Reservas",
+        register: "Registrarse",
         home: "Inicio",
         vehicles: "Vehículos",
         howItWorks: "Cómo funciona",
@@ -426,6 +428,15 @@ const es = {
     },
 
     account: {
+        authEyebrow: "CUENTA ECOFUSION",
+        registerTitle: "Bienvenido a EcoFusion",
+        registerHeroDescription: "Crea tu cuenta para reservar vehículos, gestionar tus datos y acceder a tus reservas.",
+        registrationStepsTitle: "Después del registro",
+        registrationStepsDescription: "Verifica tu correo cuando corresponda, completa tus datos y acepta la política de privacidad y los términos antes de reservar.",
+        securityNote: "Protegemos el acceso con autenticación de proveedor y una sesión segura en el servidor.",
+        linkGoogleSuccess: "Google quedó vinculado a tu cuenta.",
+        linkGoogleError: "No fue posible vincular Google.",
+        firebaseSetupError: "La autenticación de Firebase no está configurada en este entorno.",
         signInTitle: "Iniciar sesión",
         signInDescription:
             "Accede a tu cuenta para gestionar reservas, pagos y datos de alquiler.",
@@ -609,6 +620,8 @@ const es = {
         memberSince: "Miembro desde",
         prototypeProfile: "Perfil de prototipo",
         profileLater: "Más adelante, estos campos podrán editarse mediante la API autenticada de FastAPI.",
+        linkGoogleSuccess: "Google quedó vinculado a tu cuenta.",
+        linkGoogleError: "No fue posible vincular Google.",
     },
 
 

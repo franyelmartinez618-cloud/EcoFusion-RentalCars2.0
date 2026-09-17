@@ -93,6 +93,7 @@ export function AuthProvider({ children }) {
     const confirmationRef = useRef(null);
     const exchangePromisesRef = useRef(new Map());
     const googleBusyRef = useRef(false);
+    const googleFlowRef = useRef(false);
 
     const exchangeOnce = useCallback((nextFirebaseUser, profileName = "") => {
         const key = nextFirebaseUser?.uid;
@@ -123,6 +124,12 @@ export function AuthProvider({ children }) {
             setFirebaseUser(nextFirebaseUser || null);
             if (!nextFirebaseUser) {
                 setUser(null);
+                setLoading(false);
+                return;
+            }
+            // A foreground Google popup flow performs the server exchange itself.
+            // Do not start a second exchange from onAuthStateChanged while the popup is closing.
+            if (googleFlowRef.current) {
                 setLoading(false);
                 return;
             }
@@ -177,18 +184,25 @@ export function AuthProvider({ children }) {
         ensureConfigured();
         if (googleBusyRef.current) return null;
         googleBusyRef.current = true;
+        googleFlowRef.current = true;
         setAuthError("");
         try {
             sessionStorage.setItem("ecofusion-auth-return", window.location.pathname + window.location.search);
             const credential = await signInWithPopup(auth, googleProvider);
+            await credential.user.getIdToken(true);
             const backendUser = await exchangeOnce(credential.user);
             const additionalInfo = getAdditionalUserInfo(credential);
             setFirebaseUser(credential.user);
             setUser(backendUser);
             return { user: backendUser, isNewUser: Boolean(additionalInfo?.isNewUser) };
         } catch (error) {
+            // Never leave a Firebase identity active if the server session could not be established.
+            if (auth?.currentUser) await signOut(auth).catch(() => {});
+            setFirebaseUser(null);
+            setUser(null);
             throw new Error(firebaseError(error, latestTranslations.current));
         } finally {
+            googleFlowRef.current = false;
             googleBusyRef.current = false;
         }
     }, [exchangeOnce]);

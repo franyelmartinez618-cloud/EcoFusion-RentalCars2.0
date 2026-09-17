@@ -1,5 +1,7 @@
 const en = {
     nav: {
+        reservations: "Reservations",
+        register: "Register",
         home: "Home",
         vehicles: "Vehicles",
         howItWorks: "How it works",
@@ -422,6 +424,15 @@ const en = {
     },
 
     account: {
+        authEyebrow: "ECOFUSION ACCOUNT",
+        registerTitle: "Welcome to EcoFusion",
+        registerHeroDescription: "Create your account to book vehicles, manage your details and access your reservations.",
+        registrationStepsTitle: "After registration",
+        registrationStepsDescription: "Verify your email when required, complete your details and accept the privacy policy and terms before booking.",
+        securityNote: "Access is protected with provider authentication and a secure server session.",
+        linkGoogleSuccess: "Google is now linked to your account.",
+        linkGoogleError: "Google could not be linked to your account.",
+        firebaseSetupError: "Firebase Authentication is not configured in this environment.",
         signInTitle: "Sign in",
         signInDescription:
             "Sign in to manage your reservations and account.",
@@ -605,6 +616,8 @@ const en = {
         memberSince: "Member since",
         prototypeProfile: "Prototype profile",
         profileLater: "Later, these fields can become editable through the authenticated FastAPI API.",
+        linkGoogleSuccess: "Google is now linked to your account.",
+        linkGoogleError: "Google could not be linked to your account.",
     },
 
 

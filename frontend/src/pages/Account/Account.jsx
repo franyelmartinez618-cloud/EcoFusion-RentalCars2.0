@@ -70,7 +70,7 @@ function Profile({ t, user, firebaseUser, linkGoogle }) {
     const providers=firebaseUser?.providerData?.map((item)=>item.providerId)||[];
     const googleLinked=providers.includes("google.com");
     const emailVerified=Boolean(firebaseUser?.emailVerified);
-    const handleLinkGoogle=async()=>{setLinking(true);setLinkMessage("");setLinkError("");try{await linkGoogle();setLinkMessage("Google quedó vinculado a tu cuenta.")}catch(err){setLinkError(err.message||"No fue posible vincular Google.")}finally{setLinking(false)}};
+    const handleLinkGoogle=async()=>{setLinking(true);setLinkMessage("");setLinkError("");try{await linkGoogle();setLinkMessage(t.accountPage.linkGoogleSuccess)}catch(err){setLinkError(err.message||t.accountPage.linkGoogleError)}finally{setLinking(false)}};
     return <>
       <section className="account-panel">
         <div className="account-panel__header"><div><span className="account-kicker">{t.accountPage.profileKicker}</span><h2>{t.accountPage.rentalProfile}</h2></div></div>
