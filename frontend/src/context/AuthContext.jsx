@@ -6,6 +6,8 @@ import {
     sendEmailVerification,
     signInWithEmailAndPassword,
     signInWithPopup,
+    linkWithPopup,
+    getAdditionalUserInfo,
     signOut,
     updateProfile,
     RecaptchaVerifier,
@@ -60,6 +62,9 @@ function firebaseError(error, t) {
         "auth/invalid-phone-number": t.account.authErrors.invalidPhone,
         "auth/quota-exceeded": t.account.authErrors.quota,
         "auth/invalid-verification-code": t.account.authErrors.invalidCode,
+        "auth/credential-already-in-use": t.account.authErrors.credentialInUse || "Esta cuenta de Google ya está vinculada a otra cuenta.",
+        "auth/provider-already-linked": t.account.authErrors.providerLinked || "Google ya está vinculado a esta cuenta.",
+        "auth/requires-recent-login": t.account.authErrors.recentLogin || "Por seguridad, vuelve a iniciar sesión antes de cambiar el acceso de la cuenta.",
     };
     return map[error?.code] || error?.message || t.account.authErrors.generic;
 }
@@ -77,6 +82,7 @@ async function exchangeFirebaseSession(firebaseUser, profileName = "") {
 export function AuthProvider({ children }) {
     const { language, translations: t } = useApp();
     const [user, setUser] = useState(null);
+    const [firebaseUser, setFirebaseUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [authError, setAuthError] = useState("");
     useEffect(() => { if (auth) auth.languageCode = language; }, [language]);
@@ -85,6 +91,20 @@ export function AuthProvider({ children }) {
     latestTranslations.current = t;
     const recaptchaRef = useRef(null);
     const confirmationRef = useRef(null);
+    const exchangePromisesRef = useRef(new Map());
+    const googleBusyRef = useRef(false);
+
+    const exchangeOnce = useCallback((nextFirebaseUser, profileName = "") => {
+        const key = nextFirebaseUser?.uid;
+        if (!key) return Promise.reject(new Error("Authentication was not completed."));
+        const existing = exchangePromisesRef.current.get(key);
+        if (existing) return existing;
+        const promise = exchangeFirebaseSession(nextFirebaseUser, profileName).finally(() => {
+            exchangePromisesRef.current.delete(key);
+        });
+        exchangePromisesRef.current.set(key, promise);
+        return promise;
+    }, []);
 
     const ensureConfigured = () => {
         if (!firebaseConfigured) {
@@ -98,13 +118,16 @@ export function AuthProvider({ children }) {
             return undefined;
         }
         let mounted = true;
-        const finish = async (firebaseUser) => {
+        const finish = async (nextFirebaseUser) => {
+            if (!mounted) return;
+            setFirebaseUser(nextFirebaseUser || null);
+            if (!nextFirebaseUser) {
+                setUser(null);
+                setLoading(false);
+                return;
+            }
             try {
-                if (!firebaseUser) {
-                    if (mounted) setUser(null);
-                    return;
-                }
-                const backendUser = await exchangeFirebaseSession(firebaseUser);
+                const backendUser = await exchangeOnce(nextFirebaseUser);
                 if (mounted) setUser(backendUser);
             } catch (error) {
                 if (mounted) {
@@ -115,9 +138,9 @@ export function AuthProvider({ children }) {
                 if (mounted) setLoading(false);
             }
         };
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => finish(firebaseUser));
+        const unsubscribe = onAuthStateChanged(auth, finish);
         return () => { mounted = false; unsubscribe(); };
-    }, []);
+    }, [exchangeOnce]);
 
     const login = useCallback(async (email, password) => {
         ensureConfigured();
@@ -128,13 +151,13 @@ export function AuthProvider({ children }) {
                 await signOut(auth);
                 throw new Error("Please verify your email before signing in.");
             }
-            const backendUser = await exchangeFirebaseSession(credential.user);
+            const backendUser = await exchangeOnce(credential.user);
             setUser(backendUser);
             return backendUser;
         } catch (error) {
             throw new Error(firebaseError(error, latestTranslations.current));
         }
-    }, []);
+    }, [exchangeOnce]);
 
     const register = useCallback(async (name, email, password) => {
         ensureConfigured();
@@ -144,7 +167,7 @@ export function AuthProvider({ children }) {
             await updateProfile(credential.user, { displayName: name.trim() });
             await sendEmailVerification(credential.user);
             await signOut(auth);
-            throw new Error("Account created. Check your email to verify the account, then sign in.");
+            return { needsVerification: true };
         } catch (error) {
             throw new Error(firebaseError(error, latestTranslations.current));
         }
@@ -152,20 +175,39 @@ export function AuthProvider({ children }) {
 
     const loginGoogle = useCallback(async () => {
         ensureConfigured();
+        if (googleBusyRef.current) return null;
+        googleBusyRef.current = true;
         setAuthError("");
         try {
-            sessionStorage.setItem(
-                "ecofusion-auth-return",
-                window.location.pathname + window.location.search,
-            );
+            sessionStorage.setItem("ecofusion-auth-return", window.location.pathname + window.location.search);
             const credential = await signInWithPopup(auth, googleProvider);
-            const backendUser = await exchangeFirebaseSession(credential.user);
+            const backendUser = await exchangeOnce(credential.user);
+            const additionalInfo = getAdditionalUserInfo(credential);
+            setFirebaseUser(credential.user);
             setUser(backendUser);
-            return backendUser;
+            return { user: backendUser, isNewUser: Boolean(additionalInfo?.isNewUser) };
+        } catch (error) {
+            throw new Error(firebaseError(error, latestTranslations.current));
+        } finally {
+            googleBusyRef.current = false;
+        }
+    }, [exchangeOnce]);
+
+    const linkGoogle = useCallback(async () => {
+        ensureConfigured();
+        const current = auth?.currentUser;
+        if (!current) throw new Error("Sign in before linking Google.");
+        if (current.providerData.some((item) => item.providerId === "google.com")) return current;
+        try {
+            const result = await linkWithPopup(current, googleProvider);
+            const backendUser = await exchangeOnce(result.user);
+            setFirebaseUser(result.user);
+            setUser(backendUser);
+            return result.user;
         } catch (error) {
             throw new Error(firebaseError(error, latestTranslations.current));
         }
-    }, []);
+    }, [exchangeOnce]);
 
     const startPhoneSignIn = useCallback(async (phoneNumber, containerId = "recaptcha-container") => {
         ensureConfigured();
@@ -185,7 +227,7 @@ export function AuthProvider({ children }) {
         if (!confirmationRef.current) throw new Error("Request an SMS code first.");
         try {
             const credential = await confirmationRef.current.confirm(code.trim());
-            const backendUser = await exchangeFirebaseSession(credential.user, profileName);
+            const backendUser = await exchangeOnce(credential.user, profileName);
             setUser(backendUser);
             confirmationRef.current = null;
             if (recaptchaRef.current) recaptchaRef.current.clear();
@@ -202,21 +244,24 @@ export function AuthProvider({ children }) {
             if (auth) await signOut(auth);
         } finally {
             setUser(null);
+            setFirebaseUser(null);
         }
     }, []);
 
     const value = useMemo(() => ({
         user,
+        firebaseUser,
         loading,
         authError,
         firebaseConfigured,
         login,
         register,
         loginGoogle,
+        linkGoogle,
         startPhoneSignIn,
         confirmPhoneCode,
         logout,
-    }), [user, loading, authError, login, register, loginGoogle, startPhoneSignIn, confirmPhoneCode, logout]);
+    }), [user, firebaseUser, loading, authError, login, register, loginGoogle, linkGoogle, startPhoneSignIn, confirmPhoneCode, logout]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

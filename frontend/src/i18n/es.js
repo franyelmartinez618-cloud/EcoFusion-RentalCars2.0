@@ -428,7 +428,7 @@ const es = {
     account: {
         signInTitle: "Iniciar sesión",
         signInDescription:
-            "Inicia sesión para gestionar tus reservas y tu cuenta.",
+            "Accede a tu cuenta para gestionar reservas, pagos y datos de alquiler.",
         email: "Correo electrónico",
         password: "Contraseña",
         remember: "Recordarme",
