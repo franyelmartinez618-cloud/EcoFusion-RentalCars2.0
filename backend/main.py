@@ -305,7 +305,7 @@ class UserIdentity(Base):
     )
 
     user_id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        BIGINT(),
         ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
     )
