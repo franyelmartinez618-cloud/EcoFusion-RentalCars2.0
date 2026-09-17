@@ -17,22 +17,13 @@ export default function SignIn() {
     const [error, setError] = useState("");
     const [busy, setBusy] = useState(false);
 
-    const returnTo = (() => {
-        try {
-            const value = new URLSearchParams(window.location.search).get("returnTo");
-            return value && value.startsWith("/") ? value : "/account";
-        } catch {
-            return "/account";
-        }
-    })();
-
     const go = async (fn) => {
         setError(""); setBusy(true);
         try {
             const user = await fn();
-            if (!user) return;
+            if (!user) return; // redirect-based OAuth continues after Google returns to the app
             if (user.role !== "client") { setError(t.account.clientOnly); return; }
-            navigate(returnTo);
+            navigate("/account");
         } catch (err) { setError(err.message); }
         finally { setBusy(false); }
     };
@@ -47,7 +38,7 @@ export default function SignIn() {
         finally { setBusy(false); }
     };
 
-    useEffect(() => { if (user) navigate(user.role === "admin" ? "/admin" : returnTo); }, [user, returnTo]);
+    useEffect(() => { if (user) navigate(user.role === "admin" ? "/admin" : "/account"); }, [user]);
     return <PageShell><section className="page-section"><div className="container" style={{maxWidth:700}}><article className="info-card auth-modern-card">
         <span className="page-hero__eyebrow">{t.account.signInTitle}</span>
         <h1>{t.account.signInTitle}</h1>

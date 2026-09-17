@@ -12,6 +12,7 @@ from decimal import Decimal
 from typing import Optional
 
 import httpx
+import jwt
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).with_name(".env"))
@@ -60,10 +61,15 @@ except Exception:
 
 ENV = os.getenv("ENVIRONMENT", "development")
 
-FRONTEND_ORIGIN = os.getenv(
-    "FRONTEND_ORIGIN",
-    "http://localhost:5173",
-).strip()
+FRONTEND_ORIGINS = [
+    x.strip()
+    for x in os.getenv(
+        "FRONTEND_ORIGINS",
+        os.getenv("FRONTEND_ORIGIN", "http://localhost:5173"),
+    ).split(",")
+    if x.strip()
+]
+FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "ecofusion-rentalcars").strip()
 
 TRUSTED_HOSTS = [
     x.strip()
@@ -157,6 +163,34 @@ PERSONA_WEBHOOK_SECRET = os.getenv(
 ).strip()
 
 PERSONA_BASE = "https://api.withpersona.com/api/v1"
+
+
+# ============================================================
+# FIREBASE TOKEN VERIFICATION
+# ============================================================
+
+FIREBASE_ISSUER = f"https://securetoken.google.com/{FIREBASE_PROJECT_ID}"
+FIREBASE_JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
+_firebase_jwk_client = jwt.PyJWKClient(FIREBASE_JWKS_URL, cache_jwk_set=True, lifespan=3600)
+
+def verify_firebase_id_token(id_token: str):
+    # Prefer the Admin SDK when configured because it can also check revocation.
+    if firebase_auth is not None and firebase_admin is not None:
+        try:
+            if firebase_admin._apps:
+                return firebase_auth.verify_id_token(id_token, check_revoked=True)
+        except Exception:
+            pass
+
+    signing_key = _firebase_jwk_client.get_signing_key_from_jwt(id_token).key
+    return jwt.decode(
+        id_token,
+        signing_key,
+        algorithms=["RS256"],
+        audience=FIREBASE_PROJECT_ID,
+        issuer=FIREBASE_ISSUER,
+        options={"require": ["exp", "iat", "sub", "aud", "iss"]},
+    )
 
 
 # ============================================================
@@ -677,7 +711,7 @@ app.add_middleware(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_ORIGIN],
+    allow_origins=FRONTEND_ORIGINS,
     allow_credentials=True,
     allow_methods=[
         "GET",
@@ -807,24 +841,19 @@ def new_session(
             user_id=user_id,
             csrf_token=csrf,
             created_at=now(),
-            expires_at=now().replace(
-                microsecond=0
+            expires_at=(
+                now()
+                + __import__("datetime").timedelta(
+                    seconds=SESSION_TTL
+                )
             ),
         )
     )
 
-    row = (
-        s.query(UserSession)
-        .filter_by(id=sid)
-        .one()
-    )
-
-    row.expires_at = (
-        now()
-        + __import__("datetime").timedelta(
-            seconds=SESSION_TTL
-        )
-    )
+    # SessionLocal uses autoflush=False. Flush the INSERT before returning
+    # so the session row is persisted consistently before the transaction
+    # continues and downstream code can query it safely.
+    s.flush()
 
     return sid, csrf
 
@@ -1095,24 +1124,15 @@ def exchange_firebase(
     response: Response,
     s: DBSession = Depends(db),
 ):
-    if not firebase_ready():
-        raise HTTPException(
-            503,
-            "Firebase Authentication is not configured on the server.",
-        )
-
     try:
-        decoded = firebase_auth.verify_id_token(
-            payload.id_token,
-            check_revoked=True,
-        )
-    except Exception:
+        decoded = verify_firebase_id_token(payload.id_token)
+    except Exception as exc:
         raise HTTPException(
             401,
             "Invalid or expired Firebase identity token",
-        )
+        ) from exc
 
-    uid = decoded.get("uid")
+    uid = decoded.get("uid") or decoded.get("sub")
 
     email = (
         decoded.get("email") or ""

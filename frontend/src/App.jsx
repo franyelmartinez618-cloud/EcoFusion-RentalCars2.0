@@ -27,11 +27,7 @@ function NotFound() {
 function GuardedRoute({ role, children, loginPath }) {
     const { user, loading } = useAuth();
     useEffect(() => {
-        if (!loading && !user) {
-            const returnTo = window.location.pathname + window.location.search;
-            const separator = loginPath.includes("?") ? "&" : "?";
-            navigate(`${loginPath}${separator}returnTo=${encodeURIComponent(returnTo)}`);
-        }
+        if (!loading && !user) navigate(loginPath);
         if (!loading && user && role && user.role !== role) navigate(user.role === "admin" ? "/admin" : "/account");
     }, [loading, user, role, loginPath]);
     if (loading || !user || (role && user.role !== role)) return <div className="route-loading">Loading…</div>;

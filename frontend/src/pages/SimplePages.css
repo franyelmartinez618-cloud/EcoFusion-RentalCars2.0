@@ -99,3 +99,10 @@ html[data-theme="dark"] .vehicle-detail__price strong{
 .auth-divider{display:flex;align-items:center;gap:12px;color:var(--color-text-secondary);font-size:12px;margin:20px 0}.auth-divider::before,.auth-divider::after{content:"";height:1px;background:var(--color-border);flex:1}.auth-tabs{display:flex;gap:4px;padding:4px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:14px;margin-bottom:18px}.auth-tabs button{flex:1;border:0;border-radius:10px;padding:10px;background:transparent;color:var(--color-text-secondary);font-weight:800}.auth-tabs button.is-active{background:var(--color-card);color:var(--color-text);box-shadow:var(--shadow-sm)}.auth-helper{margin-top:14px;color:var(--color-text-secondary);font-size:12px;line-height:1.6}.auth-success{color:var(--color-primary);font-size:13px}
 @media(max-width:600px){.auth-provider-grid{grid-template-columns:1fr}.auth-modern-card{padding:24px}}
 .auth-error--setup{margin:14px 0;padding:12px 14px;border-radius:12px;border:1px solid color-mix(in srgb,var(--color-danger,#d64f4f) 35%,transparent);background:color-mix(in srgb,var(--color-danger,#d64f4f) 8%,transparent);font-size:.92rem;line-height:1.45}
+
+.step-card__icon{width:44px;height:44px;display:grid;place-items:center;margin-bottom:18px;border-radius:13px;background:var(--color-primary-light);color:var(--color-primary);font-size:20px;font-weight:900}
+.google-mark{display:inline-grid;place-items:center;width:20px;height:20px;flex:none}
+.google-mark svg{width:18px;height:18px;display:block}
+.auth-provider--google{display:inline-flex;align-items:center;justify-content:center;gap:9px}
+
+.admin-brand img{width:154px;height:58px;object-fit:contain;object-position:left center}.auth-brand img{width:180px;height:68px;object-fit:contain;object-position:left center}.admin-brand{display:flex;align-items:center;gap:10px}.auth-brand{display:flex;align-items:center;gap:10px}.google-mark{display:inline-grid;place-items:center;width:20px;height:20px}.google-mark svg{width:18px;height:18px}

@@ -1,82 +1,60 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useApp } from "../../context/AppContext";
-import { Link } from "../../utils/router";
+import { useAppData } from "../../context/AppDataContext";
+import { navigate } from "../../utils/router";
+import { useToast } from "../../context/ToastContext";
 import "./BookingSearch.css";
 
 function BookingSearch() {
-    const { translations: t } = useApp();
+    const { translations:t } = useApp();
+    const { locations = [] } = useAppData();
+    const { showToast } = useToast();
     const [sameLocation, setSameLocation] = useState(true);
+    const [pickupLocation, setPickupLocation] = useState("");
+    const [returnLocation, setReturnLocation] = useState("");
+    const [pickupDate, setPickupDate] = useState("");
+    const [returnDate, setReturnDate] = useState("");
 
-    return (
-        <section className="booking-search">
-            <div className="booking-search__heading">
-                <div>
-                    <span>{t.bookingSearch.eyebrow}</span>
-                    <h2>{t.booking.title}</h2>
-                    <p>{t.booking.subtitle}</p>
-                </div>
-                <div className="booking-search__step">
-                    <span>01</span>
-                    <small>{t.bookingSearch.step}</small>
-                </div>
-            </div>
+    const locationOptions = useMemo(() => locations.length ? locations : [
+        { name: t.booking.losAngeles },
+        { name: t.booking.anaheim },
+        { name: t.booking.sanDiego },
+        { name: t.booking.sanFrancisco },
+        { name: t.booking.orangeCounty },
+    ], [locations, t]);
 
-            <form
-                className="booking-search__form"
-                onSubmit={(event) => event.preventDefault()}
-            >
-                <label className="booking-field booking-field--location">
-                    <span>{t.booking.pickupLocation}</span>
-                    <select defaultValue="">
-                        <option value="" disabled>{t.booking.selectLocation}</option>
-                        <option>{t.booking.losAngeles}</option>
-                        <option>{t.booking.anaheim}</option>
-                        <option>{t.booking.sanDiego}</option>
-                        <option>{t.booking.sanFrancisco}</option>
-                        <option>{t.booking.orangeCounty}</option>
-                    </select>
-                </label>
+    const submit = (event) => {
+        event.preventDefault();
+        if (!pickupLocation || !pickupDate || !returnDate) {
+            showToast("Selecciona ubicación y ambas fechas para consultar disponibilidad.", "error");
+            return;
+        }
+        if (new Date(returnDate) <= new Date(pickupDate)) {
+            showToast("La fecha de devolución debe ser posterior a la fecha de recogida.", "error");
+            return;
+        }
+        const search = { pickupLocation, returnLocation: sameLocation ? pickupLocation : returnLocation, pickupDate, returnDate };
+        sessionStorage.setItem("ecofusion-booking-search", JSON.stringify(search));
+        navigate("/vehicles");
+    };
 
-                <label className="booking-field booking-field--location">
-                    <span>{t.booking.returnLocation}</span>
-                    <select defaultValue={sameLocation ? "same" : ""}>
-                        <option value="same">{t.booking.sameLocation}</option>
-                        <option>{t.booking.losAngeles}</option>
-                        <option>{t.booking.anaheim}</option>
-                        <option>{t.booking.sanDiego}</option>
-                        <option>{t.booking.sanFrancisco}</option>
-                        <option>{t.booking.orangeCounty}</option>
-                    </select>
-                </label>
+    return <section className="booking-search">
+        <div className="booking-search__heading">
+            <div><span>Rental search</span><h2>{t.booking.title}</h2><p>{t.booking.subtitle}</p></div>
+        </div>
 
-                <label className="booking-field">
-                    <span>{t.booking.pickupDate}</span>
-                    <input type="date" />
-                </label>
+        <form className="booking-search__form" onSubmit={submit}>
+            <label className="booking-field booking-field--location"><span>{t.booking.pickupLocation}</span><select value={pickupLocation} onChange={(e)=>setPickupLocation(e.target.value)}><option value="">{t.booking.selectLocation}</option>{locationOptions.map((location)=><option key={location.name} value={location.name}>{location.name}</option>)}</select></label>
+            <label className="booking-field booking-field--location"><span>{t.booking.returnLocation}</span><select value={sameLocation ? pickupLocation : returnLocation} disabled={sameLocation} onChange={(e)=>setReturnLocation(e.target.value)}><option value="">{t.booking.selectLocation}</option><option value={pickupLocation}>{t.booking.sameLocation}</option>{locationOptions.map((location)=><option key={location.name} value={location.name}>{location.name}</option>)}</select></label>
+            <label className="booking-field"><span>{t.booking.pickupDate}</span><input type="date" value={pickupDate} onChange={(e)=>setPickupDate(e.target.value)} /></label>
+            <label className="booking-field"><span>{t.booking.returnDate}</span><input type="date" value={returnDate} onChange={(e)=>setReturnDate(e.target.value)} /></label>
+            <button className="booking-search__button" type="submit">{t.booking.search}<span>→</span></button>
+        </form>
 
-                <label className="booking-field">
-                    <span>{t.booking.returnDate}</span>
-                    <input type="date" />
-                </label>
-
-                <button className="booking-search__button" type="submit">
-                    {t.booking.search}<span>→</span>
-                </button>
-            </form>
-
-            <div className="booking-search__meta">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={sameLocation}
-                        onChange={(event) => setSameLocation(event.target.checked)}
-                    />
-                    <span>{t.booking.sameLocation}</span>
-                </label>
-                <Link to="/vehicles">{t.bookingSearch.browseFleet} <span>→</span></Link>
-            </div>
-        </section>
-    );
+        <div className="booking-search__meta">
+            <label><input type="checkbox" checked={sameLocation} onChange={(e)=>setSameLocation(e.target.checked)} /><span>{t.booking.sameLocation}</span></label>
+            <button type="button" className="booking-search__fleet-link" onClick={()=>navigate("/vehicles")}>{t.bookingSearch.browseFleet} <span>→</span></button>
+        </div>
+    </section>
 }
-
 export default BookingSearch;

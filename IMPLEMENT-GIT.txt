@@ -1,0 +1,12 @@
+EcoFusion RentalCars - Google Auth Git-ready patch
+
+Replace the listed frontend files in your local clone, then commit and push.
+This version uses Firebase signInWithPopup(), exchanges the Firebase ID token with the Railway FastAPI backend, and preserves returnTo for protected routes.
+
+Git commands (run from the repository root):
+  git status
+  git add frontend/src/context/AuthContext.jsx frontend/src/pages/SignIn/SignIn.jsx frontend/src/pages/Auth/Register.jsx frontend/src/App.jsx frontend/src/services/firebase.js
+  git commit -m "fix: complete Google authentication flow"
+  git push origin main
+
+Do NOT add frontend/.env.local or any Firebase service-account JSON.

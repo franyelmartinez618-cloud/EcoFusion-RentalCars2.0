@@ -1,73 +1,159 @@
--- EcoFusion production MySQL schema. Core tables have typed business columns; remaining domain tables are created as extension tables so the 69-table contract exists from day one.
+-- EcoFusion RentalCars - clean production schema
+-- Core application only. No placeholder tables.
+
 CREATE DATABASE IF NOT EXISTS ecofusion CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE ecofusion;
 
-CREATE TABLE IF NOT EXISTS `roles` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_roles_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS users (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, firebase_uid VARCHAR(191) NOT NULL UNIQUE, name VARCHAR(160) NOT NULL DEFAULT '', email VARCHAR(254) NOT NULL DEFAULT '', phone VARCHAR(40) NOT NULL DEFAULT '', role VARCHAR(20) NOT NULL DEFAULT 'client', provider VARCHAR(50) NOT NULL DEFAULT '', active BOOLEAN NOT NULL DEFAULT TRUE, identity_status VARCHAR(30) NOT NULL DEFAULT 'not_started', identity_provider VARCHAR(40) NOT NULL DEFAULT '', identity_inquiry_id VARCHAR(191) NULL UNIQUE, created_at DATETIME(6) NOT NULL, last_login_at DATETIME(6) NOT NULL, INDEX idx_users_email(email), INDEX idx_users_role(role)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS user_sessions (id VARCHAR(96) PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL, csrf_token VARCHAR(96) NOT NULL, created_at DATETIME(6) NOT NULL, expires_at DATETIME(6) NOT NULL, revoked_at DATETIME(6) NULL, INDEX idx_sessions_user(user_id), CONSTRAINT fk_sessions_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `login_attempts` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_login_attempts_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `password_reset_tokens` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_password_reset_tokens_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `two_factor_recovery_codes` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_two_factor_recovery_codes_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS customers (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL UNIQUE, first_name VARCHAR(100) NOT NULL DEFAULT '', last_name VARCHAR(100) NOT NULL DEFAULT '', email VARCHAR(254) NOT NULL DEFAULT '', phone VARCHAR(40) NOT NULL DEFAULT '', status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE', CONSTRAINT fk_customers_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, INDEX idx_customers_email(email)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `customer_addresses` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_customer_addresses_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `drivers` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_drivers_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `customer_documents` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_customer_documents_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_categories` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_categories_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS vehicles (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, public_id VARCHAR(64) NOT NULL UNIQUE, name VARCHAR(160) NOT NULL, slug VARCHAR(180) NOT NULL UNIQUE, category VARCHAR(80) NOT NULL DEFAULT '', transmission VARCHAR(40) NOT NULL DEFAULT 'Automatic', fuel VARCHAR(40) NOT NULL DEFAULT '', seats INT NOT NULL DEFAULT 5, price_per_day DECIMAL(12,2) NOT NULL DEFAULT 0, location VARCHAR(120) NOT NULL DEFAULT '', status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE', image_url TEXT, metadata_json JSON NULL, INDEX idx_vehicle_status(status), INDEX idx_vehicle_location(location)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_features` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_features_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_feature_assignments` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_feature_assignments_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_images` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_images_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `locations` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_locations_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `location_business_hours` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_location_business_hours_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `location_holidays` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_location_holidays_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_blocks` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_blocks_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `rate_plans` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_rate_plans_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_rates` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_rates_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `promotions` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_promotions_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `promotion_vehicle_categories` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_promotion_vehicle_categories_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `promotion_vehicles` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_promotion_vehicles_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `add_ons` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_add_ons_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `protection_plans` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_protection_plans_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `fee_types` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_fee_types_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `tax_rates` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_tax_rates_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS reservations (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, public_id VARCHAR(64) NOT NULL UNIQUE, customer_id BIGINT UNSIGNED NOT NULL, vehicle_id BIGINT UNSIGNED NOT NULL, pickup_at DATETIME(6) NOT NULL, return_at DATETIME(6) NOT NULL, status VARCHAR(30) NOT NULL DEFAULT 'PENDING', currency CHAR(3) NOT NULL DEFAULT 'USD', subtotal DECIMAL(12,2) NOT NULL DEFAULT 0, taxes DECIMAL(12,2) NOT NULL DEFAULT 0, fees DECIMAL(12,2) NOT NULL DEFAULT 0, total DECIMAL(12,2) NOT NULL DEFAULT 0, notes TEXT, created_at DATETIME(6) NOT NULL, INDEX idx_res_vehicle_dates(vehicle_id,pickup_at,return_at), INDEX idx_res_customer(customer_id), CONSTRAINT fk_res_customer FOREIGN KEY(customer_id) REFERENCES customers(id), CONSTRAINT fk_res_vehicle FOREIGN KEY(vehicle_id) REFERENCES vehicles(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `reservation_status_history` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_reservation_status_history_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `reservation_drivers` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_reservation_drivers_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `reservation_add_ons` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_reservation_add_ons_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `reservation_protection` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_reservation_protection_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `reservation_promotions` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_reservation_promotions_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `reservation_fees` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_reservation_fees_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `reservation_taxes` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_reservation_taxes_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS payments (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, public_id VARCHAR(64) NOT NULL UNIQUE, reservation_id BIGINT UNSIGNED NOT NULL, provider VARCHAR(40) NOT NULL DEFAULT 'square', status VARCHAR(30) NOT NULL DEFAULT 'PENDING', amount DECIMAL(12,2) NOT NULL DEFAULT 0, currency CHAR(3) NOT NULL DEFAULT 'USD', square_order_id VARCHAR(191) NOT NULL DEFAULT '', square_payment_link_id VARCHAR(191) NOT NULL DEFAULT '', checkout_url TEXT, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_pay_reservation(reservation_id), INDEX idx_pay_order(square_order_id), CONSTRAINT fk_pay_res FOREIGN KEY(reservation_id) REFERENCES reservations(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `payment_transactions` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_payment_transactions_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `payment_webhook_events` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_payment_webhook_events_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `payment_holds` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_payment_holds_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `refunds` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_refunds_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS invoices (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, public_id VARCHAR(64) NOT NULL UNIQUE, reservation_id BIGINT UNSIGNED NOT NULL, status VARCHAR(30) NOT NULL DEFAULT 'ISSUED', currency CHAR(3) NOT NULL DEFAULT 'USD', subtotal DECIMAL(12,2) NOT NULL DEFAULT 0, taxes DECIMAL(12,2) NOT NULL DEFAULT 0, total DECIMAL(12,2) NOT NULL DEFAULT 0, created_at DATETIME(6) NOT NULL, INDEX idx_invoice_reservation(reservation_id), CONSTRAINT fk_invoice_res FOREIGN KEY(reservation_id) REFERENCES reservations(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `invoice_items` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_invoice_items_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `rental_contracts` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_rental_contracts_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `pickup_records` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_pickup_records_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `return_records` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_return_records_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_inspections` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_inspections_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `inspection_items` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_inspection_items_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `inspection_item_results` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_inspection_item_results_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_damages` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_damages_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `damage_photos` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_damage_photos_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vendors` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vendors_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `maintenance_records` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_maintenance_records_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `maintenance_schedules` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_maintenance_schedules_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `maintenance_parts` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_maintenance_parts_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_assets` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_assets_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `gps_devices` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_gps_devices_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_locations` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_locations_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `vehicle_geo_events` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_vehicle_geo_events_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `files` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_files_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `notifications` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_notifications_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `notification_preferences` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_notification_preferences_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `support_tickets` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_support_tickets_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `support_messages` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_support_messages_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `company_profile` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_company_profile_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `system_settings` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_system_settings_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `legal_documents` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_legal_documents_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS `legal_acceptances` (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, data JSON NULL, created_at DATETIME(6) NOT NULL, updated_at DATETIME(6) NOT NULL, INDEX idx_legal_acceptances_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-CREATE TABLE IF NOT EXISTS audit_logs (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NULL, action VARCHAR(120) NOT NULL, entity VARCHAR(120) NOT NULL, entity_id VARCHAR(120) NOT NULL DEFAULT '', ip VARCHAR(64) NOT NULL DEFAULT '', details JSON NULL, created_at DATETIME(6) NOT NULL, INDEX idx_audit_user(user_id), INDEX idx_audit_entity(entity,entity_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  firebase_uid VARCHAR(191) NOT NULL,
+  name VARCHAR(160) NOT NULL DEFAULT '',
+  email VARCHAR(254) NOT NULL DEFAULT '',
+  phone VARCHAR(40) NOT NULL DEFAULT '',
+  role VARCHAR(20) NOT NULL DEFAULT 'client',
+  provider VARCHAR(50) NOT NULL DEFAULT '',
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  identity_status VARCHAR(30) NOT NULL DEFAULT 'not_started',
+  identity_provider VARCHAR(40) NOT NULL DEFAULT '',
+  identity_inquiry_id VARCHAR(191) NULL,
+  created_at DATETIME(6) NOT NULL,
+  last_login_at DATETIME(6) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_users_firebase_uid (firebase_uid),
+  UNIQUE KEY uq_users_identity_inquiry_id (identity_inquiry_id),
+  KEY idx_users_email (email),
+  KEY idx_users_role (role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS user_sessions (
+  id VARCHAR(96) NOT NULL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  csrf_token VARCHAR(96) NOT NULL,
+  created_at DATETIME(6) NOT NULL,
+  expires_at DATETIME(6) NOT NULL,
+  revoked_at DATETIME(6) NULL,
+  PRIMARY KEY (id),
+  KEY idx_sessions_user (user_id),
+  KEY idx_sessions_expiry (expires_at),
+  CONSTRAINT fk_sessions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS customers (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  first_name VARCHAR(100) NOT NULL DEFAULT '',
+  last_name VARCHAR(100) NOT NULL DEFAULT '',
+  email VARCHAR(254) NOT NULL DEFAULT '',
+  phone VARCHAR(40) NOT NULL DEFAULT '',
+  status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_customers_user (user_id),
+  KEY idx_customers_email (email),
+  CONSTRAINT fk_customers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS vehicles (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  public_id VARCHAR(64) NOT NULL,
+  name VARCHAR(160) NOT NULL,
+  slug VARCHAR(180) NOT NULL,
+  category VARCHAR(80) NOT NULL DEFAULT '',
+  transmission VARCHAR(40) NOT NULL DEFAULT 'Automatic',
+  fuel VARCHAR(40) NOT NULL DEFAULT '',
+  seats INT NOT NULL DEFAULT 5,
+  price_per_day DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  location VARCHAR(120) NOT NULL DEFAULT '',
+  status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+  image_url TEXT NULL,
+  metadata_json JSON NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_vehicles_public_id (public_id),
+  UNIQUE KEY uq_vehicles_slug (slug),
+  KEY idx_vehicle_status (status),
+  KEY idx_vehicle_location (location)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS reservations (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  public_id VARCHAR(64) NOT NULL,
+  customer_id BIGINT UNSIGNED NOT NULL,
+  vehicle_id BIGINT UNSIGNED NOT NULL,
+  pickup_at DATETIME(6) NOT NULL,
+  return_at DATETIME(6) NOT NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+  currency CHAR(3) NOT NULL DEFAULT 'USD',
+  subtotal DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  taxes DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  fees DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  total DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  notes TEXT NULL,
+  created_at DATETIME(6) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_reservations_public_id (public_id),
+  KEY idx_res_customer (customer_id),
+  KEY idx_res_vehicle_dates (vehicle_id, pickup_at, return_at),
+  KEY idx_res_status (status),
+  CONSTRAINT fk_res_customer FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_res_vehicle FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS payments (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  public_id VARCHAR(64) NOT NULL,
+  reservation_id BIGINT UNSIGNED NOT NULL,
+  provider VARCHAR(40) NOT NULL DEFAULT 'square',
+  status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  currency CHAR(3) NOT NULL DEFAULT 'USD',
+  square_order_id VARCHAR(191) NOT NULL DEFAULT '',
+  square_payment_link_id VARCHAR(191) NOT NULL DEFAULT '',
+  checkout_url TEXT NULL,
+  created_at DATETIME(6) NOT NULL,
+  updated_at DATETIME(6) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_payments_public_id (public_id),
+  KEY idx_pay_reservation (reservation_id),
+  KEY idx_pay_order (square_order_id),
+  CONSTRAINT fk_pay_reservation FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS payment_webhook_events (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  provider VARCHAR(40) NOT NULL,
+  event_id VARCHAR(191) NOT NULL,
+  created_at DATETIME(6) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_payment_webhook_event (event_id),
+  KEY idx_payment_webhook_provider (provider)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS invoices (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  public_id VARCHAR(64) NOT NULL,
+  reservation_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'ISSUED',
+  currency CHAR(3) NOT NULL DEFAULT 'USD',
+  subtotal DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  taxes DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  total DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  created_at DATETIME(6) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_invoices_public_id (public_id),
+  KEY idx_invoice_reservation (reservation_id),
+  CONSTRAINT fk_invoice_reservation FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NULL,
+  action VARCHAR(120) NOT NULL,
+  entity VARCHAR(120) NOT NULL,
+  entity_id VARCHAR(120) NOT NULL DEFAULT '',
+  ip VARCHAR(64) NOT NULL DEFAULT '',
+  details JSON NULL,
+  created_at DATETIME(6) NOT NULL,
+  PRIMARY KEY (id),
+  KEY idx_audit_user (user_id),
+  KEY idx_audit_entity (entity, entity_id),
+  CONSTRAINT fk_audit_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

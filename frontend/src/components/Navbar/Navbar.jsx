@@ -28,9 +28,8 @@ function Navbar() {
     return (
         <header className={`navbar ${scrolled ? "navbar--scrolled" : ""}`}>
             <div className="container navbar__container">
-                <Link to="/" className="navbar__brand" onClick={closeMenu}>
-                    <span className="navbar__logo">E</span>
-                    <span className="navbar__name">EcoFusion<small>RentalCars</small></span>
+                <Link to="/" className="navbar__brand" onClick={closeMenu} aria-label="EcoFusion Rental Cars home">
+                    <img src="/ecofusion-logo.png" alt="EcoFusion Rental Cars" className="navbar__logo-image" />
                 </Link>
 
                 <button type="button" className="navbar__mobile-toggle" onClick={() => setMenuOpen((value) => !value)} aria-label={translations.common.menu} aria-expanded={menuOpen}>

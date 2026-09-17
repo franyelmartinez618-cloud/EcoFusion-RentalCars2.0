@@ -15,8 +15,8 @@
 .vehicle-card__media-link{display:block}
 .vehicle-card__media{position:relative;height:255px;overflow:hidden;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--card-accent) 18%,transparent),transparent 38%),var(--color-media)}
 .vehicle-card__media::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 48%,rgba(0,0,0,.16))}
-.vehicle-card__media img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;filter:saturate(.96) contrast(1.02);transform:scale(1.015);transition:transform .6s cubic-bezier(.2,.7,.2,1),filter .3s ease}
-.vehicle-card:hover .vehicle-card__media img{transform:scale(1.1);filter:saturate(1.07) contrast(1.05)}
+.vehicle-card__media img{width:100%;height:100%;object-fit:contain;object-position:center bottom;display:block;padding:12px 18px 4px;box-sizing:border-box;filter:saturate(.96) contrast(1.02);transform:none;transition:transform .35s cubic-bezier(.2,.7,.2,1),filter .3s ease}
+.vehicle-card:hover .vehicle-card__media img{transform:scale(1.025);filter:saturate(1.07) contrast(1.05)}
 .vehicle-card__media-glow{position:absolute;z-index:1;left:10%;right:10%;bottom:10px;height:14px;border-radius:50%;background:var(--card-accent);opacity:.25;filter:blur(18px)}
 .vehicle-card__badge{position:absolute;z-index:3;top:15px;right:15px;display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border:1px solid color-mix(in srgb,var(--card-accent) 65%,transparent);border-radius:999px;background:linear-gradient(135deg,color-mix(in srgb,var(--card-accent) 88%,#0b120e),#0b120e);color:#fff;box-shadow:0 0 22px color-mix(in srgb,var(--card-accent) 35%,transparent);font-size:9px;font-weight:950;letter-spacing:1px;text-transform:uppercase}
 .vehicle-card__badge--purple{--card-accent:var(--color-neon-purple)}

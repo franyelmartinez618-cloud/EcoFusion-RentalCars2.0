@@ -144,18 +144,16 @@ export function AuthProvider({ children }) {
         ensureConfigured();
         setAuthError("");
         try {
+            sessionStorage.setItem(
+                "ecofusion-auth-return",
+                window.location.pathname + window.location.search,
+            );
             const credential = await signInWithPopup(auth, googleProvider);
             const backendUser = await exchangeFirebaseSession(credential.user);
             setUser(backendUser);
             return backendUser;
         } catch (error) {
-            if (error?.response) {
-                throw error;
-            }
-            const message = error?.code?.startsWith("auth/")
-                ? firebaseError(error, latestTranslations.current)
-                : (error?.message || "No se pudo completar el inicio de sesión.");
-            throw new Error(message);
+            throw new Error(firebaseError(error, latestTranslations.current));
         }
     }, []);
 
