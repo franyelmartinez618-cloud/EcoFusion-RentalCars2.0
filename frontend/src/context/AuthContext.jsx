@@ -94,6 +94,7 @@ export function AuthProvider({ children }) {
     const exchangePromisesRef = useRef(new Map());
     const googleBusyRef = useRef(false);
     const googleFlowRef = useRef(false);
+    const googleAttemptRef = useRef(null);
 
     const exchangeOnce = useCallback((nextFirebaseUser, profileName = "") => {
         const key = nextFirebaseUser?.uid;
@@ -182,29 +183,34 @@ export function AuthProvider({ children }) {
 
     const loginGoogle = useCallback(async () => {
         ensureConfigured();
-        if (googleBusyRef.current) return null;
+        if (googleAttemptRef.current) return googleAttemptRef.current;
         googleBusyRef.current = true;
         googleFlowRef.current = true;
         setAuthError("");
-        try {
-            sessionStorage.setItem("ecofusion-auth-return", window.location.pathname + window.location.search);
-            const credential = await signInWithPopup(auth, googleProvider);
-            await credential.user.getIdToken(true);
-            const backendUser = await exchangeOnce(credential.user);
-            const additionalInfo = getAdditionalUserInfo(credential);
-            setFirebaseUser(credential.user);
-            setUser(backendUser);
-            return { user: backendUser, isNewUser: Boolean(additionalInfo?.isNewUser) };
-        } catch (error) {
-            // Never leave a Firebase identity active if the server session could not be established.
-            if (auth?.currentUser) await signOut(auth).catch(() => {});
-            setFirebaseUser(null);
-            setUser(null);
-            throw new Error(firebaseError(error, latestTranslations.current));
-        } finally {
-            googleFlowRef.current = false;
-            googleBusyRef.current = false;
-        }
+        const attempt = (async () => {
+            try {
+                sessionStorage.setItem("ecofusion-auth-return", window.location.pathname + window.location.search);
+                // Keep the popup call directly inside the click-driven promise chain.
+                const credential = await signInWithPopup(auth, googleProvider);
+                await credential.user.getIdToken(true);
+                const backendUser = await exchangeOnce(credential.user);
+                const additionalInfo = getAdditionalUserInfo(credential);
+                setFirebaseUser(credential.user);
+                setUser(backendUser);
+                return { user: backendUser, isNewUser: Boolean(additionalInfo?.isNewUser) };
+            } catch (error) {
+                if (auth?.currentUser) await signOut(auth).catch(() => {});
+                setFirebaseUser(null);
+                setUser(null);
+                throw new Error(firebaseError(error, latestTranslations.current));
+            } finally {
+                googleFlowRef.current = false;
+                googleBusyRef.current = false;
+                googleAttemptRef.current = null;
+            }
+        })();
+        googleAttemptRef.current = attempt;
+        return attempt;
     }, [exchangeOnce]);
 
     const linkGoogle = useCallback(async () => {

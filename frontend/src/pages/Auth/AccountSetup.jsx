@@ -20,31 +20,31 @@ export default function AccountSetup() {
   const [message,setMessage]=useState("");
   const submit=async(e)=>{
     e.preventDefault(); setError(""); setMessage("");
-    if(!privacy || !terms){setError("Debes aceptar la política de privacidad y los términos para continuar.");return;}
-    if(name.trim().length<2){setError("Escribe tu nombre completo.");return;}
-    if(phone.trim().length<7){setError("Añade un teléfono válido para tu perfil de alquiler.");return;}
+    if(!privacy || !terms){setError(t.homeUi.setupInvalidConsent);return;}
+    if(name.trim().length<2){setError(t.homeUi.setupNameError);return;}
+    if(phone.trim().length<7){setError(t.homeUi.setupPhoneError);return;}
     setBusy(true);
     try {
       await apiClient.updateProfile(name,phone);
       await apiClient.consent({privacy_version:"2026-09-16",terms_version:"2026-09-16",marketing_opt_in:marketing});
-      setMessage("Cuenta completada. Ya puedes continuar con tu reserva.");
+      setMessage(t.homeUi.setupSuccess);
       setTimeout(()=>navigate("/account"),500);
-    } catch(err){setError(err.message || "No fue posible completar la cuenta.");}
+    } catch(err){setError(err.message || t.homeUi.setupFailure);}
     finally{setBusy(false);}
   };
   return <PageShell><section className="page-section"><div className="container" style={{maxWidth:820}}><article className="info-card account-setup-card">
-    <span className="page-hero__eyebrow">CUENTA ECOFUSION</span><h1>Completa tu cuenta</h1>
-    <p>Antes de utilizar funciones de alquiler, necesitamos confirmar tus datos básicos y registrar tu aceptación de las condiciones de uso.</p>
+    <span className="page-hero__eyebrow">{t.homeUi.setupEyebrow}</span><h1>{t.homeUi.setupTitle}</h1>
+    <p>{t.homeUi.setupDescription}</p>
     <form className="simple-form" onSubmit={submit}>
-      <label>Nombre completo<input value={name} onChange={e=>setName(e.target.value)} autoComplete="name" required /></label>
-      <label>Correo electrónico<input value={user?.email || firebaseUser?.email || ""} readOnly /></label>
-      <label>Teléfono<input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} autoComplete="tel" required /></label>
-      <label className="consent-check"><input type="checkbox" checked={privacy} onChange={e=>setPrivacy(e.target.checked)} /> <span>Acepto la <Link to="/privacy" className="text-link">Política de privacidad</Link> y el tratamiento de mis datos conforme a la información allí indicada.</span></label>
-      <label className="consent-check"><input type="checkbox" checked={terms} onChange={e=>setTerms(e.target.checked)} /> <span>Acepto los <Link to="/terms" className="text-link">Términos y condiciones</Link> del servicio.</span></label>
-      <label className="consent-check consent-check--optional"><input type="checkbox" checked={marketing} onChange={e=>setMarketing(e.target.checked)} /> <span>Quiero recibir comunicaciones comerciales y novedades. (Opcional)</span></label>
+      <label>{t.homeUi.setupFullName}<input value={name} onChange={e=>setName(e.target.value)} autoComplete="name" required /></label>
+      <label>{t.homeUi.emailLabel}<input value={user?.email || firebaseUser?.email || ""} readOnly /></label>
+      <label>{t.homeUi.phoneLabel}<input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} autoComplete="tel" required /></label>
+      <label className="consent-check"><input type="checkbox" checked={privacy} onChange={e=>setPrivacy(e.target.checked)} /> <span>Acepto la <Link to="/privacy" className="text-link">{t.account.privacyPolicy}</Link> y el tratamiento de mis datos conforme a la información allí indicada.</span></label>
+      <label className="consent-check"><input type="checkbox" checked={terms} onChange={e=>setTerms(e.target.checked)} /> <span>Acepto los <Link to="/terms" className="text-link">{t.account.termsAndConditions}</Link> del servicio.</span></label>
+      <label className="consent-check consent-check--optional"><input type="checkbox" checked={marketing} onChange={e=>setMarketing(e.target.checked)} /> <span>{t.homeUi.setupMarketing}</span></label>
       {error&&<p className="auth-error">{error}</p>}{message&&<p className="auth-success">{message}</p>}
-      <button type="submit" disabled={busy}>{busy?"Guardando…":"Aceptar y continuar"}</button>
+      <button type="submit" disabled={busy}>{busy?"Guardando…":t.homeUi.saveAccount}</button>
     </form>
-    <div className="account-setup-security"><strong>Protección de la cuenta</strong><span>El acceso se mantiene detrás de Firebase Authentication y una sesión del servidor. Para acciones sensibles podremos pedir una nueva autenticación o verificación adicional.</span></div>
+    <div className="account-setup-security"><strong>{t.homeUi.setupSecurityTitle}</strong><span>{t.homeUi.setupSecurityText}</span></div>
   </article></div></section></PageShell>;
 }

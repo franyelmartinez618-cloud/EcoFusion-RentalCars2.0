@@ -42,7 +42,7 @@ export default function Navbar() {
     const closeMenu = () => setMenuOpen(false);
 
     const accountPath = user ? "/account" : "/sign-in";
-    const accountLabel = user ? t.nav.myAccount : t.nav.signIn;
+    const accountLabel = user ? (user.name || t.nav.myAccount) : t.nav.signIn;
     const avatarUser = user
         ? { ...user, photoURL: firebaseUser?.photoURL || "" }
         : null;
@@ -178,28 +178,27 @@ export default function Navbar() {
                 <div className="navbar__actions">
                     <div className="navbar__actions-cluster">
                         <Link to="/book" className="navbar__book" onClick={closeMenu}>
-                            {t.nav.reservations}
+                            <span className="navbar__book-label">{t.nav.reservations}</span>
+                            <span aria-hidden="true">→</span>
                         </Link>
                         <div className="navbar__account-links">
                             {!user ? (
-                                <>
-                                    <Link to="/sign-in" className={path === "/sign-in" ? "is-active" : ""} onClick={closeMenu}>
+                                <div className="navbar__guest-links">
+                                    <Link to={accountPath} className={path === "/sign-in" ? "is-active" : ""} onClick={closeMenu}>
                                         {t.nav.signIn}
                                     </Link>
-                                    <span aria-hidden="true">·</span>
                                     <Link to="/register" className={path === "/register" ? "is-active" : ""} onClick={closeMenu}>
                                         {t.nav.register}
                                     </Link>
-                                </>
+                                </div>
                             ) : (
                                 <>
-                                    <Link to={accountPath} className={path === "/account" ? "is-active" : ""} onClick={closeMenu}>
+                                    <Link to={accountPath} className={`navbar__account-name ${path === "/account" ? "is-active" : ""}`} onClick={closeMenu}>
                                         <Avatar user={avatarUser} />
                                         <span>{accountLabel}</span>
                                     </Link>
-                                    <span aria-hidden="true">·</span>
-                                    <button type="button" onClick={handleLogout}>
-                                        {t.common.signOut}
+                                    <button type="button" className="navbar__signout-icon" onClick={handleLogout} aria-label={t.common.signOut}>
+                                        ↗
                                     </button>
                                 </>
                             )}

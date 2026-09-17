@@ -49,6 +49,18 @@ export default function SignIn() {
         }
     };
 
+    const handleGoogle = async () => {
+        setError("");
+        setBusy(true);
+        try {
+            finish(await loginGoogle());
+        } catch (err) {
+            setError(err.message || t.account.authErrors.generic);
+        } finally {
+            setBusy(false);
+        }
+    };
+
     return (
         <PageShell>
             <section className="page-section">
@@ -63,7 +75,7 @@ export default function SignIn() {
                             </div>
                         )}
                         <div className="auth-provider-grid">
-                            <button type="button" className="auth-provider auth-provider--google" disabled={busy} onClick={() => run(loginGoogle)}>
+                            <button type="button" className="auth-provider auth-provider--google" disabled={busy} onClick={handleGoogle}>
                                 <GoogleMark />
                                 {t.account.continueGoogle}
                             </button>

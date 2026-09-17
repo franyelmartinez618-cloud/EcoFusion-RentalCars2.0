@@ -85,6 +85,9 @@ TRUSTED_HOSTS = [
 SESSION_TTL = int(os.getenv("SESSION_TTL_SECONDS", "28800"))
 FIREBASE_APPCHECK_REQUIRED = os.getenv("FIREBASE_APPCHECK_REQUIRED", "false").strip().lower() in {"1", "true", "yes", "on"}
 
+PRIVACY_VERSION = os.getenv("PRIVACY_POLICY_VERSION", "2026-09-16").strip() or "2026-09-16"
+TERMS_VERSION = os.getenv("TERMS_VERSION", "2026-09-16").strip() or "2026-09-16"
+
 MAX_BODY_BYTES = 1024 * 1024
 
 ADMIN_EMAILS = {
@@ -401,8 +404,8 @@ class UserConsent(Base):
 
     id: Mapped[int] = mapped_column(BIGINT(unsigned=True), primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BIGINT(unsigned=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
-    privacy_version: Mapped[str] = mapped_column(String(40), default="2026-09-16")
-    terms_version: Mapped[str] = mapped_column(String(40), default="2026-09-16")
+    privacy_version: Mapped[str] = mapped_column(String(40), default=PRIVACY_VERSION)
+    terms_version: Mapped[str] = mapped_column(String(40), default=TERMS_VERSION)
     marketing_opt_in: Mapped[bool] = mapped_column(Boolean, default=False)
     accepted_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     ip: Mapped[str] = mapped_column(String(64), default="")
@@ -1088,8 +1091,8 @@ class ProfilePatch(BaseModel):
 
 
 class ConsentPayload(BaseModel):
-    privacy_version: str = Field(default="2026-09-16", min_length=1, max_length=40)
-    terms_version: str = Field(default="2026-09-16", min_length=1, max_length=40)
+    privacy_version: str = Field(default=PRIVACY_VERSION, min_length=1, max_length=40)
+    terms_version: str = Field(default=TERMS_VERSION, min_length=1, max_length=40)
     marketing_opt_in: bool = False
 
 
@@ -1265,6 +1268,18 @@ def exchange_firebase(
         u.phone = phone
         u.provider = provider
         u.last_login_at = now()
+
+    # A new or outdated consent must be completed before protected rental actions.
+    consent_row = (
+        s.query(UserConsent)
+        .filter_by(user_id=u.id)
+        .first()
+    )
+    privacy_required = (
+        consent_row is None
+        or consent_row.privacy_version != PRIVACY_VERSION
+        or consent_row.terms_version != TERMS_VERSION
+    )
 
     sid, csrf = new_session(
         s,

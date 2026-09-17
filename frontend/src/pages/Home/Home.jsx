@@ -46,14 +46,14 @@ function Home() {
                             <Link className="button button--ghost" to="/how-it-works">{t.hero.secondaryAction}</Link>
                         </div>
                         <div className="home-hero__trust">
-                            <strong>Simple booking. Clear pricing. Real availability.</strong>
-                            <span>Built around the car you need, not a crowded homepage.</span>
+                            <strong>{t.homeUi.homeTrustTitle}</strong>
+                            <span>{t.homeUi.homeTrustText}</span>
                         </div>
                     </div>
                     <div className="home-hero__visual">
                         <img src="/hero-prius-temporary.jpg" alt="Toyota Prius rental" className="home-hero__image" />
                         <div className="home-hero__image-glow" />
-                        {heroVehicle && <div className="home-hero__price"><span>Featured fleet</span><strong>{heroVehicle.name}</strong><small>from ${Number(heroVehicle.price || 0).toFixed(0)} / day</small></div>}
+                        {heroVehicle && <div className="home-hero__price"><span>{t.homeUi.featuredFleet}</span><strong>{heroVehicle.name}</strong><small>${Number(heroVehicle.price || 0).toFixed(0)} {t.homeUi.perDay}</small></div>}
                     </div>
                 </div>
             </section>
@@ -65,8 +65,8 @@ function Home() {
             <section className="home-section home-featured">
                 <div className="container">
                     <div className="home-section-head">
-                        <div><span className="home-kicker">Fleet</span><h2>A few favorites. The full fleet is one click away.</h2></div>
-                        <Link to="/vehicles" className="home-text-link">View all vehicles <span>→</span></Link>
+                        <div><span className="home-kicker">{t.homeUi.homeFleet}</span><h2>{t.homeUi.homeFavorites}</h2></div>
+                        <Link to="/vehicles" className="home-text-link">{t.homeUi.homeViewAll} <span>→</span></Link>
                     </div>
                     <div className="home-fleet-grid">
                         {featured.map((vehicle, index) => <FeaturedTile key={vehicle.id} vehicle={vehicle} large={index === 0} />)}
@@ -76,19 +76,19 @@ function Home() {
 
             <section className="home-section home-section--muted">
                 <div className="container home-process">
-                    <div className="home-process__intro"><span className="home-kicker">How it works</span><h2>Everything important, one step at a time.</h2><p>Choose your dates, select a vehicle, sign in when the reservation begins, and keep the rest simple.</p><Link to="/how-it-works" className="home-text-link">See the full process <span>→</span></Link></div>
+                    <div className="home-process__intro"><span className="home-kicker">{t.homeUi.homeHow}</span><h2>{t.homeUi.homeHowTitle}</h2><p>{t.homeUi.homeHowText}</p><Link to="/how-it-works" className="home-text-link">{t.homeUi.homeSeeProcess} <span>→</span></Link></div>
                     <div className="home-process__cards">
-                        <article><div className="home-process__icon">⌁</div><h3>Choose your dates</h3><p>Tell us where and when you need the car.</p></article>
-                        <article><div className="home-process__icon">◉</div><h3>Pick a vehicle</h3><p>Compare the cars in the live fleet without clutter.</p></article>
-                        <article><div className="home-process__icon">✓</div><h3>Reserve securely</h3><p>Your account and reservation stay tied together.</p></article>
+                        <article><div className="home-process__icon">⌁</div><h3>{t.homeUi.homeChooseDates}</h3><p>{t.homeUi.homeChooseDatesText}</p></article>
+                        <article><div className="home-process__icon">◉</div><h3>{t.homeUi.homePickVehicle}</h3><p>{t.homeUi.homePickVehicleText}</p></article>
+                        <article><div className="home-process__icon">✓</div><h3>{t.homeUi.homeReserveSecurely}</h3><p>{t.homeUi.homeReserveSecurelyText}</p></article>
                     </div>
                 </div>
             </section>
 
             <section className="home-cta">
                 <div className="container home-cta__inner">
-                    <div><span className="home-kicker">Ready when you are</span><h2>Find a car that fits the trip.</h2><p>See the current fleet or start a reservation with your dates.</p></div>
-                    <div className="home-cta__actions"><Link className="button button--light" to="/vehicles">Browse fleet</Link><Link className="button button--primary" to="/book">Start a reservation <span>→</span></Link></div>
+                    <div><span className="home-kicker">{t.homeUi.homeReady}</span><h2>{t.homeUi.homeCtaTitle}</h2><p>{t.homeUi.homeCtaText}</p></div>
+                    <div className="home-cta__actions"><Link className="button button--light" to="/vehicles">{t.homeUi.homeBrowseFleet}</Link><Link className="button button--primary" to="/book">{t.homeUi.homeStartReservation} <span>→</span></Link></div>
                 </div>
             </section>
         </main>

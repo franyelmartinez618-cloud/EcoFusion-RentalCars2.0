@@ -26,11 +26,11 @@ function BookingSearch() {
     const submit = (event) => {
         event.preventDefault();
         if (!pickupLocation || !pickupDate || !returnDate) {
-            showToast("Selecciona ubicación y ambas fechas para consultar disponibilidad.", "error");
+            showToast(t.homeUi.bookingInvalid, "error");
             return;
         }
         if (new Date(returnDate) <= new Date(pickupDate)) {
-            showToast("La fecha de devolución debe ser posterior a la fecha de recogida.", "error");
+            showToast(t.homeUi.bookingDateError, "error");
             return;
         }
         const search = { pickupLocation, returnLocation: sameLocation ? pickupLocation : returnLocation, pickupDate, returnDate };
@@ -40,7 +40,7 @@ function BookingSearch() {
 
     return <section className="booking-search">
         <div className="booking-search__heading">
-            <div><span>Rental search</span><h2>{t.booking.title}</h2><p>{t.booking.subtitle}</p></div>
+            <div><span>{t.homeUi.bookingSearchKicker}</span><h2>{t.booking.title}</h2><p>{t.booking.subtitle}</p></div>
         </div>
 
         <form className="booking-search__form" onSubmit={submit}>
