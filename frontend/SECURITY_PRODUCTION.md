@@ -25,3 +25,11 @@ This package implements a real authentication boundary (Firebase identity -> Fas
 7. Put the API behind a reverse proxy/WAF and centralized logs/monitoring.
 8. Replace SQLite with MySQL/PostgreSQL before multi-instance production deployment.
 9. Add backup, secret rotation, audit retention, dependency scanning, and incident response procedures.
+
+
+## Additional production controls
+- Customer access is protected by Firebase Authentication plus a server-side session and CSRF token.
+- Cross-site production sessions use Secure + SameSite=None because the frontend and API are on different sites.
+- Consent for privacy/terms is recorded server-side in `user_consents`.
+- Firebase App Check with reCAPTCHA Enterprise is supported as an optional additional layer for the custom backend. Configure the site key first, monitor traffic, then enable `FIREBASE_APPCHECK_REQUIRED=true`.
+- Never treat a client redirect after payment as proof of payment; reconcile payment state from Square webhooks.
