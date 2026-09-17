@@ -9,7 +9,7 @@ import uuid
 from pathlib import Path
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Optional
+from typing import Literal, Optional
 
 import httpx
 import jwt
@@ -71,6 +71,7 @@ FRONTEND_ORIGINS = [
     ).split(",")
     if x.strip()
 ]
+FRONTEND_ORIGIN = FRONTEND_ORIGINS[0] if FRONTEND_ORIGINS else "http://localhost:5173"
 FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "ecofusion-rentalcars").strip()
 
 TRUSTED_HOSTS = [
@@ -289,6 +290,59 @@ class User(Base):
     )
 
     last_login_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+
+class UserIdentity(Base):
+    __tablename__ = "user_identities"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        BIGINT(unsigned=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+
+    firebase_uid: Mapped[str] = mapped_column(
+        String(191),
+        unique=True,
+        index=True,
+    )
+
+    provider: Mapped[str] = mapped_column(
+        String(50),
+        default="",
+    )
+
+    email: Mapped[str] = mapped_column(
+        String(254),
+        default="",
+        index=True,
+    )
+
+    phone: Mapped[str] = mapped_column(
+        String(40),
+        default="",
+    )
+
+    verified: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    last_seen_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),
     )
@@ -760,6 +814,7 @@ app.add_middleware(
     allow_headers=[
         "Content-Type",
         "X-CSRF-Token",
+        "X-Firebase-AppCheck",
     ],
 )
 
@@ -1004,6 +1059,23 @@ def require_csrf(
         )
 
 
+def require_rental_ready(
+    request: Request,
+    s: DBSession,
+    sess: UserSession,
+    u: User,
+):
+    customer = s.query(Customer).filter_by(user_id=u.id).first()
+    if not customer:
+        raise HTTPException(409, "Complete your EcoFusion registration before making a reservation.")
+    if customer.status != "ACTIVE":
+        raise HTTPException(403, "Your account verification must be completed before making a reservation.")
+    if u.identity_status != "verified":
+        raise HTTPException(403, "Identity verification is required before making a reservation.")
+    require_csrf(request, sess)
+    return customer
+
+
 def audit(
     s,
     request,
@@ -1038,6 +1110,8 @@ class FirebaseExchange(BaseModel):
         min_length=20,
         max_length=5000,
     )
+
+    mode: Literal["login", "register"] = "login"
 
     profile_name: str = Field(
         default="",
@@ -1130,6 +1204,73 @@ def health():
 # AUTH
 # ============================================================
 
+def _user_registration_state(s: DBSession, u: User):
+    customer = (
+        s.query(Customer)
+        .filter_by(user_id=u.id)
+        .first()
+    )
+    consent_row = (
+        s.query(UserConsent)
+        .filter_by(user_id=u.id)
+        .first()
+    )
+
+    privacy_required = (
+        consent_row is None
+        or consent_row.privacy_version != PRIVACY_VERSION
+        or consent_row.terms_version != TERMS_VERSION
+    )
+
+    profile_required = (
+        not u.name.strip()
+        or not u.email.strip()
+        or not u.phone.strip()
+    )
+
+    if not customer:
+        status = "registration_required"
+    elif customer.status == "PENDING_REGISTRATION":
+        if profile_required:
+            status = "profile_required"
+        elif privacy_required:
+            status = "consent_required"
+        else:
+            status = "identity_required" if u.identity_status != "verified" else "active"
+    elif privacy_required:
+        status = "consent_required"
+    elif customer.status != "ACTIVE":
+        status = "identity_required"
+    else:
+        status = "active"
+
+    return customer, consent_row, privacy_required, profile_required, status
+
+
+def _auth_user_payload(s: DBSession, u: User):
+    customer, consent_row, privacy_required, profile_required, registration_status = _user_registration_state(s, u)
+    return {
+        "id": u.id,
+        "name": u.name,
+        "email": u.email,
+        "phone": u.phone,
+        "role": u.role,
+        "provider": u.provider,
+        "identityStatus": u.identity_status,
+        "identityProvider": u.identity_provider,
+        "privacyRequired": privacy_required,
+        "privacyVersion": consent_row.privacy_version if consent_row else "",
+        "termsVersion": consent_row.terms_version if consent_row else "",
+        "registrationStatus": registration_status,
+        "registrationRequired": (
+            u.role == "client"
+            and registration_status != "active"
+        ),
+        "customerStatus": customer.status if customer else "",
+        "profileRequired": profile_required,
+    }
+
+
 @app.get("/api/v1/auth/me")
 def me(
     request: Request,
@@ -1147,17 +1288,86 @@ def me(
 
     return {
         "authenticated": True,
-        "user": {
-            "id": u.id,
-            "name": u.name,
-            "email": u.email,
-            "phone": u.phone,
-            "role": u.role,
-            "provider": u.provider,
-            "identityStatus": u.identity_status,
-            "identityProvider": u.identity_provider,
-        },
+        "user": _auth_user_payload(s, u),
     }
+
+
+def _find_user_for_firebase_identity(
+    s: DBSession,
+    uid: str,
+    email: str,
+    phone: str,
+    identity_verified: bool,
+):
+    identity = (
+        s.query(UserIdentity)
+        .filter_by(firebase_uid=uid)
+        .first()
+    )
+    if identity:
+        user = s.get(User, identity.user_id)
+        return user, identity, "identity"
+
+    user = (
+        s.query(User)
+        .filter_by(firebase_uid=uid)
+        .first()
+    )
+    if user:
+        identity = UserIdentity(
+            user_id=user.id,
+            firebase_uid=uid,
+            provider=user.provider or "unknown",
+            email=email or user.email,
+            phone=phone or user.phone,
+            verified=identity_verified,
+            created_at=now(),
+            last_seen_at=now(),
+        )
+        s.add(identity)
+        s.flush()
+        return user, identity, "legacy_uid"
+
+    candidates = []
+    if email and identity_verified:
+        candidates = (
+            s.query(User)
+            .filter(func.lower(User.email) == email)
+            .all()
+        )
+    elif phone and identity_verified:
+        candidates = (
+            s.query(User)
+            .filter(User.phone == phone)
+            .all()
+        )
+
+    if len(candidates) > 1:
+        raise HTTPException(
+            409,
+            {
+                "code": "ACCOUNT_AMBIGUOUS",
+                "message": "More than one EcoFusion account matches this verified identity. Contact support before linking the account.",
+            },
+        )
+
+    if candidates:
+        user = candidates[0]
+        identity = UserIdentity(
+            user_id=user.id,
+            firebase_uid=uid,
+            provider="",
+            email=email or user.email,
+            phone=phone or user.phone,
+            verified=identity_verified,
+            created_at=now(),
+            last_seen_at=now(),
+        )
+        s.add(identity)
+        s.flush()
+        return user, identity, "linked"
+
+    return None, None, "none"
 
 
 @app.post("/api/v1/auth/firebase")
@@ -1177,18 +1387,15 @@ def exchange_firebase(
         ) from exc
 
     uid = decoded.get("uid") or decoded.get("sub")
-
-    email = (
-        decoded.get("email") or ""
-    ).lower().strip()
-
+    email = (decoded.get("email") or "").lower().strip()
     phone = decoded.get("phone_number") or ""
-
     provider = (
         decoded.get("firebase", {})
         .get("sign_in_provider")
         or "unknown"
     )
+    email_verified = bool(decoded.get("email_verified"))
+    identity_verified = email_verified or provider == "phone"
 
     if not uid:
         raise HTTPException(
@@ -1196,41 +1403,43 @@ def exchange_firebase(
             "Firebase token has no user identity",
         )
 
-    if (
-        provider == "password"
-        and not decoded.get("email_verified")
-    ):
+    if provider == "password" and not email_verified and payload.mode == "login":
         raise HTTPException(
             403,
             "Please verify your email before signing in.",
         )
 
-    u = (
-        s.query(User)
-        .filter_by(firebase_uid=uid)
-        .first()
+    u, identity, match_type = _find_user_for_firebase_identity(
+        s,
+        uid,
+        email,
+        phone,
+        identity_verified,
     )
 
-    display = " ".join(
-        (
-            payload.profile_name.strip()
-            or decoded.get("name")
-            or (
-                email.split("@")[0]
-                if email
-                else "Customer"
-            )
-        ).split()
-    )[:160]
+    if u is None and payload.mode == "login":
+        raise HTTPException(
+            409,
+            {
+                "code": "REGISTRATION_REQUIRED",
+                "message": "This identity is authenticated with Firebase but does not have an EcoFusion customer account yet.",
+                "email": email,
+            },
+        )
+
+    display_source = (
+        payload.profile_name.strip()
+        or decoded.get("name")
+        or (email.split("@")[0] if email else "Customer")
+    )
+    display = " ".join(display_source.split())[:160]
 
     if u is None:
         role = (
             "admin"
-            if email
-            and email in ADMIN_EMAILS
+            if email and email in ADMIN_EMAILS
             else "client"
         )
-
         u = User(
             firebase_uid=uid,
             name=display,
@@ -1238,86 +1447,142 @@ def exchange_firebase(
             phone=phone,
             role=role,
             provider=provider,
+            active=True,
+            identity_status="not_started",
             created_at=now(),
             last_login_at=now(),
         )
-
         s.add(u)
         s.flush()
 
         if role == "client":
             parts = display.split(" ", 1)
-
             s.add(
                 Customer(
                     user_id=u.id,
                     first_name=parts[0],
-                    last_name=(
-                        parts[1]
-                        if len(parts) > 1
-                        else ""
-                    ),
+                    last_name=parts[1] if len(parts) > 1 else "",
                     email=email,
                     phone=phone,
+                    status="PENDING_REGISTRATION",
                 )
             )
 
+        identity = UserIdentity(
+            user_id=u.id,
+            firebase_uid=uid,
+            provider=provider,
+            email=email,
+            phone=phone,
+            verified=identity_verified,
+            created_at=now(),
+            last_seen_at=now(),
+        )
+        s.add(identity)
+        s.flush()
     else:
         u.name = display or u.name
-        u.email = email
-        u.phone = phone
+        u.email = email or u.email
+        u.phone = phone or u.phone
         u.provider = provider
-        u.last_login_at = now()
+        if u.last_login_at is not None:
+            u.last_login_at = now()
+        else:
+            u.last_login_at = now()
 
-    # A new or outdated consent must be completed before protected rental actions.
-    consent_row = (
-        s.query(UserConsent)
-        .filter_by(user_id=u.id)
-        .first()
-    )
-    privacy_required = (
-        consent_row is None
-        or consent_row.privacy_version != PRIVACY_VERSION
-        or consent_row.terms_version != TERMS_VERSION
+        if identity:
+            identity.provider = provider
+            identity.email = email or identity.email
+            identity.phone = phone or identity.phone
+            identity.verified = identity.verified or identity_verified
+            identity.last_seen_at = now()
+
+        customer = (
+            s.query(Customer)
+            .filter_by(user_id=u.id)
+            .first()
+        )
+        if u.role == "client" and customer is None:
+            parts = u.name.split(" ", 1)
+            s.add(
+                Customer(
+                    user_id=u.id,
+                    first_name=parts[0] if parts else "",
+                    last_name=parts[1] if len(parts) > 1 else "",
+                    email=u.email,
+                    phone=u.phone,
+                    status="PENDING_REGISTRATION",
+                )
+            )
+            s.flush()
+
+    if payload.mode == "register":
+        customer, _, _, _, _ = _user_registration_state(s, u)
+        if customer and customer.status == "ACTIVE":
+            s.rollback()
+            raise HTTPException(
+                409,
+                {
+                    "code": "ACCOUNT_EXISTS",
+                    "message": "This identity is already linked to an active EcoFusion account.",
+                },
+            )
+    else:
+        customer, _, _, _, _ = _user_registration_state(s, u)
+        if customer is None and u.role == "client":
+            s.rollback()
+            raise HTTPException(
+                409,
+                {
+                    "code": "REGISTRATION_REQUIRED",
+                    "message": "Complete your EcoFusion registration before signing in.",
+                    "email": email,
+                },
+            )
+
+    needs_email_verification = (
+        payload.mode == "register"
+        and provider == "password"
+        and not email_verified
     )
 
-    sid, csrf = new_session(
-        s,
-        u.id,
-    )
+    if needs_email_verification:
+        audit(
+            s,
+            request,
+            u.id,
+            "register_identity",
+            "users",
+            u.id,
+            {"provider": provider, "matchType": match_type, "requiresVerification": True},
+        )
+        s.commit()
+        return {
+            "user": _auth_user_payload(s, u),
+            "sessionCreated": False,
+            "requiresVerification": True,
+        }
+
+    sid, csrf = new_session(s, u.id)
 
     audit(
         s,
         request,
         u.id,
-        "login",
+        "register_identity" if payload.mode == "register" else "login",
         "users",
         u.id,
-        {"provider": provider},
+        {"provider": provider, "matchType": match_type},
     )
 
     s.commit()
 
-    set_cookies(
-        response,
-        sid,
-        csrf,
-    )
+    set_cookies(response, sid, csrf)
 
     return {
-        "user": {
-            "id": u.id,
-            "name": u.name,
-            "email": u.email,
-            "phone": u.phone,
-            "role": u.role,
-            "provider": u.provider,
-            "identityStatus": u.identity_status,
-            "identityProvider": u.identity_provider,
-            "privacyRequired": privacy_required,
-            "privacyVersion": consent_row.privacy_version if consent_row else "",
-            "termsVersion": consent_row.terms_version if consent_row else "",
-        }
+        "user": _auth_user_payload(s, u),
+        "sessionCreated": True,
+        "requiresVerification": False,
     }
 
 
@@ -1416,6 +1681,9 @@ def profile(
         customer.first_name = parts[0]
         customer.last_name = parts[1] if len(parts) > 1 else ""
         customer.phone = u.phone
+        customer.email = u.email
+        if customer.status == "PENDING_REGISTRATION" and u.name.strip() and u.phone.strip():
+            customer.status = "PENDING_IDENTITY"
 
     s.commit()
 
@@ -1793,22 +2061,7 @@ def create_reservation(
         "client",
     )
 
-    require_csrf(
-        request,
-        sess,
-    )
-
-    c = (
-        s.query(Customer)
-        .filter_by(user_id=u.id)
-        .first()
-    )
-
-    if not c:
-        raise HTTPException(
-            409,
-            "Customer profile not found",
-        )
+    c = require_rental_ready(request, s, sess, u)
 
     if payload.return_at <= payload.pickup_at:
         raise HTTPException(
@@ -1987,10 +2240,7 @@ async def create_checkout(
         "client",
     )
 
-    require_csrf(
-        request,
-        sess,
-    )
+    c = require_rental_ready(request, s, sess, u)
 
     if (
         not SQUARE_TOKEN
@@ -2000,12 +2250,6 @@ async def create_checkout(
             503,
             "Square is not configured",
         )
-
-    c = (
-        s.query(Customer)
-        .filter_by(user_id=u.id)
-        .first()
-    )
 
     r = (
         s.query(Reservation)
@@ -2560,6 +2804,18 @@ async def persona_webhook(
 
         if u:
             u.identity_status = mapping[name]
+            customer = s.query(Customer).filter_by(user_id=u.id).first()
+            consent = s.query(UserConsent).filter_by(user_id=u.id).first()
+            if (
+                customer
+                and mapping[name] == "verified"
+                and u.name.strip()
+                and u.phone.strip()
+                and consent
+                and consent.privacy_version == PRIVACY_VERSION
+                and consent.terms_version == TERMS_VERSION
+            ):
+                customer.status = "ACTIVE"
 
     s.commit()
 

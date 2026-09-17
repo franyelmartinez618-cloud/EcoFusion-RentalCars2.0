@@ -20,6 +20,16 @@ import { useApp } from "./AppContext";
 const AuthContext = createContext(null);
 const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
 
+class ApiRequestError extends Error {
+    constructor(message, status, data = {}) {
+        super(message);
+        this.name = "ApiRequestError";
+        this.status = status;
+        this.code = data?.code || "";
+        this.data = data;
+    }
+}
+
 async function req(path, options = {}) {
     const headers = { "Content-Type": "application/json", ...options.headers };
     if (appCheck) {
@@ -36,7 +46,13 @@ async function req(path, options = {}) {
         ...options,
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.detail || "Request failed");
+    if (!response.ok) {
+        const detail = data?.detail;
+        const message = typeof detail === "string"
+            ? detail
+            : detail?.message || "Request failed";
+        throw new ApiRequestError(message, response.status, typeof detail === "object" ? detail : data);
+    }
     return data;
 }
 
@@ -69,12 +85,16 @@ function firebaseError(error, t) {
     return map[error?.code] || error?.message || t.account.authErrors.generic;
 }
 
-async function exchangeFirebaseSession(firebaseUser, profileName = "") {
+async function exchangeFirebaseSession(firebaseUser, profileName = "", mode = "login") {
     if (!firebaseUser) throw new Error("Authentication was not completed.");
     const idToken = await firebaseUser.getIdToken(true);
     const data = await req("/auth/firebase", {
         method: "POST",
-        body: JSON.stringify({ id_token: idToken, profile_name: profileName || "" }),
+        body: JSON.stringify({
+            id_token: idToken,
+            profile_name: profileName || "",
+            mode,
+        }),
     });
     return data.user;
 }
@@ -94,14 +114,16 @@ export function AuthProvider({ children }) {
     const exchangePromisesRef = useRef(new Map());
     const googleBusyRef = useRef(false);
     const googleFlowRef = useRef(false);
+    const explicitAuthFlowRef = useRef(false);
     const googleAttemptRef = useRef(null);
 
-    const exchangeOnce = useCallback((nextFirebaseUser, profileName = "") => {
-        const key = nextFirebaseUser?.uid;
-        if (!key) return Promise.reject(new Error("Authentication was not completed."));
+    const exchangeOnce = useCallback((nextFirebaseUser, profileName = "", mode = "login") => {
+        const uid = nextFirebaseUser?.uid;
+        if (!uid) return Promise.reject(new Error("Authentication was not completed."));
+        const key = `${uid}:${mode}`;
         const existing = exchangePromisesRef.current.get(key);
         if (existing) return existing;
-        const promise = exchangeFirebaseSession(nextFirebaseUser, profileName).finally(() => {
+        const promise = exchangeFirebaseSession(nextFirebaseUser, profileName, mode).finally(() => {
             exchangePromisesRef.current.delete(key);
         });
         exchangePromisesRef.current.set(key, promise);
@@ -130,7 +152,7 @@ export function AuthProvider({ children }) {
             }
             // A foreground Google popup flow performs the server exchange itself.
             // Do not start a second exchange from onAuthStateChanged while the popup is closing.
-            if (googleFlowRef.current) {
+            if (explicitAuthFlowRef.current || googleFlowRef.current) {
                 setLoading(false);
                 return;
             }
@@ -153,6 +175,7 @@ export function AuthProvider({ children }) {
     const login = useCallback(async (email, password) => {
         ensureConfigured();
         setAuthError("");
+        explicitAuthFlowRef.current = true;
         try {
             const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
             if (!credential.user.emailVerified) {
@@ -163,54 +186,102 @@ export function AuthProvider({ children }) {
             setUser(backendUser);
             return backendUser;
         } catch (error) {
+            if (error?.code === "REGISTRATION_REQUIRED") {
+                await signOut(auth).catch(() => {});
+                setFirebaseUser(null);
+                setUser(null);
+                try {
+                    sessionStorage.setItem("ecofusion-registration-email", error.data?.email || email.trim());
+                } catch {}
+                return { registrationRequired: true, email: error.data?.email || email.trim() };
+            }
             throw new Error(firebaseError(error, latestTranslations.current));
+        } finally {
+            explicitAuthFlowRef.current = false;
         }
     }, [exchangeOnce]);
 
     const register = useCallback(async (name, email, password) => {
         ensureConfigured();
         setAuthError("");
+        explicitAuthFlowRef.current = true;
         try {
             const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
             await updateProfile(credential.user, { displayName: name.trim() });
+            await exchangeOnce(credential.user, name.trim(), "register");
             await sendEmailVerification(credential.user);
             await signOut(auth);
-            return { needsVerification: true };
+            return { needsVerification: true, registrationCreated: true };
         } catch (error) {
             throw new Error(firebaseError(error, latestTranslations.current));
+        } finally {
+            explicitAuthFlowRef.current = false;
         }
-    }, []);
+    }, [exchangeOnce]);
 
     const loginGoogle = useCallback(async () => {
         ensureConfigured();
         if (googleAttemptRef.current) return googleAttemptRef.current;
         googleBusyRef.current = true;
         googleFlowRef.current = true;
+        explicitAuthFlowRef.current = true;
         setAuthError("");
         const attempt = (async () => {
             try {
                 sessionStorage.setItem("ecofusion-auth-return", window.location.pathname + window.location.search);
-                // Keep the popup call directly inside the click-driven promise chain.
                 const credential = await signInWithPopup(auth, googleProvider);
-                await credential.user.getIdToken(true);
-                const backendUser = await exchangeOnce(credential.user);
+                const backendUser = await exchangeOnce(credential.user, "", "login");
                 const additionalInfo = getAdditionalUserInfo(credential);
                 setFirebaseUser(credential.user);
                 setUser(backendUser);
                 return { user: backendUser, isNewUser: Boolean(additionalInfo?.isNewUser) };
             } catch (error) {
-                if (auth?.currentUser) await signOut(auth).catch(() => {});
+                if (error?.code === "REGISTRATION_REQUIRED") {
+                    const email = error.data?.email || auth?.currentUser?.email || "";
+                    await signOut(auth).catch(() => {});
+                    setFirebaseUser(null);
+                    setUser(null);
+                    try {
+                        if (email) sessionStorage.setItem("ecofusion-registration-email", email);
+                    } catch {}
+                    return { registrationRequired: true, email };
+                }
+                await signOut(auth).catch(() => {});
                 setFirebaseUser(null);
                 setUser(null);
                 throw new Error(firebaseError(error, latestTranslations.current));
             } finally {
                 googleFlowRef.current = false;
+                explicitAuthFlowRef.current = false;
                 googleBusyRef.current = false;
                 googleAttemptRef.current = null;
             }
         })();
         googleAttemptRef.current = attempt;
         return attempt;
+    }, [exchangeOnce]);
+
+    const registerGoogle = useCallback(async () => {
+        ensureConfigured();
+        setAuthError("");
+        explicitAuthFlowRef.current = true;
+        try {
+            const credential = await signInWithPopup(auth, googleProvider);
+            const backendUser = await exchangeOnce(credential.user, credential.user.displayName || "", "register");
+            setFirebaseUser(credential.user);
+            setUser(backendUser);
+            return { user: backendUser, isNewUser: true };
+        } catch (error) {
+            await signOut(auth).catch(() => {});
+            setFirebaseUser(null);
+            setUser(null);
+            if (error?.code === "ACCOUNT_EXISTS") {
+                throw new Error(latestTranslations.current.account.authErrors.accountExists);
+            }
+            throw new Error(firebaseError(error, latestTranslations.current));
+        } finally {
+            explicitAuthFlowRef.current = false;
+        }
     }, [exchangeOnce]);
 
     const linkGoogle = useCallback(async () => {
@@ -243,11 +314,24 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
-    const confirmPhoneCode = useCallback(async (code, profileName = "") => {
+    const confirmPhoneCode = useCallback(async (code, profileName = "", mode = "login") => {
         if (!confirmationRef.current) throw new Error("Request an SMS code first.");
+        explicitAuthFlowRef.current = true;
         try {
             const credential = await confirmationRef.current.confirm(code.trim());
-            const backendUser = await exchangeOnce(credential.user, profileName);
+            let backendUser;
+            try {
+                backendUser = await exchangeOnce(credential.user, profileName, mode);
+            } catch (error) {
+                if (mode === "login" && error?.code === "REGISTRATION_REQUIRED") {
+                    await signOut(auth).catch(() => {});
+                    setFirebaseUser(null);
+                    setUser(null);
+                    return { registrationRequired: true, email: error.data?.email || "" };
+                }
+                throw error;
+            }
+            setFirebaseUser(credential.user);
             setUser(backendUser);
             confirmationRef.current = null;
             if (recaptchaRef.current) recaptchaRef.current.clear();
@@ -255,6 +339,18 @@ export function AuthProvider({ children }) {
             return backendUser;
         } catch (error) {
             throw new Error(firebaseError(error, latestTranslations.current));
+        } finally {
+            explicitAuthFlowRef.current = false;
+        }
+    }, [exchangeOnce]);
+
+    const refreshSession = useCallback(async () => {
+        try {
+            const data = await req("/auth/me");
+            setUser(data.user || null);
+            return data.user || null;
+        } catch {
+            return null;
         }
     }, []);
 
@@ -277,11 +373,13 @@ export function AuthProvider({ children }) {
         login,
         register,
         loginGoogle,
+        registerGoogle,
         linkGoogle,
         startPhoneSignIn,
         confirmPhoneCode,
+        refreshSession,
         logout,
-    }), [user, firebaseUser, loading, authError, login, register, loginGoogle, linkGoogle, startPhoneSignIn, confirmPhoneCode, logout]);
+    }), [user, firebaseUser, loading, authError, login, register, loginGoogle, registerGoogle, linkGoogle, startPhoneSignIn, confirmPhoneCode, refreshSession, logout]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

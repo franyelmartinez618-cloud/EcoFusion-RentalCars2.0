@@ -33,6 +33,7 @@ export const apiClient = {
   myPayments: () => api("/account/payments"),
   createReservation: (payload) => api("/account/reservations", { method: "POST", body: JSON.stringify(payload) }),
   checkout: (reservationId) => api(`/account/reservations/${encodeURIComponent(reservationId)}/checkout`, { method: "POST" }),
+  identityStatus: () => api("/account/identity"),
   identityStart: () => api("/account/identity/start", { method: "POST", body: JSON.stringify({}) }),
   adminVehicles: () => api("/vehicles"),
   adminReservations: () => api("/admin/reservations"),

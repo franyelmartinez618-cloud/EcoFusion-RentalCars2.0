@@ -42,6 +42,8 @@ export default function Navbar() {
     const closeMenu = () => setMenuOpen(false);
 
     const accountPath = user ? "/account" : "/sign-in";
+    const bookingPath = user?.registrationRequired ? "/complete-account" : "/book";
+    const bookingLabel = user?.registrationRequired ? t.nav.completeRegistration : t.nav.reservations;
     const accountLabel = user ? (user.name || t.nav.myAccount) : t.nav.signIn;
     const avatarUser = user
         ? { ...user, photoURL: firebaseUser?.photoURL || "" }
@@ -114,11 +116,11 @@ export default function Navbar() {
                     ))}
 
                     <Link
-                        to="/book"
-                        className={`navbar__mobile-book ${path === "/book" ? "is-active" : ""}`}
+                        to={bookingPath}
+                        className={`navbar__mobile-book ${path === bookingPath ? "is-active" : ""}`}
                         onClick={closeMenu}
                     >
-                        {t.nav.reservations}
+                        {bookingLabel}
                     </Link>
 
                     {!user ? (
@@ -177,8 +179,8 @@ export default function Navbar() {
 
                 <div className="navbar__actions">
                     <div className="navbar__actions-cluster">
-                        <Link to="/book" className="navbar__book" onClick={closeMenu}>
-                            <span className="navbar__book-label">{t.nav.reservations}</span>
+                        <Link to={bookingPath} className={`navbar__book ${path === bookingPath ? "is-active" : ""}`} onClick={closeMenu}>
+                            <span className="navbar__book-label">{bookingLabel}</span>
                             <span aria-hidden="true">→</span>
                         </Link>
                         <div className="navbar__account-links">

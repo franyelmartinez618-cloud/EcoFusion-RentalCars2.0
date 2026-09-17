@@ -31,10 +31,15 @@ export default function SignIn() {
     const [busy, setBusy] = useState(false);
 
     const finish = (result) => {
+        if (result?.registrationRequired) {
+            if (result.email) sessionStorage.setItem("ecofusion-registration-email", result.email);
+            navigate("/register");
+            return;
+        }
         const account = result?.user || result;
         if (!account) return;
         if (account.role !== "client") throw new Error(t.account.clientOnly);
-        navigate(account.privacyRequired ? "/complete-account" : "/account");
+        navigate(account.registrationRequired ? "/complete-account" : "/account");
     };
 
     const run = async (fn) => {

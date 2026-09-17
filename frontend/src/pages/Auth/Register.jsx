@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageShell from "../../components/PageShell/PageShell";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
@@ -20,7 +20,7 @@ function GoogleMark() {
 
 export default function Register() {
     const { translations: t } = useApp();
-    const { register, loginGoogle, startPhoneSignIn, confirmPhoneCode, authError, firebaseConfigured } = useAuth();
+    const { register, registerGoogle, startPhoneSignIn, confirmPhoneCode, authError, firebaseConfigured } = useAuth();
     const [method, setMethod] = useState("email");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -32,15 +32,23 @@ export default function Register() {
     const [error, setError] = useState("");
     const [busy, setBusy] = useState(false);
 
+    useEffect(() => {
+        const rememberedEmail = sessionStorage.getItem("ecofusion-registration-email");
+        if (rememberedEmail) {
+            setEmail(rememberedEmail);
+            sessionStorage.removeItem("ecofusion-registration-email");
+        }
+    }, []);
+
     const finishGoogle = async () => {
         setBusy(true);
         setError("");
         setMessage("");
         try {
-            const result = await loginGoogle();
+            const result = await registerGoogle();
             const account = result?.user;
             if (!account || account.role !== "client") throw new Error(t.account.clientOnly);
-            navigate(result.isNewUser || account.privacyRequired ? "/complete-account" : "/account");
+            navigate("/complete-account");
         } catch (err) {
             setError(err.message || t.account.authErrors.generic);
         } finally {
@@ -73,9 +81,9 @@ export default function Register() {
                 await startPhoneSignIn(phone);
                 setCodeSent(true);
             } else {
-                const account = await confirmPhoneCode(code, name);
+                const account = await confirmPhoneCode(code, name, "register");
                 if (account.role !== "client") throw new Error(t.account.clientOnly);
-                navigate(account.privacyRequired ? "/complete-account" : "/account");
+                navigate("/complete-account");
             }
         } catch (err) {
             setError(err.message || t.account.authErrors.generic);

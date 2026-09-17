@@ -58,7 +58,7 @@ function GuardedRoute({ role, children, loginPath, allowSetup = false }) {
             navigate(user.role === "admin" ? "/admin" : "/account");
             return;
         }
-        if (!loading && user?.role === "client" && user.privacyRequired && !allowSetup) {
+        if (!loading && user?.role === "client" && user.registrationRequired && !allowSetup) {
             navigate("/complete-account");
         }
     }, [loading, user, role, loginPath, allowSetup]);

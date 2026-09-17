@@ -25,6 +25,23 @@ CREATE TABLE IF NOT EXISTS users (
   KEY idx_users_role (role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS user_identities (
+  id INT NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  firebase_uid VARCHAR(191) NOT NULL,
+  provider VARCHAR(50) NOT NULL DEFAULT '',
+  email VARCHAR(254) NOT NULL DEFAULT '',
+  phone VARCHAR(40) NOT NULL DEFAULT '',
+  verified BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at DATETIME(6) NOT NULL,
+  last_seen_at DATETIME(6) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_user_identities_firebase_uid (firebase_uid),
+  KEY idx_user_identities_user (user_id),
+  KEY idx_user_identities_email (email),
+  CONSTRAINT fk_user_identities_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS user_sessions (
   id VARCHAR(96) NOT NULL,
   user_id BIGINT UNSIGNED NOT NULL,
