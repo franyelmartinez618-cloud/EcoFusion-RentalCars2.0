@@ -3,6 +3,7 @@ import PageShell from "../../components/PageShell/PageShell";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { Link, navigate } from "../../utils/router";
+import { PHONE_COUNTRIES, normalizePhoneNumber, validatePhoneNumber } from "../../utils/phone";
 import "../SimplePages.css";
 
 function GoogleMark() {
@@ -26,6 +27,7 @@ export default function Register() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [phone, setPhone] = useState("");
+    const [phoneCountry, setPhoneCountry] = useState("US");
     const [code, setCode] = useState("");
     const [codeSent, setCodeSent] = useState(false);
     const [message, setMessage] = useState("");
@@ -78,7 +80,10 @@ export default function Register() {
         setMessage("");
         try {
             if (!codeSent) {
-                await startPhoneSignIn(phone);
+                if (!validatePhoneNumber(phone, phoneCountry)) {
+                    throw new Error(t.account.authErrors.invalidPhone);
+                }
+                await startPhoneSignIn(normalizePhoneNumber(phone, phoneCountry));
                 setCodeSent(true);
             } else {
                 const account = await confirmPhoneCode(code, name, "register");
@@ -132,8 +137,13 @@ export default function Register() {
                         ) : (
                             <form className="simple-form" onSubmit={phoneSubmit}>
                                 <label>{t.account.fullName}<input value={name} onChange={(event) => setName(event.target.value)} required autoComplete="name"/></label>
-                                <label>{t.account.phone}<input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} required autoComplete="tel"/></label>
-                                {codeSent && <label>{t.account.verificationCode}<input inputMode="numeric" maxLength={6} value={code} onChange={(event) => setCode(event.target.value)} required autoComplete="one-time-code"/></label>}
+                                <label>{t.homeUi.phoneCountryLabel}
+                                    <select value={phoneCountry} onChange={(event) => setPhoneCountry(event.target.value)}>
+                                        {Object.entries(PHONE_COUNTRIES).map(([key, config]) => <option key={key} value={key}>{config.label}</option>)}
+                                    </select>
+                                </label>
+                                <label>{t.account.phone}<input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} required autoComplete="tel" placeholder={t.homeUi.phonePlaceholder}/></label>
+                                {codeSent && <label>{t.account.verificationCode}<input inputMode="numeric" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))} required autoComplete="one-time-code"/></label>}
                                 <div id="recaptcha-container"/>
                                 {error && <p className="auth-error">{error}</p>}
                                 <button type="submit" disabled={busy}>{busy ? (codeSent ? t.account.verifying : t.account.sending) : (codeSent ? t.account.verifyCreate : t.account.sendCode)}</button>

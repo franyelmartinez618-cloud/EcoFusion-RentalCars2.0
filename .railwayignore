@@ -1,5 +1,13 @@
+# Local secrets/config
+backend/.env
+frontend/.env.local
 frontend/.env.production
+
+# Local/generated files
+.git/
+frontend/node_modules/
+frontend/dist/
 frontend/.wrangler/
-PATCH_NOTES.md
-IMPLEMENTATION_NOTES.md
-ecofusion_auth_registration_update.patch
+backend/.venv/
+backend/__pycache__/
+*.sqlite3

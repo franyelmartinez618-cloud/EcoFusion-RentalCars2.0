@@ -23,7 +23,7 @@ This package implements a real authentication boundary (Firebase identity -> Fas
 5. Create a Persona production inquiry template and set `PERSONA_API_KEY`, `PERSONA_INQUIRY_TEMPLATE_ID`, and `PERSONA_WEBHOOK_SECRET`.
 6. Configure Persona webhooks for inquiry approved/declined/review events.
 7. Put the API behind a reverse proxy/WAF and centralized logs/monitoring.
-8. Replace SQLite with MySQL/PostgreSQL before multi-instance production deployment.
+8. Production data is already running on Railway MySQL; keep backups and test restore procedures.
 9. Add backup, secret rotation, audit retention, dependency scanning, and incident response procedures.
 
 

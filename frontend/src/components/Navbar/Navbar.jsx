@@ -41,11 +41,9 @@ export default function Navbar() {
     const path = useLocation();
     const closeMenu = () => setMenuOpen(false);
 
-    const accountPath = user ? "/account" : "/sign-in";
-    const bookingPath = user?.registrationRequired ? "/complete-account" : "/book";
-    const bookingLabel = user?.registrationRequired ? t.nav.completeRegistration : t.nav.reservations;
-    const accountLabel = user ? (user.name || t.nav.myAccount) : t.nav.signIn;
-    const avatarUser = user
+    const onboarding = Boolean(user?.role === "client" && user?.registrationRequired);
+    const onSetupPage = path === "/complete-account";
+    const avatarUser = user && !onboarding
         ? { ...user, photoURL: firebaseUser?.photoURL || "" }
         : null;
 
@@ -73,157 +71,86 @@ export default function Navbar() {
     return (
         <header className={`navbar ${scrolled ? "navbar--scrolled" : ""}`}>
             <div className="container navbar__container">
-                <Link
-                    to="/"
-                    className="navbar__brand"
-                    onClick={closeMenu}
-                    aria-label="EcoFusion Rental Cars"
-                >
-                    <img
-                        src="/ecofusion-logo.png"
-                        alt="EcoFusion Rental Cars"
-                        className="navbar__logo-image navbar__logo-image--full"
-                    />
-                    <img
-                        src="/ecofusion-logo-symbol.png"
-                        alt="EcoFusion"
-                        className="navbar__logo-image navbar__logo-image--compact"
-                    />
+                <Link to="/" className="navbar__brand" onClick={closeMenu} aria-label="EcoFusion Rental Cars">
+                    <img src="/ecofusion-logo.png" alt="EcoFusion Rental Cars" className="navbar__logo-image navbar__logo-image--full" />
+                    <img src="/ecofusion-logo-symbol.png" alt="EcoFusion" className="navbar__logo-image navbar__logo-image--compact" />
                 </Link>
 
-                <button
-                    type="button"
-                    className="navbar__mobile-toggle"
-                    onClick={() => setMenuOpen((value) => !value)}
-                    aria-label={t.common.menu}
-                    aria-expanded={menuOpen}
-                >
-                    <span />
-                    <span />
-                    <span />
+                <button type="button" className="navbar__mobile-toggle" onClick={() => setMenuOpen((value) => !value)} aria-label={t.common.menu} aria-expanded={menuOpen}>
+                    <span /><span /><span />
                 </button>
 
                 <nav className={`navbar__nav ${menuOpen ? "navbar__nav--open" : ""}`}>
                     {links.map(([to, label]) => (
-                        <Link
-                            key={to}
-                            to={to}
-                            className={path === to ? "is-active" : ""}
-                            onClick={closeMenu}
-                        >
-                            {label}
-                        </Link>
+                        <Link key={to} to={to} className={path === to ? "is-active" : ""} onClick={closeMenu}>{label}</Link>
                     ))}
 
-                    <Link
-                        to={bookingPath}
-                        className={`navbar__mobile-book ${path === bookingPath ? "is-active" : ""}`}
-                        onClick={closeMenu}
-                    >
-                        {bookingLabel}
-                    </Link>
-
                     {!user ? (
-                        <div className="navbar__mobile-auth-links">
-                            <Link
-                                to="/sign-in"
-                                className={path === "/sign-in" ? "is-active" : ""}
-                                onClick={closeMenu}
-                            >
-                                {t.nav.signIn}
-                            </Link>
-                            <Link
-                                to="/register"
-                                className={path === "/register" ? "is-active" : ""}
-                                onClick={closeMenu}
-                            >
-                                {t.nav.register}
-                            </Link>
-                        </div>
+                        <>
+                            <Link to="/sign-in" className={path === "/sign-in" ? "is-active" : ""} onClick={closeMenu}>{t.nav.signIn}</Link>
+                            <Link to="/register" className={path === "/register" ? "is-active" : ""} onClick={closeMenu}>{t.nav.register}</Link>
+                        </>
+                    ) : onboarding ? (
+                        <>
+                            {onSetupPage && (
+                                <Link to="/complete-account" className="navbar__mobile-account is-active" onClick={closeMenu}>
+                                    <span>{t.nav.completeRegistration}</span><span aria-hidden="true">→</span>
+                                </Link>
+                            )}
+                            <button type="button" className="navbar__mobile-logout" onClick={handleLogout}>{t.common.signOut}<span aria-hidden="true">↗</span></button>
+                        </>
                     ) : (
                         <>
-                            <Link
-                                to="/account"
-                                className={`navbar__mobile-account ${path === "/account" ? "is-active" : ""}`}
-                                onClick={closeMenu}
-                            >
-                                <Avatar user={avatarUser} mobile />
-                                <span>{t.nav.myAccount}</span>
-                                <span aria-hidden="true">→</span>
+                            <Link to="/account" className={`navbar__mobile-account ${path === "/account" ? "is-active" : ""}`} onClick={closeMenu}>
+                                <Avatar user={avatarUser} mobile /><span>{t.nav.myAccount}</span><span aria-hidden="true">→</span>
                             </Link>
-                            <button
-                                type="button"
-                                className="navbar__mobile-logout"
-                                onClick={handleLogout}
-                            >
-                                {t.common.signOut}
-                                <span aria-hidden="true">↗</span>
-                            </button>
+                            <button type="button" className="navbar__mobile-logout" onClick={handleLogout}>{t.common.signOut}<span aria-hidden="true">↗</span></button>
                         </>
                     )}
 
                     <div className="navbar__mobile-controls">
-                        <button type="button" className="navbar__control" onClick={toggleLanguage}>
-                            {language === "en" ? "ES" : "EN"}
-                        </button>
-                        <button
-                            type="button"
-                            className="navbar__control navbar__theme"
-                            onClick={toggleTheme}
-                            aria-label={t.common.changeTheme}
-                        >
-                            {theme === "light" ? "☾" : "☀"}
-                        </button>
+                        <button type="button" className="navbar__control" onClick={toggleLanguage}>{language === "en" ? "ES" : "EN"}</button>
+                        <button type="button" className="navbar__control navbar__theme" onClick={toggleTheme} aria-label={t.common.changeTheme}>{theme === "light" ? "☾" : "☀"}</button>
                     </div>
                 </nav>
 
                 <div className="navbar__actions">
                     <div className="navbar__actions-cluster">
-                        <Link to={bookingPath} className={`navbar__book ${path === bookingPath ? "is-active" : ""}`} onClick={closeMenu}>
-                            <span className="navbar__book-label">{bookingLabel}</span>
-                            <span aria-hidden="true">→</span>
-                        </Link>
+                        {onboarding && onSetupPage && (
+                            <Link to="/complete-account" className={`navbar__book is-active`} onClick={closeMenu}>
+                                <span className="navbar__book-label">{t.nav.completeRegistration}</span>
+                                <span aria-hidden="true">→</span>
+                            </Link>
+                        )}
+                        {!onboarding && (
+                            <Link to="/book" className={`navbar__book ${path === "/book" ? "is-active" : ""}`} onClick={closeMenu}>
+                                <span className="navbar__book-label">{t.nav.reservations}</span>
+                                <span aria-hidden="true">→</span>
+                            </Link>
+                        )}
+
                         <div className="navbar__account-links">
                             {!user ? (
                                 <div className="navbar__guest-links">
-                                    <Link to={accountPath} className={path === "/sign-in" ? "is-active" : ""} onClick={closeMenu}>
-                                        {t.nav.signIn}
-                                    </Link>
-                                    <Link to="/register" className={path === "/register" ? "is-active" : ""} onClick={closeMenu}>
-                                        {t.nav.register}
-                                    </Link>
+                                    <Link to="/sign-in" className={path === "/sign-in" ? "is-active" : ""} onClick={closeMenu}>{t.nav.signIn}</Link>
+                                    <Link to="/register" className={path === "/register" ? "is-active" : ""} onClick={closeMenu}>{t.nav.register}</Link>
                                 </div>
+                            ) : onboarding ? (
+                                <button type="button" className="navbar__signout-icon" onClick={handleLogout} aria-label={t.common.signOut}>↗</button>
                             ) : (
                                 <>
-                                    <Link to={accountPath} className={`navbar__account-name ${path === "/account" ? "is-active" : ""}`} onClick={closeMenu}>
-                                        <Avatar user={avatarUser} />
-                                        <span>{accountLabel}</span>
+                                    <Link to="/account" className={`navbar__account-name ${path === "/account" ? "is-active" : ""}`} onClick={closeMenu}>
+                                        <Avatar user={avatarUser} /><span>{user.name || t.nav.myAccount}</span>
                                     </Link>
-                                    <button type="button" className="navbar__signout-icon" onClick={handleLogout} aria-label={t.common.signOut}>
-                                        ↗
-                                    </button>
+                                    <button type="button" className="navbar__signout-icon" onClick={handleLogout} aria-label={t.common.signOut}>↗</button>
                                 </>
                             )}
                         </div>
                     </div>
 
                     <div className="navbar__desktop-controls">
-                        <button
-                            type="button"
-                            className="navbar__control"
-                            onClick={toggleLanguage}
-                            aria-label={t.common.changeLanguage}
-                        >
-                            {language === "en" ? "ES" : "EN"}
-                        </button>
-                        <button
-                            type="button"
-                            className="navbar__control navbar__theme"
-                            onClick={toggleTheme}
-                            aria-label={t.common.changeTheme}
-                        >
-                            {theme === "light" ? "☾" : "☀"}
-                        </button>
+                        <button type="button" className="navbar__control" onClick={toggleLanguage} aria-label={t.common.changeLanguage}>{language === "en" ? "ES" : "EN"}</button>
+                        <button type="button" className="navbar__control navbar__theme" onClick={toggleTheme} aria-label={t.common.changeTheme}>{theme === "light" ? "☾" : "☀"}</button>
                     </div>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, setPersistence, browserSessionPersistence } from "firebase/auth";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "firebase/app-check";
 
 const required = [
@@ -28,8 +28,8 @@ if (firebaseConfigured) {
         appId: import.meta.env.VITE_FIREBASE_APP_ID,
     });
     auth = getAuth(app);
-    // Keep Firebase identity across refreshes while the server session remains the authority for app access.
-    setPersistence(auth, browserLocalPersistence).catch(() => {});
+    // Keep authentication for the current tab only; closing the tab clears the Firebase identity so incomplete onboarding cannot linger.
+    setPersistence(auth, browserSessionPersistence).catch(() => {});
     googleProvider = new GoogleAuthProvider();
     googleProvider.setCustomParameters({ prompt: "select_account" });
     const recaptchaSiteKey = import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY?.trim();

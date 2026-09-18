@@ -16,7 +16,7 @@ Google / Email + password / Phone-SMS are handled by Firebase Authentication. Th
 
 The API contains typed endpoints for vehicles, customer reservations, availability, payments, invoices, Square Checkout, Persona identity verification and signed webhooks. SQLAlchemy uses bound parameters for database operations.
 
-`backend/sql/schema.sql` contains the complete 69-table domain contract used by the frontend planning layer. The core runtime tables are fully typed; extension tables begin with a JSON data column so the contract exists without pretending that every future reporting column is already final.
+`EcoFusion-production-setup.sql` is the single authoritative production database file. It creates the 27-table MySQL schema used by EcoFusion and includes the California starter fleet. The FastAPI runtime currently maps the core runtime tables it actively queries; the remaining tables are reserved for the rental lifecycle, fleet inspections, billing and audit domains.
 
 ## Payments
 
@@ -39,4 +39,4 @@ The client calls `/api/v1/account/reservations/{reservation_id}/checkout`. FastA
 - Enable Firebase App Check before enforcing it for Authentication.
 - Configure Square webhook signing and test `payment.created` / `payment.updated`.
 - Configure Persona webhook signing and test approval/review/decline paths.
-- Replace development SQLite with MySQL before production.
+- Production is already configured for Railway MySQL via `MYSQL_URL`.

@@ -21,7 +21,17 @@ export async function api(path, options = {}) {
   }
   const response = await fetch(`${API}${path}`, { credentials: "include", ...options, headers });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.detail || "Request failed");
+  if (!response.ok) {
+    const detail = data?.detail;
+    const message = typeof detail === "string"
+      ? detail
+      : detail?.message || data?.message || "Request failed";
+    const error = new Error(message);
+    error.status = response.status;
+    error.code = detail?.code || data?.code || "";
+    error.data = typeof detail === "object" ? detail : data;
+    throw error;
+  }
   return data;
 }
 
@@ -33,7 +43,6 @@ export const apiClient = {
   myPayments: () => api("/account/payments"),
   createReservation: (payload) => api("/account/reservations", { method: "POST", body: JSON.stringify(payload) }),
   checkout: (reservationId) => api(`/account/reservations/${encodeURIComponent(reservationId)}/checkout`, { method: "POST" }),
-  identityStatus: () => api("/account/identity"),
   identityStart: () => api("/account/identity/start", { method: "POST", body: JSON.stringify({}) }),
   adminVehicles: () => api("/vehicles"),
   adminReservations: () => api("/admin/reservations"),

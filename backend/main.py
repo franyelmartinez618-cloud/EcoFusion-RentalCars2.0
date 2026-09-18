@@ -252,6 +252,11 @@ class User(Base):
         default="",
     )
 
+    phone_verified: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+    )
+
     role: Mapped[str] = mapped_column(
         String(20),
         default="client",
@@ -299,7 +304,7 @@ class UserIdentity(Base):
     __tablename__ = "user_identities"
 
     id: Mapped[int] = mapped_column(
-        Integer,
+        BIGINT(unsigned=True),
         primary_key=True,
         autoincrement=True,
     )
@@ -1164,6 +1169,10 @@ class ProfilePatch(BaseModel):
     phone: str = Field(default="", max_length=40)
 
 
+class PhoneVerificationPayload(BaseModel):
+    id_token: str = Field(min_length=20, max_length=5000)
+
+
 class ConsentPayload(BaseModel):
     privacy_version: str = Field(default=PRIVACY_VERSION, min_length=1, max_length=40)
     terms_version: str = Field(default=TERMS_VERSION, min_length=1, max_length=40)
@@ -1227,12 +1236,15 @@ def _user_registration_state(s: DBSession, u: User):
         or not u.email.strip()
         or not u.phone.strip()
     )
+    phone_required = bool(u.phone.strip()) and not bool(u.phone_verified)
 
     if not customer:
         status = "registration_required"
     elif customer.status == "PENDING_REGISTRATION":
         if profile_required:
             status = "profile_required"
+        elif phone_required:
+            status = "phone_verification_required"
         elif privacy_required:
             status = "consent_required"
         else:
@@ -1254,6 +1266,7 @@ def _auth_user_payload(s: DBSession, u: User):
         "name": u.name,
         "email": u.email,
         "phone": u.phone,
+        "phoneVerified": bool(u.phone_verified),
         "role": u.role,
         "provider": u.provider,
         "identityStatus": u.identity_status,
@@ -1445,6 +1458,7 @@ def exchange_firebase(
             name=display,
             email=email,
             phone=phone,
+            phone_verified=(provider == "phone" and bool(phone)),
             role=role,
             provider=provider,
             active=True,
@@ -1483,7 +1497,11 @@ def exchange_firebase(
     else:
         u.name = display or u.name
         u.email = email or u.email
+        if phone and phone != u.phone and provider != "phone":
+            u.phone_verified = False
         u.phone = phone or u.phone
+        if provider == "phone" and phone:
+            u.phone_verified = True
         u.provider = provider
         if u.last_login_at is not None:
             u.last_login_at = now()
@@ -1586,6 +1604,54 @@ def exchange_firebase(
     }
 
 
+@app.post("/api/v1/auth/phone/verify")
+def verify_phone(
+    payload: PhoneVerificationPayload,
+    request: Request,
+    s: DBSession = Depends(db),
+):
+    sess, u = require_auth(request, s)
+    require_csrf(request, sess)
+
+    try:
+        decoded = verify_firebase_id_token(payload.id_token)
+    except Exception as exc:
+        raise HTTPException(401, "Invalid or expired Firebase phone verification token") from exc
+
+    uid = decoded.get("uid") or decoded.get("sub")
+    phone = (decoded.get("phone_number") or "").strip()
+    if not uid or not phone:
+        raise HTTPException(400, "Verified Firebase account does not contain a phone number")
+
+    linked = (
+        s.query(UserIdentity)
+        .filter_by(firebase_uid=uid, user_id=u.id)
+        .first()
+    )
+    if linked is None and uid != u.firebase_uid:
+        raise HTTPException(403, "This phone identity is not linked to the current EcoFusion account")
+
+    u.phone = phone[:40]
+    u.phone_verified = True
+
+    if linked is not None:
+        linked.phone = u.phone
+        linked.verified = True
+        linked.last_seen_at = now()
+
+    customer = s.query(Customer).filter_by(user_id=u.id).first()
+    if customer:
+        customer.phone = u.phone
+        customer.email = u.email
+        if customer.status == "PENDING_REGISTRATION" and u.name.strip() and u.phone.strip():
+            customer.status = "PENDING_IDENTITY"
+
+    audit(s, request, u.id, "phone_verified", "users", u.id, {"phone": u.phone})
+    s.commit()
+
+    return {"ok": True, "user": _auth_user_payload(s, u)}
+
+
 @app.post("/api/v1/auth/consent")
 def accept_consent(
     payload: ConsentPayload,
@@ -1674,7 +1740,10 @@ def profile(
     )
 
     u.name = " ".join(payload.name.strip().split())
-    u.phone = payload.phone.strip()[:40]
+    next_phone = payload.phone.strip()[:40]
+    if next_phone != (u.phone or ""):
+        u.phone_verified = False
+    u.phone = next_phone
     customer = s.query(Customer).filter_by(user_id=u.id).first()
     if customer:
         parts = u.name.split(" ", 1)
@@ -1682,7 +1751,7 @@ def profile(
         customer.last_name = parts[1] if len(parts) > 1 else ""
         customer.phone = u.phone
         customer.email = u.email
-        if customer.status == "PENDING_REGISTRATION" and u.name.strip() and u.phone.strip():
+        if customer.status == "PENDING_REGISTRATION" and u.name.strip() and u.phone.strip() and u.phone_verified:
             customer.status = "PENDING_IDENTITY"
 
     s.commit()

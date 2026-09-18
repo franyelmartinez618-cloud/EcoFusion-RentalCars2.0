@@ -7,6 +7,7 @@ import {
     signInWithEmailAndPassword,
     signInWithPopup,
     linkWithPopup,
+    linkWithPhoneNumber,
     getAdditionalUserInfo,
     signOut,
     updateProfile,
@@ -81,6 +82,9 @@ function firebaseError(error, t) {
         "auth/credential-already-in-use": t.account.authErrors.credentialInUse || "Esta cuenta de Google ya está vinculada a otra cuenta.",
         "auth/provider-already-linked": t.account.authErrors.providerLinked || "Google ya está vinculado a esta cuenta.",
         "auth/requires-recent-login": t.account.authErrors.recentLogin || "Por seguridad, vuelve a iniciar sesión antes de cambiar el acceso de la cuenta.",
+        "auth/code-expired": t.account.authErrors.codeExpired || "El código ha expirado. Solicita uno nuevo.",
+        "auth/captcha-check-failed": t.account.authErrors.captchaFailed || "No pudimos completar la verificación de seguridad. Inténtalo de nuevo.",
+        "auth/missing-phone-number": t.account.authErrors.invalidPhone || "Introduce un número de teléfono válido.",
     };
     return map[error?.code] || error?.message || t.account.authErrors.generic;
 }
@@ -314,6 +318,47 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
+    const startPhoneVerification = useCallback(async (phoneNumber, containerId = "recaptcha-container") => {
+        ensureConfigured();
+        const current = auth?.currentUser;
+        if (!current) throw new Error("Authentication was not completed.");
+        try {
+            if (recaptchaRef.current) recaptchaRef.current.clear();
+            recaptchaRef.current = new RecaptchaVerifier(auth, containerId, { size: "invisible" });
+            confirmationRef.current = await linkWithPhoneNumber(current, phoneNumber.trim(), recaptchaRef.current);
+            return true;
+        } catch (error) {
+            if (recaptchaRef.current) recaptchaRef.current.clear();
+            recaptchaRef.current = null;
+            confirmationRef.current = null;
+            throw new Error(firebaseError(error, latestTranslations.current));
+        }
+    }, []);
+
+    const confirmPhoneVerification = useCallback(async (code) => {
+        if (!confirmationRef.current) throw new Error("Request an SMS code first.");
+        explicitAuthFlowRef.current = true;
+        try {
+            const credential = await confirmationRef.current.confirm(code.trim());
+            const idToken = await credential.user.getIdToken(true);
+            const data = await req("/auth/phone/verify", {
+                method: "POST",
+                headers: { "X-CSRF-Token": csrf() },
+                body: JSON.stringify({ id_token: idToken }),
+            });
+            setFirebaseUser(credential.user);
+            setUser(data.user);
+            confirmationRef.current = null;
+            if (recaptchaRef.current) recaptchaRef.current.clear();
+            recaptchaRef.current = null;
+            return data.user;
+        } catch (error) {
+            throw new Error(error instanceof ApiRequestError ? error.message : firebaseError(error, latestTranslations.current));
+        } finally {
+            explicitAuthFlowRef.current = false;
+        }
+    }, []);
+
     const confirmPhoneCode = useCallback(async (code, profileName = "", mode = "login") => {
         if (!confirmationRef.current) throw new Error("Request an SMS code first.");
         explicitAuthFlowRef.current = true;
@@ -364,8 +409,10 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
+    const onboarding = Boolean(user?.role === "client" && user?.registrationRequired);
     const value = useMemo(() => ({
         user,
+        onboarding,
         firebaseUser,
         loading,
         authError,
@@ -377,9 +424,11 @@ export function AuthProvider({ children }) {
         linkGoogle,
         startPhoneSignIn,
         confirmPhoneCode,
+        startPhoneVerification,
+        confirmPhoneVerification,
         refreshSession,
         logout,
-    }), [user, firebaseUser, loading, authError, login, register, loginGoogle, registerGoogle, linkGoogle, startPhoneSignIn, confirmPhoneCode, refreshSession, logout]);
+    }), [user, onboarding, firebaseUser, loading, authError, login, register, loginGoogle, registerGoogle, linkGoogle, startPhoneSignIn, confirmPhoneCode, startPhoneVerification, confirmPhoneVerification, refreshSession, logout]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

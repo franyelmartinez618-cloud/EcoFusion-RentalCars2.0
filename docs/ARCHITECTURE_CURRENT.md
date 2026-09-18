@@ -8,7 +8,7 @@ Browser → Cloudflare frontend → Railway FastAPI → Railway MySQL
 
 ## Database policy
 
-The production schema is intentionally compact: 9 core tables. Optional domains such as GPS, maintenance, promotions, support, notifications, and legal-document workflows are not created until their functionality is implemented and needs persistent storage.
+The production schema is defined by `EcoFusion-production-setup.sql` with 27 tables covering identity, customers, fleet, reservations, contracts, inspections, billing, payments and auditing. The active FastAPI ORM currently maps the core runtime tables it queries.
 
 ## Homepage policy
 

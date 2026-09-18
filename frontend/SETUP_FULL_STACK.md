@@ -24,7 +24,7 @@ The API health endpoint is `http://localhost:8000/api/v1/health`.
 
 ## 3. MySQL production
 
-Create the database and all 69 domain tables using `backend/sql/schema.sql`. Then set `MYSQL_URL` in `backend/.env` to a real MySQL 8+ connection string.
+For production, use the root `EcoFusion-production-setup.sql` as the single authoritative MySQL schema and starter data. Then set `MYSQL_URL` in `backend/.env` to a real MySQL 8+ connection string for local development.
 
 The API uses SQLAlchemy parameter binding for business queries and can run against MySQL without changing the frontend.
 
