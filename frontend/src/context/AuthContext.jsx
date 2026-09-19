@@ -20,6 +20,7 @@ import { useApp } from "./AppContext";
 
 const AuthContext = createContext(null);
 const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+const TAB_AUTH_MARKER = "ecofusion-tab-auth";
 
 class ApiRequestError extends Error {
     constructor(message, status, data = {}) {
@@ -120,6 +121,7 @@ export function AuthProvider({ children }) {
     const googleFlowRef = useRef(false);
     const explicitAuthFlowRef = useRef(false);
     const googleAttemptRef = useRef(null);
+    const registerGoogleAttemptRef = useRef(null);
 
     const exchangeOnce = useCallback((nextFirebaseUser, profileName = "", mode = "login") => {
         const uid = nextFirebaseUser?.uid;
@@ -140,6 +142,24 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const markTabAuthenticated = useCallback(() => {
+        try {
+            sessionStorage.setItem(TAB_AUTH_MARKER, "1");
+        } catch {}
+    }, []);
+
+    const revokeServerSessionOnFreshTab = useCallback(async () => {
+        try {
+            const marker = sessionStorage.getItem(TAB_AUTH_MARKER);
+            if (marker === "1") return;
+            const current = await req("/auth/me");
+            if (current?.authenticated) {
+                await req("/auth/logout", { method: "POST", headers: { "X-CSRF-Token": csrf() } }).catch(() => {});
+            }
+            sessionStorage.removeItem(TAB_AUTH_MARKER);
+        } catch {}
+    }, []);
+
     useEffect(() => {
         if (!firebaseConfigured || !auth) {
             setLoading(false);
@@ -148,18 +168,32 @@ export function AuthProvider({ children }) {
         let mounted = true;
         const finish = async (nextFirebaseUser) => {
             if (!mounted) return;
+
+            // Explicit auth flows own the session exchange/state transition.
+            // Firebase may emit intermediate events while a popup opens/closes;
+            // never let those events clear a just-created account or start a
+            // second server exchange.
+            if (explicitAuthFlowRef.current || googleFlowRef.current) {
+                if (nextFirebaseUser) setFirebaseUser(nextFirebaseUser);
+                setLoading(false);
+                return;
+            }
+
             setFirebaseUser(nextFirebaseUser || null);
             if (!nextFirebaseUser) {
+                // Ignore a transient null callback if Firebase has already restored
+                // the current user; only clear the app session when it is truly gone.
+                if (auth?.currentUser) {
+                    setFirebaseUser(auth.currentUser);
+                    setLoading(false);
+                    return;
+                }
+                await revokeServerSessionOnFreshTab();
                 setUser(null);
                 setLoading(false);
                 return;
             }
-            // A foreground Google popup flow performs the server exchange itself.
-            // Do not start a second exchange from onAuthStateChanged while the popup is closing.
-            if (explicitAuthFlowRef.current || googleFlowRef.current) {
-                setLoading(false);
-                return;
-            }
+
             try {
                 const backendUser = await exchangeOnce(nextFirebaseUser);
                 if (mounted) setUser(backendUser);
@@ -174,7 +208,7 @@ export function AuthProvider({ children }) {
         };
         const unsubscribe = onAuthStateChanged(auth, finish);
         return () => { mounted = false; unsubscribe(); };
-    }, [exchangeOnce]);
+    }, [exchangeOnce, revokeServerSessionOnFreshTab]);
 
     const login = useCallback(async (email, password) => {
         ensureConfigured();
@@ -187,6 +221,7 @@ export function AuthProvider({ children }) {
                 throw new Error("Please verify your email before signing in.");
             }
             const backendUser = await exchangeOnce(credential.user);
+            markTabAuthenticated();
             setUser(backendUser);
             return backendUser;
         } catch (error) {
@@ -203,7 +238,7 @@ export function AuthProvider({ children }) {
         } finally {
             explicitAuthFlowRef.current = false;
         }
-    }, [exchangeOnce]);
+    }, [exchangeOnce, markTabAuthenticated]);
 
     const register = useCallback(async (name, email, password) => {
         ensureConfigured();
@@ -235,6 +270,7 @@ export function AuthProvider({ children }) {
                 sessionStorage.setItem("ecofusion-auth-return", window.location.pathname + window.location.search);
                 const credential = await signInWithPopup(auth, googleProvider);
                 const backendUser = await exchangeOnce(credential.user, "", "login");
+                markTabAuthenticated();
                 const additionalInfo = getAdditionalUserInfo(credential);
                 setFirebaseUser(credential.user);
                 setUser(backendUser);
@@ -263,30 +299,41 @@ export function AuthProvider({ children }) {
         })();
         googleAttemptRef.current = attempt;
         return attempt;
-    }, [exchangeOnce]);
+    }, [exchangeOnce, markTabAuthenticated]);
 
     const registerGoogle = useCallback(async () => {
         ensureConfigured();
+        if (registerGoogleAttemptRef.current) return registerGoogleAttemptRef.current;
         setAuthError("");
         explicitAuthFlowRef.current = true;
-        try {
-            const credential = await signInWithPopup(auth, googleProvider);
-            const backendUser = await exchangeOnce(credential.user, credential.user.displayName || "", "register");
-            setFirebaseUser(credential.user);
-            setUser(backendUser);
-            return { user: backendUser, isNewUser: true };
-        } catch (error) {
-            await signOut(auth).catch(() => {});
-            setFirebaseUser(null);
-            setUser(null);
-            if (error?.code === "ACCOUNT_EXISTS") {
-                throw new Error(latestTranslations.current.account.authErrors.accountExists);
+        googleFlowRef.current = true;
+
+        const attempt = (async () => {
+            try {
+                const credential = await signInWithPopup(auth, googleProvider);
+                const backendUser = await exchangeOnce(credential.user, credential.user.displayName || "", "register");
+                markTabAuthenticated();
+                setFirebaseUser(credential.user);
+                setUser(backendUser);
+                return { user: backendUser, isNewUser: true };
+            } catch (error) {
+                await signOut(auth).catch(() => {});
+                setFirebaseUser(null);
+                setUser(null);
+                if (error?.code === "ACCOUNT_EXISTS") {
+                    throw new Error(latestTranslations.current.account.authErrors.accountExists);
+                }
+                throw new Error(firebaseError(error, latestTranslations.current));
+            } finally {
+                googleFlowRef.current = false;
+                explicitAuthFlowRef.current = false;
+                registerGoogleAttemptRef.current = null;
             }
-            throw new Error(firebaseError(error, latestTranslations.current));
-        } finally {
-            explicitAuthFlowRef.current = false;
-        }
-    }, [exchangeOnce]);
+        })();
+
+        registerGoogleAttemptRef.current = attempt;
+        return attempt;
+    }, [exchangeOnce, markTabAuthenticated]);
 
     const linkGoogle = useCallback(async () => {
         ensureConfigured();
@@ -346,6 +393,7 @@ export function AuthProvider({ children }) {
                 headers: { "X-CSRF-Token": csrf() },
                 body: JSON.stringify({ id_token: idToken }),
             });
+            markTabAuthenticated();
             setFirebaseUser(credential.user);
             setUser(data.user);
             confirmationRef.current = null;
@@ -357,7 +405,7 @@ export function AuthProvider({ children }) {
         } finally {
             explicitAuthFlowRef.current = false;
         }
-    }, []);
+    }, [markTabAuthenticated]);
 
     const confirmPhoneCode = useCallback(async (code, profileName = "", mode = "login") => {
         if (!confirmationRef.current) throw new Error("Request an SMS code first.");
@@ -376,6 +424,7 @@ export function AuthProvider({ children }) {
                 }
                 throw error;
             }
+            markTabAuthenticated();
             setFirebaseUser(credential.user);
             setUser(backendUser);
             confirmationRef.current = null;
@@ -387,7 +436,7 @@ export function AuthProvider({ children }) {
         } finally {
             explicitAuthFlowRef.current = false;
         }
-    }, [exchangeOnce]);
+    }, [exchangeOnce, markTabAuthenticated]);
 
     const refreshSession = useCallback(async () => {
         try {
@@ -404,6 +453,7 @@ export function AuthProvider({ children }) {
             await req("/auth/logout", { method: "POST", headers: { "X-CSRF-Token": csrf() } }).catch(() => {});
             if (auth) await signOut(auth);
         } finally {
+            try { sessionStorage.removeItem(TAB_AUTH_MARKER); } catch {}
             setUser(null);
             setFirebaseUser(null);
         }
