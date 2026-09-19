@@ -513,6 +513,17 @@ class Customer(Base):
         default="ACTIVE",
     )
 
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
 
 class Reservation(Base):
     __tablename__ = "reservations"
@@ -883,7 +894,7 @@ def db():
 
 
 def now():
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def firebase_ready():
@@ -1279,6 +1290,7 @@ def _auth_user_payload(s: DBSession, u: User):
             u.role == "client"
             and registration_status != "active"
         ),
+        "accountActive": registration_status == "active",
         "customerStatus": customer.status if customer else "",
         "profileRequired": profile_required,
     }
@@ -2628,6 +2640,7 @@ def identity_status(
         "status": u.identity_status,
         "provider": u.identity_provider,
         "inquiryId": u.identity_inquiry_id,
+        "configured": bool(PERSONA_API_KEY and PERSONA_TEMPLATE_ID and PERSONA_WEBHOOK_SECRET),
     }
 
 
