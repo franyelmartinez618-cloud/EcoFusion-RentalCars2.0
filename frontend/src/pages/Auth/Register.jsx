@@ -21,7 +21,7 @@ function GoogleMark() {
 
 export default function Register() {
     const { translations: t } = useApp();
-    const { register, registerGoogle, startPhoneSignIn, confirmPhoneCode, authError, firebaseConfigured } = useAuth();
+    const { user: currentUser, register, registerGoogle, startPhoneSignIn, confirmPhoneCode, authError, firebaseConfigured } = useAuth();
     const [method, setMethod] = useState("email");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -34,6 +34,12 @@ export default function Register() {
     const [error, setError] = useState("");
     const [busy, setBusy] = useState(false);
 
+
+    useEffect(() => {
+        if (currentUser?.role === "client") {
+            navigate(currentUser.registrationRequired ? "/complete-account" : "/account");
+        }
+    }, [currentUser]);
     useEffect(() => {
         const rememberedEmail = sessionStorage.getItem("ecofusion-registration-email");
         if (rememberedEmail) {
@@ -50,7 +56,6 @@ export default function Register() {
             const result = await registerGoogle();
             const account = result?.user;
             if (!account || account.role !== "client") throw new Error(t.account.clientOnly);
-            navigate("/complete-account");
         } catch (err) {
             setError(err.message || t.account.authErrors.generic);
         } finally {
@@ -88,7 +93,6 @@ export default function Register() {
             } else {
                 const account = await confirmPhoneCode(code, name, "register");
                 if (account.role !== "client") throw new Error(t.account.clientOnly);
-                navigate("/complete-account");
             }
         } catch (err) {
             setError(err.message || t.account.authErrors.generic);
