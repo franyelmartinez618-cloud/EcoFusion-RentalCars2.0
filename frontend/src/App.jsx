@@ -21,6 +21,7 @@ import { Component, useEffect } from "react";
 import "./styles/variables.css";
 import "./styles/global.css";
 import "./App.css";
+import "./styles/compact-layout.css";
 
 
 class AppErrorBoundary extends Component {

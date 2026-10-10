@@ -4,7 +4,7 @@ import { Link, navigate } from "../../utils/router";
 import { useAuth } from "../../context/AuthContext";
 import { apiClient } from "../../services/api";
 import { useApp } from "../../context/AppContext";
-import { PHONE_COUNTRIES, normalizePhoneNumber, validatePhoneNumber } from "../../utils/phone";
+import { PHONE_COUNTRIES, getPhoneCountryFromNumber, normalizePhoneNumber, validatePhoneNumber } from "../../utils/phone";
 import "../SimplePages.css";
 import "./AccountSetup.css";
 
@@ -20,8 +20,6 @@ export default function AccountSetup() {
   const [privacy, setPrivacy] = useState(false);
   const [terms, setTerms] = useState(false);
   const [marketing, setMarketing] = useState(false);
-  const [identity, setIdentity] = useState(user?.identityStatus || "not_started");
-  const [identityUrl, setIdentityUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -30,13 +28,31 @@ export default function AccountSetup() {
   useEffect(() => {
     setName(user?.name || firebaseUser?.displayName || "");
     setPhone(user?.phone || "");
-    setIdentity(user?.identityStatus || "not_started");
+    const inferredCountry = getPhoneCountryFromNumber(user?.phone || phone);
+    if (inferredCountry) setPhoneCountry(inferredCountry);
   }, [user, firebaseUser]);
+
 
   useEffect(() => {
     if (!user?.registrationRequired || reloadHandled.current) return;
-    const navigationType = performance.getEntriesByType?.("navigation")?.[0]?.type || "navigate";
+
+    let routedFromRegistration = false;
+    try {
+      routedFromRegistration =
+        sessionStorage.getItem("ecofusion-onboarding-route") === "1";
+
+      if (routedFromRegistration) {
+        sessionStorage.removeItem("ecofusion-onboarding-route");
+      }
+    } catch {}
+
+    if (routedFromRegistration) return;
+
+    const navigationType =
+      performance.getEntriesByType?.("navigation")?.[0]?.type || "navigate";
+
     if (navigationType !== "reload") return;
+
     reloadHandled.current = true;
     logout().finally(() => navigate("/"));
   }, [logout, user?.registrationRequired]);
@@ -125,7 +141,7 @@ export default function AccountSetup() {
     setError("");
     setMessage("");
     try {
-      if (await saveConsent()) setStep(4);
+      if (await saveConsent()) navigate("/account");
     } catch (err) {
       setError(err.message || t.homeUi.setupFailure);
     } finally {
@@ -133,63 +149,24 @@ export default function AccountSetup() {
     }
   };
 
-  const startIdentity = async () => {
+  const exitRegistration = async () => {
     setBusy(true);
-    setError("");
-    setMessage("");
     try {
-      const result = await apiClient.identityStart();
-      setIdentity(result.status || "pending");
-      setIdentityUrl(result.url || "");
-      if (result.url) {
-        window.open(result.url, "_blank", "noopener,noreferrer");
-        setMessage(t.homeUi.identityOpened);
-      }
-    } catch (err) {
-      setError(err.message || t.homeUi.identityStartFailure);
+      await logout();
+      navigate("/");
     } finally {
       setBusy(false);
     }
-  };
-
-  const checkIdentity = async () => {
-    setBusy(true);
-    setError("");
-    setMessage("");
-    try {
-      const status = await apiClient.identityStatus();
-      setIdentity(status.status || "not_started");
-      const account = await refreshSession();
-      if (account?.registrationStatus === "active") {
-        setMessage(t.homeUi.setupSuccess);
-        setTimeout(() => navigate("/account"), 450);
-      } else if (status.status === "verified") {
-        setMessage(t.homeUi.identityVerifiedPending);
-      } else {
-        setMessage(t.homeUi.identityPending);
-      }
-    } catch (err) {
-      setError(err.message || t.homeUi.identityCheckFailure);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const finishLater = async () => {
-    const account = await refreshSession();
-    if (account?.registrationStatus === "active") navigate("/account");
-    else setMessage(t.homeUi.identityRequiredBeforeBooking);
   };
 
   const stepLabels = [
     t.homeUi.registrationStepProfile,
     t.homeUi.registrationStepPhone,
     t.homeUi.registrationStepConsent,
-    t.homeUi.registrationStepIdentity,
   ];
 
   return (
-    <PageShell>
+    <PageShell className="page-shell--account-setup">
       <section className="page-section">
         <div className="container" style={{ maxWidth: 900 }}>
           <article className="info-card account-setup-card account-setup-card--pro">
@@ -197,10 +174,11 @@ export default function AccountSetup() {
               <span className="page-hero__eyebrow">{t.homeUi.setupEyebrow}</span>
               <h1>{t.homeUi.setupTitle}</h1>
               <p>{t.homeUi.setupDescription}</p>
+              <button type="button" className="registration-exit" onClick={exitRegistration} disabled={busy}>Salir del registro</button>
             </div>
 
             <div className="registration-progress" aria-label={t.homeUi.registrationProgressLabel}>
-              {[1, 2, 3, 4].map((item) => (
+              {[1, 2, 3].map((item) => (
                 <div key={item} className={`registration-progress__item ${step === item ? "is-active" : ""} ${step > item ? "is-done" : ""}`}>
                   <span>{item}</span>
                   <strong>{stepLabels[item - 1]}</strong>
@@ -238,6 +216,7 @@ export default function AccountSetup() {
                   <span>{user?.email || firebaseUser?.email}</span>
                   <span>{normalizePhoneNumber(phone, phoneCountry)}</span>
                 </div>
+                <div id="recaptcha-container" className="registration-recaptcha" />
                 {!codeSent ? (
                   <div className="registration-actions">
                     <button type="button" className="button-secondary" onClick={() => setStep(1)} disabled={busy}>{t.homeUi.backRegistration}</button>
@@ -246,7 +225,6 @@ export default function AccountSetup() {
                 ) : (
                   <form className="simple-form" onSubmit={(e) => { e.preventDefault(); verifyPhone(); }}>
                     <label>{t.account.verificationCode}<input inputMode="numeric" maxLength={6} value={verificationCode} onChange={e => setVerificationCode(e.target.value.replace(/\D/g, ""))} autoComplete="one-time-code" required /></label>
-                    <div id="recaptcha-container" />
                     {error && <p className="auth-error">{error}</p>}
                     {message && <p className="auth-success">{message}</p>}
                     <div className="registration-actions">
@@ -282,44 +260,11 @@ export default function AccountSetup() {
               </section>
             )}
 
-            {step === 4 && (
-              <section className="registration-panel">
-                <span className="registration-panel__kicker">04</span>
-                <h2>{t.homeUi.registrationStepIdentity}</h2>
-                <p>{t.homeUi.registrationIdentityDescription}</p>
-                <div className={`identity-status-card identity-status-card--${identity}`}>
-                  <div><strong>{t.homeUi.identityStatusLabel}</strong><span>{t.homeUi.identityStatusValue[identity] || identity}</span></div>
-                  <div><strong>{t.homeUi.identityProviderLabel}</strong><span>Persona</span></div>
-                </div>
-                {identity === "verified" ? (
-                  <div className="auth-success">{t.homeUi.identityVerifiedPending}</div>
-                ) : (
-                  <>
-                    <div className="identity-checklist">
-                      <span>✓ {t.homeUi.identitySecurityItem1}</span>
-                      <span>✓ {t.homeUi.identitySecurityItem2}</span>
-                      <span>✓ {t.homeUi.identitySecurityItem3}</span>
-                    </div>
-                    <div className="registration-actions">
-                      <button type="button" className="button-secondary" onClick={() => setStep(3)} disabled={busy}>{t.homeUi.backRegistration}</button>
-                      <button type="button" onClick={startIdentity} disabled={busy}>{busy ? t.homeUi.identityStarting : t.homeUi.identityStart}</button>
-                    </div>
-                    {identityUrl && <a className="text-link identity-reopen-link" href={identityUrl} target="_blank" rel="noreferrer">{t.homeUi.identityReopen}</a>}
-                  </>
-                )}
-                <button type="button" className="button-secondary identity-check-button" onClick={checkIdentity} disabled={busy}>{busy ? t.homeUi.identityChecking : t.homeUi.identityCheck}</button>
-                {error && <p className="auth-error">{error}</p>}
-                {message && <p className="auth-success">{message}</p>}
-                <div className="account-setup-security"><strong>{t.homeUi.setupSecurityTitle}</strong><span>{t.homeUi.setupSecurityText}</span></div>
-              </section>
-            )}
-
-            {step === 4 && identity === "verified" && (
-              <button type="button" className="identity-complete-button" onClick={finishLater}>{t.homeUi.openAccount}</button>
-            )}
           </article>
         </div>
       </section>
     </PageShell>
   );
 }
+
+

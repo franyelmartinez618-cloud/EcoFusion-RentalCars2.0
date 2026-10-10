@@ -37,7 +37,12 @@ export default function Register() {
 
     useEffect(() => {
         if (currentUser?.role === "client") {
-            navigate(currentUser.registrationRequired ? "/complete-account" : "/account");
+            if (currentUser.registrationRequired) {
+                sessionStorage.setItem("ecofusion-onboarding-route", "1");
+                navigate("/complete-account");
+            } else {
+                navigate("/account");
+            }
         }
     }, [currentUser]);
     useEffect(() => {
@@ -102,7 +107,7 @@ export default function Register() {
     };
 
     return (
-        <PageShell>
+        <PageShell className="page-shell--register">
             <section className="page-section">
                 <div className="container" style={{ maxWidth: 700 }}>
                     <article className="info-card auth-modern-card auth-entry-card">
@@ -120,7 +125,7 @@ export default function Register() {
                                 {t.account.continueGoogle}
                             </button>
                             <button type="button" className={`auth-provider ${method === "phone" ? "is-active" : ""}`} disabled={busy} onClick={() => setMethod("phone")}>
-                                <span className="auth-provider-icon" aria-hidden="true">⌕</span>
+                                <span className="auth-provider-icon" aria-hidden="true">âŒ•</span>
                                 {t.account.continuePhone}
                             </button>
                         </div>
@@ -167,3 +172,4 @@ export default function Register() {
         </PageShell>
     );
 }
+

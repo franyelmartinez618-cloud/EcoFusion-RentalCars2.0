@@ -6,6 +6,8 @@ import os
 import secrets
 import time
 import uuid
+import threading
+import re
 from pathlib import Path
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -47,6 +49,10 @@ from sqlalchemy.orm import (
     Session as DBSession,
 )
 
+# Preserve MySQL's unsigned BIGINT while allowing SQLite's INTEGER rowid
+# behavior for autoincrement primary keys in local development/tests.
+DB_BIGINT = BIGINT(unsigned=True).with_variant(Integer, "sqlite")
+
 try:
     import firebase_admin
     from firebase_admin import auth as firebase_auth, credentials, app_check as firebase_app_check
@@ -71,6 +77,16 @@ FRONTEND_ORIGINS = [
     ).split(",")
     if x.strip()
 ]
+# Vite may fall back from port 5173 to 5174 if 5173 is already occupied.
+# Allow only these explicit localhost origins in development; production still
+# requires an exact configured origin list.
+if ENV.strip().lower() in {"development", "dev", "local", "test"}:
+    local_dev_origins = {
+        "http://localhost:5173", "http://localhost:5174",
+        "http://127.0.0.1:5173", "http://127.0.0.1:5174",
+    }
+    if any(origin in local_dev_origins for origin in FRONTEND_ORIGINS):
+        FRONTEND_ORIGINS = list(dict.fromkeys([*FRONTEND_ORIGINS, *sorted(local_dev_origins)]))
 FRONTEND_ORIGIN = FRONTEND_ORIGINS[0] if FRONTEND_ORIGINS else "http://localhost:5173"
 FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "ecofusion-rentalcars").strip()
 
@@ -91,11 +107,7 @@ TERMS_VERSION = os.getenv("TERMS_VERSION", "2026-09-16").strip() or "2026-09-16"
 
 MAX_BODY_BYTES = 1024 * 1024
 
-ADMIN_EMAILS = {
-    x.strip().lower()
-    for x in os.getenv("ADMIN_EMAILS", "").split(",")
-    if x.strip()
-}
+ADMIN_SESSION_TTL = max(900, min(SESSION_TTL, int(os.getenv("ADMIN_SESSION_TTL_SECONDS", "3600"))))
 
 
 # ============================================================
@@ -170,6 +182,10 @@ PERSONA_WEBHOOK_SECRET = os.getenv(
 ).strip()
 
 PERSONA_BASE = "https://api.withpersona.com/api/v1"
+REQUIRE_IDENTITY_FOR_REGISTRATION = os.getenv(
+    "REQUIRE_IDENTITY_FOR_REGISTRATION",
+    "false",
+).strip().lower() in {"1", "true", "yes", "on"}
 
 
 # ============================================================
@@ -225,7 +241,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         primary_key=True,
         autoincrement=True,
     )
@@ -304,13 +320,13 @@ class UserIdentity(Base):
     __tablename__ = "user_identities"
 
     id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         primary_key=True,
         autoincrement=True,
     )
 
     user_id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
     )
@@ -362,7 +378,7 @@ class UserSession(Base):
     )
 
     user_id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
     )
@@ -386,11 +402,35 @@ class UserSession(Base):
     )
 
 
+class AdminCredential(Base):
+    """Dedicated local admin credentials; never linked to Firebase email login."""
+
+    __tablename__ = "admin_credentials"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        DB_BIGINT,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        index=True,
+    )
+    username: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(256))
+    recovery_code_hash: Mapped[str] = mapped_column(String(256))
+    failed_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    recovery_failed_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    recovery_locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    password_changed_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+
 class Vehicle(Base):
     __tablename__ = "vehicles"
 
     id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         primary_key=True,
         autoincrement=True,
     )
@@ -461,8 +501,8 @@ class Vehicle(Base):
 class UserConsent(Base):
     __tablename__ = "user_consents"
 
-    id: Mapped[int] = mapped_column(BIGINT(unsigned=True), primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(BIGINT(unsigned=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
+    id: Mapped[int] = mapped_column(DB_BIGINT, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(DB_BIGINT, ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
     privacy_version: Mapped[str] = mapped_column(String(40), default=PRIVACY_VERSION)
     terms_version: Mapped[str] = mapped_column(String(40), default=TERMS_VERSION)
     marketing_opt_in: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -475,13 +515,13 @@ class Customer(Base):
     __tablename__ = "customers"
 
     id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         primary_key=True,
         autoincrement=True,
     )
 
     user_id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         ForeignKey("users.id", ondelete="CASCADE"),
         unique=True,
         index=True,
@@ -529,7 +569,7 @@ class Reservation(Base):
     __tablename__ = "reservations"
 
     id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         primary_key=True,
         autoincrement=True,
     )
@@ -541,13 +581,13 @@ class Reservation(Base):
     )
 
     customer_id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         ForeignKey("customers.id", ondelete="RESTRICT"),
         index=True,
     )
 
     vehicle_id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         ForeignKey("vehicles.id", ondelete="RESTRICT"),
         index=True,
     )
@@ -608,7 +648,7 @@ class Payment(Base):
     __tablename__ = "payments"
 
     id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         primary_key=True,
         autoincrement=True,
     )
@@ -620,7 +660,7 @@ class Payment(Base):
     )
 
     reservation_id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         ForeignKey("reservations.id", ondelete="RESTRICT"),
         index=True,
     )
@@ -678,7 +718,7 @@ class PaymentWebhookEvent(Base):
     __tablename__ = "payment_webhook_events"
 
     id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         primary_key=True,
         autoincrement=True,
     )
@@ -704,7 +744,7 @@ class Invoice(Base):
     __tablename__ = "invoices"
 
     id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         primary_key=True,
         autoincrement=True,
     )
@@ -716,7 +756,7 @@ class Invoice(Base):
     )
 
     reservation_id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         ForeignKey("reservations.id", ondelete="RESTRICT"),
         index=True,
     )
@@ -756,13 +796,13 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     id: Mapped[int] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         primary_key=True,
         autoincrement=True,
     )
 
     user_id: Mapped[Optional[int]] = mapped_column(
-        BIGINT(unsigned=True),
+        DB_BIGINT,
         nullable=True,
         index=True,
     )
@@ -794,6 +834,63 @@ class AuditLog(Base):
         DateTime,
         default=lambda: datetime.now(timezone.utc),
     )
+
+
+# ============================================================
+# DEDICATED ADMIN CREDENTIAL SECURITY
+# ============================================================
+
+ADMIN_PBKDF2_ITERATIONS = 600_000
+_ADMIN_IP_WINDOW_SECONDS = 15 * 60
+_ADMIN_IP_MAX_ATTEMPTS = 20
+_ADMIN_IP_ATTEMPTS: dict[str, list[float]] = {}
+_ADMIN_IP_LOCK = threading.Lock()
+
+
+def hash_admin_secret(secret: str) -> str:
+    """PBKDF2-SHA256 with a unique random salt; the raw secret is never stored."""
+    salt = secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256", secret.encode("utf-8"), salt, ADMIN_PBKDF2_ITERATIONS, dklen=32
+    )
+    return f"pbkdf2_sha256${ADMIN_PBKDF2_ITERATIONS}${salt.hex()}${digest.hex()}"
+
+
+def verify_admin_secret(secret: str, encoded: str) -> bool:
+    try:
+        algorithm, iterations_text, salt_hex, expected_hex = encoded.split("$", 3)
+        iterations = int(iterations_text)
+        if algorithm != "pbkdf2_sha256" or iterations < 100_000 or iterations > 2_000_000:
+            return False
+        expected = bytes.fromhex(expected_hex)
+        salt = bytes.fromhex(salt_hex)
+        actual = hashlib.pbkdf2_hmac(
+            "sha256", secret.encode("utf-8"), salt, iterations, dklen=len(expected)
+        )
+        return hmac.compare_digest(actual, expected)
+    except (ValueError, TypeError, UnicodeError):
+        return False
+
+
+# Equal-work hash for unknown usernames/recovery attempts, to reduce timing leaks.
+_ADMIN_DUMMY_HASH = hash_admin_secret("EcoFusion-invalid-admin-credential-dummy-value")
+
+
+def enforce_admin_ip_rate_limit(request: Request) -> None:
+    ip = request.client.host if request.client else "unknown"
+    current = time.monotonic()
+    with _ADMIN_IP_LOCK:
+        attempts = [stamp for stamp in _ADMIN_IP_ATTEMPTS.get(ip, []) if current - stamp < _ADMIN_IP_WINDOW_SECONDS]
+        if len(attempts) >= _ADMIN_IP_MAX_ATTEMPTS:
+            _ADMIN_IP_ATTEMPTS[ip] = attempts
+            raise HTTPException(429, "Demasiados intentos. Espera 15 minutos y vuelve a intentarlo.")
+        attempts.append(current)
+        _ADMIN_IP_ATTEMPTS[ip] = attempts
+        # Keep this process-local table bounded.
+        if len(_ADMIN_IP_ATTEMPTS) > 5000:
+            for old_ip in list(_ADMIN_IP_ATTEMPTS)[:1000]:
+                if not _ADMIN_IP_ATTEMPTS[old_ip] or current - _ADMIN_IP_ATTEMPTS[old_ip][-1] >= _ADMIN_IP_WINDOW_SECONDS:
+                    _ADMIN_IP_ATTEMPTS.pop(old_ip, None)
 
 
 # ============================================================
@@ -940,6 +1037,7 @@ except Exception:
 def new_session(
     s: DBSession,
     user_id: int,
+    ttl_seconds: Optional[int] = None,
 ):
     sid = secrets.token_urlsafe(48)
     csrf = secrets.token_urlsafe(32)
@@ -953,7 +1051,7 @@ def new_session(
             expires_at=(
                 now()
                 + __import__("datetime").timedelta(
-                    seconds=SESSION_TTL
+                    seconds=(ttl_seconds or SESSION_TTL)
                 )
             ),
         )
@@ -971,8 +1069,10 @@ def set_cookies(
     response: Response,
     sid: str,
     csrf: str,
+    max_age: Optional[int] = None,
 ):
     secure = ENV == "production"
+    cookie_ttl = max_age or SESSION_TTL
 
     response.set_cookie(
         "ef_session",
@@ -980,7 +1080,7 @@ def set_cookies(
         httponly=True,
         secure=secure,
         samesite=("none" if secure else "lax"),
-        max_age=SESSION_TTL,
+        max_age=cookie_ttl,
         path="/",
     )
 
@@ -990,7 +1090,7 @@ def set_cookies(
         httponly=False,
         secure=secure,
         samesite=("none" if secure else "lax"),
-        max_age=SESSION_TTL,
+        max_age=cookie_ttl,
         path="/",
     )
 
@@ -1026,6 +1126,11 @@ def current_session(
     if sess.expires_at < now():
         return None
 
+    # Legacy/Firebase admins are not allowed into the console. Only users with
+    # a separate local admin credential may hold an administrator session.
+    if user.role == "admin" and s.query(AdminCredential).filter_by(user_id=user.id).first() is None:
+        return None
+
     return sess, user
 
 
@@ -1049,6 +1154,9 @@ def require_auth(
             403,
             "Forbidden",
         )
+
+    if role == "admin" and s.query(AdminCredential).filter_by(user_id=user.id).first() is None:
+        raise HTTPException(403, "Administrator credentials are not configured for this account")
 
     return sess, user
 
@@ -1135,6 +1243,17 @@ class FirebaseExchange(BaseModel):
     )
 
 
+class AdminLoginPayload(BaseModel):
+    username: str = Field(min_length=3, max_length=80)
+    password: str = Field(min_length=1, max_length=128)
+
+
+class AdminRecoveryPayload(BaseModel):
+    username: str = Field(min_length=3, max_length=80)
+    recovery_code: str = Field(min_length=20, max_length=160)
+    new_password: str = Field(min_length=14, max_length=128)
+
+
 class VehicleIn(BaseModel):
     name: str = Field(
         min_length=2,
@@ -1217,6 +1336,7 @@ def health():
             PERSONA_API_KEY
             and PERSONA_TEMPLATE_ID
         ),
+        "identityRequiredForRegistration": REQUIRE_IDENTITY_FOR_REGISTRATION,
     }
 
 
@@ -1251,18 +1371,13 @@ def _user_registration_state(s: DBSession, u: User):
 
     if not customer:
         status = "registration_required"
-    elif customer.status == "PENDING_REGISTRATION":
-        if profile_required:
-            status = "profile_required"
-        elif phone_required:
-            status = "phone_verification_required"
-        elif privacy_required:
-            status = "consent_required"
-        else:
-            status = "identity_required" if u.identity_status != "verified" else "active"
+    elif profile_required:
+        status = "profile_required"
+    elif phone_required:
+        status = "phone_verification_required"
     elif privacy_required:
         status = "consent_required"
-    elif customer.status != "ACTIVE":
+    elif REQUIRE_IDENTITY_FOR_REGISTRATION and u.identity_status != "verified":
         status = "identity_required"
     else:
         status = "active"
@@ -1442,6 +1557,12 @@ def exchange_firebase(
         identity_verified,
     )
 
+    if u is not None and u.role == "admin":
+        raise HTTPException(
+            403,
+            "Administrator accounts must use the separate administrator sign-in.",
+        )
+
     if u is None and payload.mode == "login":
         raise HTTPException(
             409,
@@ -1460,11 +1581,9 @@ def exchange_firebase(
     display = " ".join(display_source.split())[:160]
 
     if u is None:
-        role = (
-            "admin"
-            if email and email in ADMIN_EMAILS
-            else "client"
-        )
+        # Firebase/email identities always create customer accounts. Admin privileges
+        # are provisioned only through the separate local-admin setup command.
+        role = "client"
         u = User(
             firebase_uid=uid,
             name=display,
@@ -1655,8 +1774,6 @@ def verify_phone(
     if customer:
         customer.phone = u.phone
         customer.email = u.email
-        if customer.status == "PENDING_REGISTRATION" and u.name.strip() and u.phone.strip():
-            customer.status = "PENDING_IDENTITY"
 
     audit(s, request, u.id, "phone_verified", "users", u.id, {"phone": u.phone})
     s.commit()
@@ -1683,6 +1800,19 @@ def accept_consent(
     existing.ip = request.client.host if request.client else ""
     existing.user_agent = request.headers.get("user-agent", "")[:500]
     u.last_login_at = now()
+
+    customer = s.query(Customer).filter_by(user_id=u.id).first()
+    if (
+        customer
+        and u.name.strip()
+        and u.phone.strip()
+        and u.phone_verified
+        and (
+            not REQUIRE_IDENTITY_FOR_REGISTRATION
+            or u.identity_status == "verified"
+        )
+    ):
+        customer.status = "ACTIVE"
     audit(s, request, u.id, "privacy_consent", "user_consents", u.id, {"privacyVersion": payload.privacy_version, "termsVersion": payload.terms_version, "marketingOptIn": bool(payload.marketing_opt_in)})
     s.commit()
     return {"ok": True, "privacyRequired": False, "privacyVersion": existing.privacy_version, "termsVersion": existing.terms_version}
@@ -1763,8 +1893,6 @@ def profile(
         customer.last_name = parts[1] if len(parts) > 1 else ""
         customer.phone = u.phone
         customer.email = u.email
-        if customer.status == "PENDING_REGISTRATION" and u.name.strip() and u.phone.strip() and u.phone_verified:
-            customer.status = "PENDING_IDENTITY"
 
     s.commit()
 
@@ -1778,6 +1906,110 @@ def profile(
 # ============================================================
 # ADMIN
 # ============================================================
+
+@app.post("/api/v1/admin/auth/login")
+def admin_auth_login(
+    payload: AdminLoginPayload,
+    request: Request,
+    response: Response,
+    s: DBSession = Depends(db),
+):
+    """Separate username/password login; no Firebase or email-provider login."""
+    enforce_admin_ip_rate_limit(request)
+    username = payload.username.strip().casefold()
+    credential = s.query(AdminCredential).filter_by(username=username).first()
+    clock = now()
+
+    if credential and credential.locked_until and credential.locked_until > clock:
+        verify_admin_secret(payload.password, credential.password_hash)
+        raise HTTPException(429, "Acceso temporalmente bloqueado. Inténtalo más tarde.")
+
+    password_ok = verify_admin_secret(
+        payload.password,
+        credential.password_hash if credential else _ADMIN_DUMMY_HASH,
+    )
+    admin_user = s.get(User, credential.user_id) if credential else None
+    if not credential or not password_ok or not admin_user or not admin_user.active or admin_user.role != "admin":
+        if credential:
+            if credential.locked_until and credential.locked_until <= clock:
+                credential.failed_attempts = 0
+                credential.locked_until = None
+            credential.failed_attempts = (credential.failed_attempts or 0) + 1
+            if credential.failed_attempts >= 5:
+                credential.locked_until = clock + __import__("datetime").timedelta(minutes=15)
+            s.commit()
+        raise HTTPException(401, "Usuario o contraseña incorrectos.")
+
+    credential.failed_attempts = 0
+    credential.locked_until = None
+    credential.last_login_at = clock
+    admin_user.last_login_at = clock
+    # Replace any previous console sessions for this admin after a fresh login.
+    s.query(UserSession).filter(
+        UserSession.user_id == admin_user.id,
+        UserSession.revoked_at.is_(None),
+    ).update({UserSession.revoked_at: clock}, synchronize_session=False)
+    sid, csrf_token = new_session(s, admin_user.id, ttl_seconds=ADMIN_SESSION_TTL)
+    audit(s, request, admin_user.id, "admin_login", "admin_credentials", credential.id, {"username": username})
+    s.commit()
+    set_cookies(response, sid, csrf_token, max_age=ADMIN_SESSION_TTL)
+    return {
+        "ok": True,
+        "user": {"id": admin_user.id, "name": admin_user.name, "role": "admin"},
+        "expiresInSeconds": ADMIN_SESSION_TTL,
+    }
+
+
+@app.post("/api/v1/admin/auth/recover")
+def admin_auth_recover(
+    payload: AdminRecoveryPayload,
+    request: Request,
+    s: DBSession = Depends(db),
+):
+    """Use the offline recovery secret; rotate both password and one-time code."""
+    enforce_admin_ip_rate_limit(request)
+    username = payload.username.strip().casefold()
+    credential = s.query(AdminCredential).filter_by(username=username).first()
+    clock = now()
+    stored_hash = credential.recovery_code_hash if credential else _ADMIN_DUMMY_HASH
+
+    if credential and credential.recovery_locked_until and credential.recovery_locked_until > clock:
+        verify_admin_secret(payload.recovery_code, stored_hash)
+        raise HTTPException(429, "La recuperación está bloqueada temporalmente. Inténtalo más tarde.")
+
+    code_ok = verify_admin_secret(payload.recovery_code.strip(), stored_hash)
+    admin_user = s.get(User, credential.user_id) if credential else None
+    if not credential or not code_ok or not admin_user or not admin_user.active or admin_user.role != "admin":
+        if credential:
+            if credential.recovery_locked_until and credential.recovery_locked_until <= clock:
+                credential.recovery_failed_attempts = 0
+                credential.recovery_locked_until = None
+            credential.recovery_failed_attempts = (credential.recovery_failed_attempts or 0) + 1
+            if credential.recovery_failed_attempts >= 5:
+                credential.recovery_locked_until = clock + __import__("datetime").timedelta(minutes=30)
+            s.commit()
+        # Do not reveal whether the username exists.
+        return {"ok": False, "message": "No se pudieron verificar los datos de recuperación."}
+
+    new_recovery_code = secrets.token_urlsafe(32)
+    credential.password_hash = hash_admin_secret(payload.new_password)
+    credential.recovery_code_hash = hash_admin_secret(new_recovery_code)
+    credential.password_changed_at = clock
+    credential.failed_attempts = 0
+    credential.locked_until = None
+    credential.recovery_failed_attempts = 0
+    credential.recovery_locked_until = None
+    # Revoke active sessions immediately following password recovery.
+    s.query(UserSession).filter(
+        UserSession.user_id == admin_user.id,
+        UserSession.revoked_at.is_(None),
+    ).update({UserSession.revoked_at: clock}, synchronize_session=False)
+    audit(s, request, admin_user.id, "admin_password_recovery", "admin_credentials", credential.id)
+    s.commit()
+    # The newly rotated recovery code is returned exactly once and only to a holder
+    # of the previous recovery code. It is never emailed or stored in plaintext.
+    return {"ok": True, "recovery_code": new_recovery_code}
+
 
 @app.get("/api/v1/admin/ping")
 def admin_ping(

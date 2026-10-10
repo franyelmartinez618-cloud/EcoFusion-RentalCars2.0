@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageShell from "../../components/PageShell/PageShell";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
@@ -20,7 +20,13 @@ function GoogleMark() {
 
 export default function SignIn() {
     const { translations: t } = useApp();
-    const { login, loginGoogle, startPhoneSignIn, confirmPhoneCode, authError, firebaseConfigured } = useAuth();
+    const { user: currentUser, login, loginGoogle, startPhoneSignIn, confirmPhoneCode, authError, firebaseConfigured } = useAuth();
+
+    useEffect(() => {
+        if (currentUser?.role === "client") {
+            navigate(currentUser.registrationRequired ? "/complete-account" : "/account");
+        }
+    }, [currentUser]);
     const [method, setMethod] = useState("email");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -67,7 +73,7 @@ export default function SignIn() {
     };
 
     return (
-        <PageShell>
+        <PageShell className="page-shell--signin">
             <section className="page-section">
                 <div className="container" style={{ maxWidth: 700 }}>
                     <article className="info-card auth-modern-card auth-entry-card">

@@ -34,6 +34,10 @@ function Home() {
     return <div className="home-page">
         <Navbar />
         <main>
+            <section className="home-booking-wrap">
+                <div className="container"><BookingSearch /></div>
+            </section>
+
             <section className="home-hero">
                 <div className="home-hero__glow" />
                 <div className="container home-hero__grid">
@@ -56,10 +60,6 @@ function Home() {
                         {heroVehicle && <div className="home-hero__price"><span>{t.homeUi.featuredFleet}</span><strong>{heroVehicle.name}</strong><small>${Number(heroVehicle.price || 0).toFixed(0)} {t.homeUi.perDay}</small></div>}
                     </div>
                 </div>
-            </section>
-
-            <section className="home-booking-wrap">
-                <div className="container"><BookingSearch /></div>
             </section>
 
             <section className="home-section home-featured">
@@ -85,12 +85,6 @@ function Home() {
                 </div>
             </section>
 
-            <section className="home-cta">
-                <div className="container home-cta__inner">
-                    <div><span className="home-kicker">{t.homeUi.homeReady}</span><h2>{t.homeUi.homeCtaTitle}</h2><p>{t.homeUi.homeCtaText}</p></div>
-                    <div className="home-cta__actions"><Link className="button button--light" to="/vehicles">{t.homeUi.homeBrowseFleet}</Link><Link className="button button--primary" to="/book">{t.homeUi.homeStartReservation} <span>→</span></Link></div>
-                </div>
-            </section>
         </main>
         <Footer />
     </div>;

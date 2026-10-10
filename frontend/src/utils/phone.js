@@ -5,21 +5,46 @@ const PHONE_COUNTRIES = {
     MX: { dial: "+52", digits: 10, label: "Mexico (+52)" },
 };
 
+const COUNTRY_BY_DIAL = Object.entries(PHONE_COUNTRIES)
+    .map(([code, config]) => ({ code, ...config }))
+    .sort((a, b) => b.dial.length - a.dial.length);
+
+function digitsOnly(value) {
+    return String(value || "").replace(/\D/g, "");
+}
+
 export function normalizePhoneNumber(value, country = "US") {
     const raw = String(value || "").trim();
     if (!raw) return "";
+
     if (raw.startsWith("+")) {
-        const digits = raw.replace(/\D/g, "");
+        const digits = digitsOnly(raw);
         return digits ? `+${digits}` : "";
     }
+
     const config = PHONE_COUNTRIES[country] || PHONE_COUNTRIES.US;
-    const digits = raw.replace(/\D/g, "");
-    return digits ? `${config.dial}${digits}` : "";
+    const digits = digitsOnly(raw);
+    if (!digits) return "";
+    return `${config.dial}${digits}`;
+}
+
+export function getPhoneCountryFromNumber(value) {
+    const normalized = normalizePhoneNumber(value, "US");
+    if (!normalized.startsWith("+")) return null;
+    return COUNTRY_BY_DIAL.find(({ dial }) => normalized.startsWith(dial))?.code || null;
 }
 
 export function validatePhoneNumber(value, country = "US") {
-    const normalized = normalizePhoneNumber(value, country);
-    if (!normalized) return false;
+    const raw = String(value || "").trim();
+    if (!raw) return false;
+
+    if (raw.startsWith("+")) {
+        const normalized = normalizePhoneNumber(raw, country);
+        const match = COUNTRY_BY_DIAL.find(({ dial }) => normalized.startsWith(dial));
+        return Boolean(match && normalized.slice(match.dial.length).length === match.digits);
+    }
+
+    const normalized = normalizePhoneNumber(raw, country);
     const config = PHONE_COUNTRIES[country] || PHONE_COUNTRIES.US;
     return normalized.slice(config.dial.length).length === config.digits;
 }

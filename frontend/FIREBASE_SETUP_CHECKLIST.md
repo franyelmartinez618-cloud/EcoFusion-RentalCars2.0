@@ -13,7 +13,7 @@ The login/register UI is already wired for three real identity methods:
 - Enable Phone and configure the allowed SMS regions.
 - Authentication → Settings → Authorized domains → add the domain used by the app.
 - For production phone authentication, deploy over HTTPS. Firebase does not allow localhost as a hosted domain for the Phone provider.
-- Create an admin user in Firebase Authentication with the email listed in `ADMIN_EMAILS`.
+- Do not create or mark administrators through Firebase Authentication. Admin access is provisioned with `python setup_admin.py` from the backend directory.
 - Create a Firebase service account and keep the JSON outside the repository.
 
 The Firebase Web config goes in frontend `.env` (`VITE_FIREBASE_*`). The service-account credentials stay server-side in `FIREBASE_SERVICE_ACCOUNT_PATH` or `FIREBASE_SERVICE_ACCOUNT_JSON`.

@@ -1,0 +1,25 @@
+ECOfusion RentalCars — actualizacion de seguridad admin y portada
+
+CAMBIO INCREMENTAL (recomendado para tu proyecto actual)
+1. Cierra las ventanas del backend/frontend o deten los procesos con Ctrl+C.
+2. Haz una copia de seguridad de la carpeta actual del proyecto.
+3. Extrae el ZIP de parche DIRECTAMENTE dentro de la carpeta "EcoFusion RentalCars", la carpeta que contiene backend, frontend y README.md. Acepta reemplazar archivos.
+4. No borres ni reemplaces backend/.env, frontend/.env.local, node_modules ni tu base de datos.
+5. Reinicia el backend y el frontend.
+6. Lee docs/ADMIN_ACCESS_SETUP.md y crea el acceso desde una consola confiable:
+   cd backend
+   .venv\Scripts\activate
+   python setup_admin.py
+7. Guarda el código de recuperación que aparecerá en la terminal. El programa solo lo muestra una vez.
+8. Entra a /admin/login con el usuario y la contraseña nuevos. No uses Google ni el correo de cliente.
+
+CAMBIOS
+- El admin tiene inicio independiente con usuario y contraseña.
+- La base de datos guarda hashes de contraseña y recuperación, no secretos en claro.
+- Se añadieron limitación de intentos, bloqueos temporales y sesiones administrativas de una hora.
+- Recuperar acceso cambia la contraseña, rota el código e invalida sesiones antiguas.
+- Se quitó la promoción de administradores mediante ADMIN_EMAILS/Firebase.
+- En la portada, la búsqueda de alquiler aparece antes de la sección Toyota y se eliminó el bloque "Cuando estés listo".
+
+IMPORTANTE
+El código de recuperación funciona como una clave secreta: guárdalo offline. Si pierdes la contraseña y el código, desde una consola segura del backend ejecuta `python setup_admin.py --reset`.
