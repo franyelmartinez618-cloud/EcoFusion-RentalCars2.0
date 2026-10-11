@@ -18,6 +18,16 @@ function GoogleMark() {
     );
 }
 
+function PhoneMark() {
+    return (
+        <span className="auth-provider-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M7.1 3.9 9.4 3.5c.7-.1 1.3.3 1.5.9l1 3.1c.2.6 0 1.2-.5 1.6l-1.6 1.2a14.5 14.5 0 0 0 4 4l1.2-1.6c.4-.5 1-.7 1.6-.5l3.1 1c.6.2 1 .8.9 1.5l-.4 2.3c-.1.7-.8 1.2-1.5 1.2C10 18.2 5.8 14 5.8 8.3c0-.7.5-1.4 1.3-1.5Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" transform="translate(-1 -1)"/>
+            </svg>
+        </span>
+    );
+}
+
 export default function SignIn() {
     const { translations: t } = useApp();
     const { user: currentUser, login, loginGoogle, startPhoneSignIn, confirmPhoneCode, authError, firebaseConfigured } = useAuth();
@@ -38,7 +48,10 @@ export default function SignIn() {
 
     const finish = (result) => {
         if (result?.registrationRequired) {
-            if (result.email) sessionStorage.setItem("ecofusion-registration-email", result.email);
+            try {
+                if (result.email) sessionStorage.setItem("ecofusion-registration-email", result.email);
+                sessionStorage.setItem("ecofusion-registration-notice", t.account.registrationRequiredNotice);
+            } catch {}
             navigate("/register");
             return;
         }
@@ -91,7 +104,7 @@ export default function SignIn() {
                                 {t.account.continueGoogle}
                             </button>
                             <button type="button" className={`auth-provider ${method === "phone" ? "is-active" : ""}`} disabled={busy} onClick={() => { setMethod("phone"); setError(""); }}>
-                                <span className="auth-provider-icon" aria-hidden="true">⌕</span>
+                                <PhoneMark />
                                 {t.account.continuePhone}
                             </button>
                         </div>
