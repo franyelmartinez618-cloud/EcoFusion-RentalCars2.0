@@ -551,6 +551,7 @@ const es = {
         sendCode: "Enviar código SMS",
         verifyCode: "Verificar código",
         alreadyAccount: "¿Ya tienes una cuenta?",
+        registrationRequiredNotice: "Esta identidad todavía no tiene una cuenta de EcoFusion. Regístrate para continuar; no se ha iniciado sesión.",
         emailVerificationNotice: "Cuenta creada. Revisa tu correo para verificarla antes de iniciar sesión.",
         clientOnly: "Esta cuenta no está disponible en el área del cliente.",
         authHelper: "Las cuentas de correo deben verificarse antes de iniciar sesión. La autenticación por teléfono usa un código SMS y protección reCAPTCHA.",
