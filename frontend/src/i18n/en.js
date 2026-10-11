@@ -547,6 +547,7 @@ const en = {
         sendCode: "Send SMS code",
         verifyCode: "Verify code",
         alreadyAccount: "Already have an account?",
+        registrationRequiredNotice: "This identity does not have an EcoFusion account yet. Register to continue; you have not been signed in.",
         emailVerificationNotice: "Account created. Check your email to verify it before signing in.",
         clientOnly: "This account is not available in the customer area.",
         authHelper: "Email accounts must be verified before sign-in. Phone authentication uses an SMS code and reCAPTCHA protection.",
