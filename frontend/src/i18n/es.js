@@ -329,6 +329,16 @@ const es = {
             description:
                 "Recoge tu vehículo, disfruta el viaje y devuélvelo fácilmente.",
         },
+        prepKicker: "ANTES DE RESERVAR",
+        prepTitle: "Ten a mano lo importante",
+        prepDescription: "Unos minutos de preparación ayudan a que puedas avanzar por el proceso con menos interrupciones.",
+        prepAccountTitle: "Prepara tu cuenta",
+        prepAccountText: "Inicia sesión o crea tu cuenta de EcoFusion. Si te registras, sigue los pasos para completar tu perfil.",
+        prepDetailsTitle: "Revisa fechas y ubicación",
+        prepDetailsText: "Comprueba el lugar de recogida, las fechas de inicio y devolución y el vehículo seleccionado.",
+        prepReviewTitle: "Comprueba los detalles",
+        prepReviewText: "Antes de confirmar, revisa la información de la reserva y cualquier requisito que aparezca en pantalla.",
+
     },
 
     locations: {
@@ -502,6 +512,17 @@ const es = {
         simplicity: "Sencillez",
         transparency: "Transparencia",
         customerCare: "Atención al cliente",
+        missionKicker: "NUESTRA MISIÓN",
+        promiseTitle: "Una experiencia clara desde el principio",
+        promiseDescription: "Queremos que puedas comparar opciones, entender los pasos y gestionar tus datos desde un mismo lugar, sin perderte en el proceso.",
+        exploreProcess: "Conoce el proceso",
+        valuesKicker: "NUESTRO ENFOQUE",
+        valuesDescription: "Principios prácticos que guían la experiencia de EcoFusion.",
+        reliabilityText: "Información ordenada para que puedas revisar los detalles del vehículo antes de continuar.",
+        simplicityText: "Pasos claros para explorar la flota, crear tu cuenta y comenzar una reserva.",
+        transparencyText: "Mostramos la información disponible y evitamos ocultar los pasos importantes del proceso.",
+        customerCareText: "Canales de ayuda organizados para orientar consultas sobre vehículos, reservas y cuentas.",
+
     },
 
     contact: {
@@ -516,6 +537,26 @@ const es = {
         message: "Mensaje",
         send: "Enviar mensaje",
         success: "Tu mensaje ha sido enviado correctamente.",
+        reservationsTitle: "Reservas",
+        reservationsText: "Ten a mano las fechas, la ubicación y cualquier referencia que aparezca en tu solicitud.",
+        vehiclesTitle: "Vehículos",
+        vehiclesText: "Indica qué modelo te interesa y qué característica necesitas aclarar.",
+        accountTitle: "Cuenta y acceso",
+        accountText: "Describe si el problema ocurre al registrarte, iniciar sesión o consultar tu cuenta.",
+        beforeWritingKicker: "PARA AYUDARTE MEJOR",
+        beforeWritingTitle: "Cuéntanos el contexto",
+        beforeWritingText: "Un mensaje útil describe qué estabas intentando hacer, en qué paso ocurrió el problema y qué mensaje viste.",
+        detailReservation: "Si es una reserva, incluye las fechas y la ubicación seleccionadas.",
+        detailVehicle: "Si es un vehículo, escribe el nombre o modelo que viste.",
+        detailAccount: "Si es un problema de acceso, no incluyas contraseñas ni códigos de recuperación.",
+        locationNote: "La referencia geográfica mostrada por el sitio no sustituye una dirección de oficina confirmada.",
+        formKicker: "PREPARA TU MENSAJE",
+        formTitle: "Describe tu consulta",
+        formDescription: "El formulario todavía no envía mensajes a un buzón. Puedes preparar el texto y copiarlo para enviarlo por el canal que tengas disponible.",
+        prepareMessage: "Preparar y copiar mensaje",
+        copiedDraft: "Borrador copiado. No se ha enviado: pégalo en tu canal de contacto preferido.",
+        formNotConnected: "El envío automático aún no está conectado; no se enviará nada al pulsar el botón.",
+
     },
 
     account: {
