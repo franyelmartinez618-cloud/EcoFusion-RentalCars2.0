@@ -17,3 +17,8 @@
 .vehicles-advanced-filters label{display:grid;gap:7px;color:var(--color-text-secondary);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.vehicles-advanced-filters select{height:42px;padding:0 10px;border:1px solid var(--color-border);border-radius:10px;background:var(--color-input);color:var(--color-text);outline:0}.vehicles-advanced-filters input[type="range"]{width:100%;accent-color:var(--color-primary)}.vehicles-price-filter strong{color:var(--color-primary);margin-left:4px}
 .active-filter-chips{display:flex;flex-wrap:wrap;gap:7px;margin:-2px 0 22px}.active-filter-chips button{padding:7px 10px;border:1px solid color-mix(in srgb,var(--color-primary) 24%,var(--color-border));border-radius:999px;background:var(--color-primary-light);color:var(--color-primary);font-size:9px;font-weight:900;transition:transform var(--motion-fast),background var(--motion-fast)}.active-filter-chips button:hover{transform:translateY(-1px);background:color-mix(in srgb,var(--color-primary) 14%,var(--color-card))}
 @media(max-width:760px){.vehicles-advanced-filters{grid-template-columns:1fr}.vehicle-filter-toggle{width:100%;justify-content:center}.vehicle-filters{width:100%}.vehicle-filters button{min-height:40px}.active-filter-chips{margin-top:0}}
+
+
+/* Keep fleet cards aligned without changing their color, radius or hover language. */
+.vehicles-grid{align-items:stretch;grid-auto-rows:1fr}
+.vehicles-grid>.vehicle-card{min-width:0}
