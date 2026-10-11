@@ -91,14 +91,12 @@ export default {
       return notFound();
     }
 
-    // The secret entry point is only enabled once configured in Cloudflare.
-    // Until then, all admin UI access fails closed.
-    if (!adminEntryPath) {
-      return notFound();
-    }
-
-    const isPrivateAdminRequest = pathname === adminEntryPath
-      || pathname === `${adminEntryPath}/panel`;
+    // The private entry point is enabled only after it is configured in Cloudflare.
+    // Without it, public pages still work while all guessed admin paths remain 404.
+    const isPrivateAdminRequest = adminEntryPath && (
+      pathname === adminEntryPath
+      || pathname === `${adminEntryPath}/panel`
+    );
 
     if (isPrivateAdminRequest) {
       return servePrivateAdminAsset(request, env, adminEntryPath);
