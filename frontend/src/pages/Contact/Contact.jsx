@@ -89,7 +89,7 @@ function Contact() {
                             <label>{t.contact.subject}<input required type="text" value={form.subject} onChange={(event) => update("subject", event.target.value)} /></label>
                             <label>{t.contact.message}<textarea required value={form.message} onChange={(event) => update("message", event.target.value)} /></label>
                             <button type="submit">{t.contact.prepareMessage}</button>
-                            <p className={\`contact-page__form-note \${copied ? "is-copied" : ""}\`} role="status">
+                            <p className={`contact-page__form-note ${copied ? "is-copied" : ""}`} role="status">
                                 {copied ? t.contact.copiedDraft : t.contact.formNotConnected}
                             </p>
                         </form>
