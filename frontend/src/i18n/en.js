@@ -329,6 +329,16 @@ const en = {
             description:
                 "Pick up your vehicle, enjoy the journey and return it with ease.",
         },
+        prepKicker: "BEFORE YOU BOOK",
+        prepTitle: "Have the essentials ready",
+        prepDescription: "A little preparation helps you move through the process with fewer interruptions.",
+        prepAccountTitle: "Prepare your account",
+        prepAccountText: "Sign in or create an EcoFusion account. If you register, follow the prompts to complete your profile.",
+        prepDetailsTitle: "Review dates and location",
+        prepDetailsText: "Double-check the pickup location, pickup and return dates, and the vehicle you selected.",
+        prepReviewTitle: "Check the details",
+        prepReviewText: "Before confirming, review the reservation information and any requirements shown on screen.",
+
     },
 
     locations: {
@@ -498,6 +508,17 @@ const en = {
         simplicity: "Simplicity",
         transparency: "Transparency",
         customerCare: "Customer care",
+        missionKicker: "OUR MISSION",
+        promiseTitle: "A clear experience from the start",
+        promiseDescription: "We want you to compare options, understand the steps and manage your details in one place without getting lost in the process.",
+        exploreProcess: "Explore the process",
+        valuesKicker: "OUR APPROACH",
+        valuesDescription: "Practical principles that guide the EcoFusion experience.",
+        reliabilityText: "Organized information so you can review vehicle details before moving forward.",
+        simplicityText: "Clear steps to explore the fleet, create your account and begin a reservation.",
+        transparencyText: "We present the information available and keep important steps visible throughout the process.",
+        customerCareText: "Help topics organized around vehicles, reservations and customer accounts.",
+
     },
 
     contact: {
@@ -512,6 +533,26 @@ const en = {
         message: "Message",
         send: "Send message",
         success: "Your message has been sent successfully.",
+        reservationsTitle: "Reservations",
+        reservationsText: "Have your dates, location and any reservation reference ready.",
+        vehiclesTitle: "Vehicles",
+        vehiclesText: "Tell us which model interests you and what feature you need clarified.",
+        accountTitle: "Account and access",
+        accountText: "Describe whether the issue happens while registering, signing in or viewing your account.",
+        beforeWritingKicker: "HELP US HELP YOU",
+        beforeWritingTitle: "Give us the context",
+        beforeWritingText: "A useful message says what you were trying to do, which step had the issue and what message appeared.",
+        detailReservation: "For a reservation question, include the selected dates and location.",
+        detailVehicle: "For a vehicle question, include the model or name you saw.",
+        detailAccount: "For an access issue, never include passwords or recovery codes.",
+        locationNote: "The geographic reference shown by the site is not a confirmed office address.",
+        formKicker: "PREPARE A MESSAGE",
+        formTitle: "Describe your question",
+        formDescription: "The form is not connected to a message inbox yet. You can prepare the text and copy it to send through a contact channel available to you.",
+        prepareMessage: "Prepare and copy message",
+        copiedDraft: "Draft copied. It has not been sent; paste it into your preferred contact channel.",
+        formNotConnected: "Automatic message delivery is not connected yet; pressing this button will not send anything.",
+
     },
 
     account: {
