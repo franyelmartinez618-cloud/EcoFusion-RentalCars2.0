@@ -274,19 +274,27 @@ export function AuthProvider({ children }) {
             setUser(backendUser);
             return backendUser;
         } catch (error) {
-            if (error?.code === "REGISTRATION_REQUIRED") {
+            // A valid Firebase identity is not enough: the server must already
+            // recognize an EcoFusion account. Route unknown Firebase accounts
+            // to registration instead of silently opening a customer session.
+            if (
+                error?.code === "REGISTRATION_REQUIRED"
+                || error?.code === "auth/user-not-found"
+                || error?.code === "auth/account-not-found"
+            ) {
+                const registrationEmail = error.data?.email || email.trim();
                 await signOut(auth).catch(() => {});
                 setFirebaseUser(null);
+                userRef.current = null;
                 setUser(null);
                 try {
-                    sessionStorage.setItem(
-                        "ecofusion-registration-email",
-                        error.data?.email || email.trim(),
-                    );
+                    if (registrationEmail) {
+                        sessionStorage.setItem("ecofusion-registration-email", registrationEmail);
+                    }
                 } catch {}
                 return {
                     registrationRequired: true,
-                    email: error.data?.email || email.trim(),
+                    email: registrationEmail,
                 };
             }
             throw new Error(firebaseError(error, latestTranslations.current));
