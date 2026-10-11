@@ -39,6 +39,31 @@ function HowItWorks() {
                             {t.nav.bookNow} →
                         </Link>
                     </div>
+
+                    <section className="how-it-works-prep">
+                        <div className="how-it-works-prep__heading">
+                            <span className="page-hero__eyebrow">{t.howItWorks.prepKicker}</span>
+                            <h2>{t.howItWorks.prepTitle}</h2>
+                            <p>{t.howItWorks.prepDescription}</p>
+                        </div>
+                        <div className="how-it-works-prep__grid">
+                            <article>
+                                <span>01</span>
+                                <h3>{t.howItWorks.prepAccountTitle}</h3>
+                                <p>{t.howItWorks.prepAccountText}</p>
+                            </article>
+                            <article>
+                                <span>02</span>
+                                <h3>{t.howItWorks.prepDetailsTitle}</h3>
+                                <p>{t.howItWorks.prepDetailsText}</p>
+                            </article>
+                            <article>
+                                <span>03</span>
+                                <h3>{t.howItWorks.prepReviewTitle}</h3>
+                                <p>{t.howItWorks.prepReviewText}</p>
+                            </article>
+                        </div>
+                    </section>
                 </div>
             </section>
         </PageShell>
