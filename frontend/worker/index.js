@@ -24,10 +24,13 @@ function notFound() {
 }
 
 function isPublicAdminPath(pathname) {
-  return pathname === "/admin"
-    || pathname.startsWith("/admin/")
-    || pathname === "/login"
-    || pathname.startsWith("/login/");
+  // Paths are checked case-insensitively so /ADMIN, /Admin/Login, etc.
+  // are blocked just like their lowercase equivalents.
+  const path = pathname.toLowerCase();
+  return path === "/admin"
+    || path.startsWith("/admin/")
+    || path === "/login"
+    || path.startsWith("/login/");
 }
 
 async function servePrivateAdminAsset(request, env, adminEntryPath) {
