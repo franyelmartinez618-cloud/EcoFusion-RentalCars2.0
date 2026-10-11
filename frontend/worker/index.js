@@ -34,7 +34,14 @@ function isPublicAdminPath(pathname) {
 }
 
 async function servePrivateAdminAsset(request, env, adminEntryPath) {
-  const response = await env.ASSETS.fetch(request);
+  // Fetch the SPA entry file directly so the secret path works even if the
+  // asset binding does not apply the SPA fallback to this arbitrary URL.
+  const sourceUrl = new URL("/index.html", request.url);
+  const sourceRequest = new Request(sourceUrl.toString(), {
+    method: "GET",
+    headers: request.headers,
+  });
+  const response = await env.ASSETS.fetch(sourceRequest);
   const contentType = response.headers.get("content-type") || "";
 
   if (!contentType.toLowerCase().includes("text/html")) {
