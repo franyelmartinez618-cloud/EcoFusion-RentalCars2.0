@@ -1,6 +1,7 @@
 import PageShell from "../../components/PageShell/PageShell";
 import { useApp } from "../../context/AppContext";
 import { Link } from "../../utils/router";
+import "../SimplePages.css";
 import "./About.css";
 
 // Present FRANKEY's purpose and service principles through a more editorial layout.
