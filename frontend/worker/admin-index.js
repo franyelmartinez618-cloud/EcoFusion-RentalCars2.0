@@ -25,7 +25,7 @@ async function allowRequest(env, bindingName, key) {
 // Keep credential brute-force responses small and non-cacheable.\n// Reuse the HTTP-only server session for authenticated traffic; anonymous requests use the edge IP.
 function getRequestRateKey(request) {
     const cookie = request.headers.get("Cookie") || "";
-    const session = cookie.match(/(?:^|;\\s*)ef_session=([^;]+)/i)?.[1];
+    const session = cookie.match(/(?:^|;\s*)ef_session=([^;]+)/i)?.[1];
     if (session) return `session:${session}`;
     return `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
 }
@@ -70,7 +70,7 @@ export default {
                 if (isCredentialAction) {
                     const identity = await getAdminCredentialKey(request);
                     if (!(await allowRequest(env, "ADMIN_IP_LIMITER", identity.ip))) return rateLimitResponse();
-                    if (!(await allowRequest(env, "ADMIN_LOGIN_LIMITER", identity.ip + ":" + identity.username)) return rateLimitResponse();
+                    if (!(await allowRequest(env, "ADMIN_LOGIN_LIMITER", identity.ip + ":" + identity.username))) return rateLimitResponse();
                 }
             } catch {
                 return secureResponse(new Response(JSON.stringify({
