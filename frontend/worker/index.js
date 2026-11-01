@@ -56,7 +56,8 @@ function rateLimitUnavailableResponse() {
   }), { noStore: true });
 }
 
-// Keep private routes and missing resources from revealing application details.\nfunction notFound() {
+// Keep private routes and missing resources from revealing application details.
+function notFound() {
   return new Response("Not Found", {
     status: 404,
     headers: {
