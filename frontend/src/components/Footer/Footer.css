@@ -81,3 +81,5 @@
     background: #fff;
     filter: none;
 }
+
+.footer__logo-image { width:190px; height:108px; object-fit:contain; object-position:left center; background:#fff; filter:none; }
