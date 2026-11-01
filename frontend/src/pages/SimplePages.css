@@ -206,3 +206,22 @@ html[data-theme="dark"] .admin-login-logo-dark { display: block; }
 .admin-login-logo-dark { display: none; }
 html[data-theme="dark"] .admin-login-logo-light { display: none; }
 html[data-theme="dark"] .admin-login-logo-dark { display: block; }
+
+
+/* FRANKEY admin login logo — render at intrinsic proportions. */
+.auth-brand .admin-login-logo {
+  display: block;
+  flex: 0 1 auto;
+  width: auto;
+  height: auto;
+  max-width: min(100%, 184px);
+  max-height: 66px;
+  object-fit: contain;
+  object-position: left center;
+}
+@media (max-width: 620px) {
+  .auth-brand .admin-login-logo {
+    max-width: min(100%, 160px);
+    max-height: 54px;
+  }
+}
