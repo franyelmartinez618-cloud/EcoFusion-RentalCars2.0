@@ -31,7 +31,23 @@ async function allowRequest(env, bindingName, key) {
   }), { noStore: true });
 }
 
-// Fail closed if the Cloudflare limiter itself cannot be reached.\nfunction rateLimitUnavailableResponse() {
+// Fail closed if the Cloudflare limiter itself cannot be reached.\n// Use the HTTP-only session as the key after login; anonymous traffic falls back to the edge IP.
+function getRequestRateKey(request) {
+  const cookie = request.headers.get("Cookie") || "";
+  const session = cookie.match(/(?:^|;\\s*)ef_session=([^;]+)/i)?.[1];
+  if (session) return `session:${session}`;
+  return `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
+}
+
+// Bind admin credential attempts to both the client address and the submitted account name.
+async function getAdminCredentialKey(request) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const payload = await request.clone().json().catch(() => ({}));
+  const username = String(payload?.username || "unknown").trim().toLowerCase().slice(0, 120) || "unknown";
+  return { ip, username };
+}
+
+function rateLimitUnavailableResponse() {
   return withSecurityHeaders(new Response(JSON.stringify({
     detail: "La protección de solicitudes no está disponible temporalmente.",
   }), {
@@ -76,15 +92,20 @@ export default {
         return withSecurityHeaders(notFound(), { noStore: true, noIndex: true });
       }
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      const rateKey = getRequestRateKey(request);
       const isAdminCredentialAction = /^\/api\/v1\/admin\/auth\/(login|recover)$/i.test(pathname);
       const isCustomerAuthAction = /^\/api\/v1\/auth\//i.test(pathname);
 
       try {
         // One per-IP ceiling protects the API from burst traffic across all routes.
-        if (!(await allowRequest(env, "API_RATE_LIMITER", ip))) return rateLimitedResponse();
+        if (!(await allowRequest(env, "API_RATE_LIMITER", rateKey))) return rateLimitedResponse();
         // Authentication and admin recovery use tighter per-IP ceilings.
-        if (isCustomerAuthAction && !(await allowRequest(env, "AUTH_RATE_LIMITER", ip))) return rateLimitedResponse();
-        if (isAdminCredentialAction && !(await allowRequest(env, "ADMIN_AUTH_RATE_LIMITER", ip))) return rateLimitedResponse();
+        if (isCustomerAuthAction && !(await allowRequest(env, "AUTH_RATE_LIMITER", rateKey + ":" + pathname))) return rateLimitedResponse();
+        if (isAdminCredentialAction) {
+          const identity = await getAdminCredentialKey(request);
+          if (!(await allowRequest(env, "ADMIN_IP_RATE_LIMITER", identity.ip))) return rateLimitedResponse();
+          if (!(await allowRequest(env, "ADMIN_AUTH_RATE_LIMITER", identity.ip + ":" + identity.username))) return rateLimitedResponse();
+        }
       } catch {
         return rateLimitUnavailableResponse();
       }
