@@ -16,7 +16,7 @@ import "./styles/responsive-polish.css";
 import "./pages/SimplePages.css";
 
 // Keep the dedicated console inside its own standalone application and host.
-function AdminRouter() {
+export function AdminRouter() {
     const { user, loading } = useAuth();
     const path = useLocation();
 
@@ -37,7 +37,7 @@ function AdminRouter() {
 }
 
 // The admin bundle does not load customer reservations or account data.
-function AdminApplication() {
+export function AdminApplication() {
     return (
         <AppProvider>
             <AuthProvider>
