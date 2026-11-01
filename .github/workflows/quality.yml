@@ -7,6 +7,7 @@ on:
       - "frontend/**"
       - "backend/**"
       - ".github/workflows/quality.yml"
+      - ".github/workflows/deploy-admin.yml"
   workflow_dispatch:
 
 permissions:
