@@ -63,3 +63,12 @@
         justify-content: center;
     }
 }
+
+.footer__logo-image {
+    width: 174px;
+    height: auto;
+    object-fit: contain;
+    object-position: left center;
+    filter: none;
+    background: #fff;
+}

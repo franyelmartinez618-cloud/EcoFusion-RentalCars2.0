@@ -126,3 +126,20 @@ html[data-theme="dark"] .admin-app {
     .admin-main { margin-left: 0; }
     .admin-content { padding: 16px; }
 }
+
+
+/* Supplied brand asset on the private console and login screen. */
+.admin-brand img {
+    width: 166px;
+    height: 98px;
+    object-fit: contain;
+    object-position: left center;
+    background: #fff;
+}
+.auth-brand img {
+    width: 140px;
+    height: 82px;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+}

@@ -119,3 +119,44 @@ html[data-theme="dark"] .navbar__logo-image--compact.navbar__logo-image--dark { 
     html[data-theme="dark"] .navbar__logo-image--full.navbar__logo-image--dark { display: none; }
     html[data-theme="dark"] .navbar__logo-image--compact.navbar__logo-image--dark { display: block; }
 }
+
+
+/* Use the supplied FRANKEY wordmark as the actual site identity. */
+.navbar__container { min-height: 96px; }
+.navbar__brand {
+    width: 176px;
+    min-width: 176px;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+}
+.navbar__logo-image--full {
+    width: 166px;
+    height: 97px;
+    object-fit: contain;
+    object-position: center;
+}
+.navbar__logo-image--compact { display: none; }
+.navbar__logo-image--dark { display: none !important; }
+
+@media (max-width: 1120px) and (min-width: 861px) {
+    .navbar__brand { width: 150px; min-width: 150px; }
+    .navbar__logo-image--full { width: 146px; height: 86px; }
+}
+@media (max-width: 860px) {
+    .navbar__container { min-height: 70px; }
+    .navbar__brand {
+        width: 108px;
+        min-width: 108px;
+        padding: 0;
+        background: transparent;
+    }
+    .navbar__logo-image--full { display: none !important; }
+    .navbar__logo-image--compact {
+        display: block;
+        width: 104px;
+        height: 42px;
+        object-fit: contain;
+        object-position: center;
+    }
+}
