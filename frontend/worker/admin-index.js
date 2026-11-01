@@ -72,7 +72,7 @@ export default {
             try {
                 if (!(await allowRequest(env, "ADMIN_API_LIMITER", rateKey))) return rateLimitResponse();
 
-                const isCredentialAction = /^\/api\/v1\/admin\/auth\/(login|recover)$/i.test(pathname);
+                const isCredentialAction = /^\/api\/v1\/admin\/(?:auth\/)?(login|recover)$/i.test(pathname);
                 if (isCredentialAction) {
                     const identity = await getAdminCredentialKey(request);
                     if (!(await allowRequest(env, "ADMIN_IP_LIMITER", identity.ip))) return rateLimitResponse();
