@@ -41,8 +41,8 @@ async function digestRateKey(value) {
 // Use the HTTP-only session after login; anonymous traffic falls back to the edge IP.
 async function getRequestRateKey(request) {
   const cookie = request.headers.get("Cookie") || "";
-  const session = cookie.match(/(?:^|;\\s*)ef_session=([^;]+)/i)?.[1];
-  const identity = session
+  const sessionCookie = cookie.split(";").map(part => part.trim()).find(part => part.toLowerCase().startsWith("ef_session="));
+  const session = sessionCookie ? sessionCookie.slice("ef_session=".length) : "";
     ? `session:${session}`
     : `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
   return digestRateKey(identity);
@@ -101,7 +101,7 @@ export default {
         return withSecurityHeaders(notFound(), { noStore: true, noIndex: true });
       }
       const rateKey = await getRequestRateKey(request);
-      const isCustomerAuthAction = /^\\/api\\/v1\\/auth\\//i.test(pathname);
+      const isCustomerAuthAction = pathname.startsWith("/api/v1/auth/");
 
       try {
         if (!(await allowRequest(env, "API_RATE_LIMITER", rateKey))) return rateLimitedResponse();
