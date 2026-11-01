@@ -17,7 +17,7 @@ function withSecurityHeaders(response, { noStore = false, noIndex = false } = {}
 // Ask Cloudflare's edge limiter before forwarding requests to the application server.
 async function allowRequest(env, bindingName, key) {
   const limiter = env[bindingName];
-  if (!limiter || typeof limiter.limit !== "function") return true;
+  if (!limiter || typeof limiter.limit !== "function") throw new Error("Missing rate limit binding: " + bindingName);
   const result = await limiter.limit({ key });
   return result?.success === true;
 }
