@@ -57,9 +57,12 @@ jobs:
       - name: Build production bundle
         working-directory: frontend
         run: npm run build
+      - name: Build the independent administrator application
+        working-directory: frontend
+        run: npm run build:admin
       - name: Verify the independent admin entry was emitted
         working-directory: frontend
-        run: test -s dist/client/admin.html
+        run: test -s dist-admin/admin.html
       - name: Validate the standalone admin Worker configuration
         working-directory: frontend
         run: npx wrangler deploy --dry-run --config wrangler.admin.jsonc
