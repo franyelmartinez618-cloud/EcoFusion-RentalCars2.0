@@ -873,7 +873,7 @@ def verify_admin_secret(secret: str, encoded: str) -> bool:
 
 
 # Equal-work hash for unknown usernames/recovery attempts, to reduce timing leaks.
-_ADMIN_DUMMY_HASH = hash_admin_secret("EcoFusion-invalid-admin-credential-dummy-value")
+_ADMIN_DUMMY_HASH = hash_admin_secret("FRANKEY-invalid-admin-credential-dummy-value")
 
 
 def enforce_admin_ip_rate_limit(request: Request) -> None:
@@ -1191,7 +1191,7 @@ def require_rental_ready(
 ):
     customer = s.query(Customer).filter_by(user_id=u.id).first()
     if not customer:
-        raise HTTPException(409, "Complete your EcoFusion registration before making a reservation.")
+        raise HTTPException(409, "Complete your FRANKEY registration before making a reservation.")
     if customer.status != "ACTIVE":
         raise HTTPException(403, "Your account verification must be completed before making a reservation.")
     if u.identity_status != "verified":
@@ -1487,7 +1487,7 @@ def _find_user_for_firebase_identity(
             409,
             {
                 "code": "ACCOUNT_AMBIGUOUS",
-                "message": "More than one EcoFusion account matches this verified identity. Contact support before linking the account.",
+                "message": "More than one FRANKEY account matches this verified identity. Contact support before linking the account.",
             },
         )
 
@@ -1568,7 +1568,7 @@ def exchange_firebase(
             409,
             {
                 "code": "REGISTRATION_REQUIRED",
-                "message": "This identity is authenticated with Firebase but does not have an EcoFusion customer account yet.",
+                "message": "This identity is authenticated with Firebase but does not have an FRANKEY customer account yet.",
                 "email": email,
             },
         )
@@ -1673,7 +1673,7 @@ def exchange_firebase(
                 409,
                 {
                     "code": "ACCOUNT_EXISTS",
-                    "message": "This identity is already linked to an active EcoFusion account.",
+                    "message": "This identity is already linked to an active FRANKEY account.",
                 },
             )
     else:
@@ -1684,7 +1684,7 @@ def exchange_firebase(
                 409,
                 {
                     "code": "REGISTRATION_REQUIRED",
-                    "message": "Complete your EcoFusion registration before signing in.",
+                    "message": "Complete your FRANKEY registration before signing in.",
                     "email": email,
                 },
             )
@@ -1760,7 +1760,7 @@ def verify_phone(
         .first()
     )
     if linked is None and uid != u.firebase_uid:
-        raise HTTPException(403, "This phone identity is not linked to the current EcoFusion account")
+        raise HTTPException(403, "This phone identity is not linked to the current FRANKEY account")
 
     u.phone = phone[:40]
     u.phone_verified = True
@@ -2651,7 +2651,7 @@ async def create_checkout(
             ),
         },
         "description": (
-            "EcoFusion RentalCars reservation "
+            "FRANKEY RentalCars reservation "
             f"{reservation_id}"
         ),
     }
