@@ -905,7 +905,7 @@ Base.metadata.create_all(engine)
 # ============================================================
 
 app = FastAPI(
-    title="EcoFusion RentalCars API",
+    title="FRANKEY Rentals Car API",
     version="4.0.0",
 )
 
@@ -2382,9 +2382,13 @@ def create_reservation(
             "Return date must be after pickup date",
         )
 
-    vehicle = s.get(
-        Vehicle,
-        payload.vehicle_id,
+    # Lock the selected vehicle row until this booking transaction commits.
+    # This serializes competing reservations for the same vehicle on MySQL/TiDB.
+    vehicle = (
+        s.query(Vehicle)
+        .filter(Vehicle.id == payload.vehicle_id)
+        .with_for_update()
+        .first()
     )
 
     if (
@@ -2574,6 +2578,7 @@ async def create_checkout(
                 else -1
             ),
         )
+        .with_for_update()
         .first()
     )
 
@@ -2582,6 +2587,27 @@ async def create_checkout(
             404,
             "Reservation not found",
         )
+
+    # Reuse an existing pending checkout instead of creating one on every
+    # retry. The reservation row lock prevents two requests from racing here.
+    latest_payment = (
+        s.query(Payment)
+        .filter(Payment.reservation_id == r.id)
+        .order_by(Payment.id.desc())
+        .first()
+    )
+    if latest_payment and latest_payment.status == "PAID":
+        raise HTTPException(409, "Reservation has already been paid")
+    if (
+        latest_payment
+        and latest_payment.status == "PENDING"
+        and latest_payment.checkout_url
+    ):
+        return {
+            "paymentId": latest_payment.public_id,
+            "checkoutUrl": latest_payment.checkout_url,
+            "reused": True,
+        }
 
     amount = int(
         (
@@ -2592,7 +2618,12 @@ async def create_checkout(
         )
     )
 
-    idem = secrets.token_hex(16)
+    # Stable per-reservation idempotency key: a network retry after Square
+    # accepted a request cannot create a second payment link for this booking.
+    idem = uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        f"frankey-rentals-square-checkout:{r.public_id}",
+    ).hex
 
     body = {
         "idempotency_key": idem,
@@ -2672,11 +2703,21 @@ async def create_checkout(
     )
 
     s.add(p)
+    audit(
+        s,
+        request,
+        u.id,
+        "create",
+        "payments",
+        p.public_id,
+        {"reservation_id": r.public_id, "provider": "square"},
+    )
     s.commit()
 
     return {
         "paymentId": p.public_id,
         "checkoutUrl": p.checkout_url,
+        "reused": False,
     }
 
 
