@@ -22,7 +22,24 @@ async function allowRequest(env, bindingName, key) {
     return result?.success === true;
 }
 
-// Keep credential brute-force responses small and non-cacheable.\nfunction rateLimitResponse() {
+// Keep credential brute-force responses small and non-cacheable.\n// Reuse the HTTP-only server session for authenticated traffic; anonymous requests use the edge IP.
+function getRequestRateKey(request) {
+    const cookie = request.headers.get("Cookie") || "";
+    const session = cookie.match(/(?:^|;\\s*)ef_session=([^;]+)/i)?.[1];
+    if (session) return `session:${session}`;
+    return `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
+}
+
+// Separate administrator login attempts by both source IP and account name.
+async function getAdminCredentialKey(request) {
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+    const payload = await request.clone().json().catch(() => ({}));
+    const username = String(payload?.username || "unknown").trim().toLowerCase().slice(0, 120) || "unknown";
+    return { ip, username };
+}
+
+// Return a small response when the admin traffic budget is exceeded.
+function rateLimitResponse() {
     return secureResponse(new Response(JSON.stringify({
         detail: "Demasiadas solicitudes. Espera un momento y vuelve a intentarlo.",
     }), {
@@ -45,12 +62,15 @@ export default {
                 return secureResponse(new Response("Not Found", { status: 404 }), { noStore: true });
             }
             const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+            const rateKey = getRequestRateKey(request);
             try {
-                if (!(await allowRequest(env, "ADMIN_API_LIMITER", ip))) return rateLimitResponse();
+                if (!(await allowRequest(env, "ADMIN_API_LIMITER", rateKey))) return rateLimitResponse();
 
                 const isCredentialAction = /^\/api\/v1\/admin\/auth\/(login|recover)$/i.test(pathname);
-                if (isCredentialAction && !(await allowRequest(env, "ADMIN_LOGIN_LIMITER", ip))) {
-                    return rateLimitResponse();
+                if (isCredentialAction) {
+                    const identity = await getAdminCredentialKey(request);
+                    if (!(await allowRequest(env, "ADMIN_IP_LIMITER", identity.ip))) return rateLimitResponse();
+                    if (!(await allowRequest(env, "ADMIN_LOGIN_LIMITER", identity.ip + ":" + identity.username)) return rateLimitResponse();
                 }
             } catch {
                 return secureResponse(new Response(JSON.stringify({
