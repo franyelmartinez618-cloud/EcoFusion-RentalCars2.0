@@ -69,6 +69,8 @@ function isPublicAdminPath(pathname) {
   const path = pathname.toLowerCase();
   return path === "/admin"
     || path.startsWith("/admin/")
+    || path === "/admin.html"
+    || path.startsWith("/admin.")
     || path === "/login"
     || path.startsWith("/login/");
 }
