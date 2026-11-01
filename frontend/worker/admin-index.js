@@ -17,7 +17,7 @@ function secureResponse(response, { noStore = false } = {}) {
 // Cloudflare edge limits slow repeated API and credential attempts before they reach Render.
 async function allowRequest(env, bindingName, key) {
     const limiter = env[bindingName];
-    if (!limiter || typeof limiter.limit !== "function") return true;
+    if (!limiter || typeof limiter.limit !== "function") throw new Error("Missing rate limit binding: " + bindingName);
     const result = await limiter.limit({ key });
     return result?.success === true;
 }
