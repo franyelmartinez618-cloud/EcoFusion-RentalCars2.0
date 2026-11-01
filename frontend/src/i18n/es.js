@@ -98,7 +98,7 @@ const es = {
         setupPhoneError: "Añade un teléfono válido para tu perfil de alquiler.",
         setupSuccess: "Cuenta completada. Ya puedes continuar con tu reserva.",
         setupFailure: "No fue posible completar la cuenta.",
-        legalIntro: "Información de transparencia y protección para el uso de EcoFusion Rental Cars.",
+        legalIntro: "Información de transparencia y protección para el uso de FRANKEY Rentals Car.",
         legalOperational: "Documento operativo. Completa los datos legales del responsable y somételo a revisión profesional antes de utilizarlo como texto definitivo de cumplimiento.",
         legalBack: "Volver a EcoFusion",
 
@@ -503,7 +503,7 @@ const es = {
         eyebrow: "SOBRE ECOFUSION",
         title: "Creado para ofrecer mejores experiencias de alquiler",
         description:
-            "EcoFusion RentalCars combina vehículos Toyota confiables, tecnología sencilla y una experiencia de alquiler centrada en el cliente.",
+            "FRANKEY Rentals Car combina vehículos Toyota confiables, tecnología sencilla y una experiencia de alquiler centrada en el cliente.",
         missionTitle: "Nuestra misión",
         missionDescription:
             "Hacer que el alquiler de vehículos sea más sencillo, transparente y agradable para cada viaje.",
@@ -904,7 +904,7 @@ const es = {
         newsletterButton: "Suscribirme",
 
         copyright:
-            "EcoFusion RentalCars. Todos los derechos reservados.",
+            "FRANKEY Rentals Car. Todos los derechos reservados.",
 
         tagline: "Conduce mejor. Viaja más lejos.",
     },
