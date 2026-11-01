@@ -907,6 +907,9 @@ Base.metadata.create_all(engine)
 app = FastAPI(
     title="FRANKEY Rentals Car API",
     version="4.0.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
 )
 
 app.add_middleware(
@@ -1327,26 +1330,9 @@ class IdentityStart(BaseModel):
 
 @app.get("/api/v1/health")
 def health():
-    return {
-        "ok": True,
-        "database": (
-            "mysql"
-            if DATABASE_URL.startswith("mysql")
-            else "sqlite-dev"
-        ),
-        "firebaseConfigured": firebase_ready(),
-        "appCheckRequired": FIREBASE_APPCHECK_REQUIRED,
-        "squareConfigured": bool(
-            SQUARE_TOKEN
-            and SQUARE_LOCATION_ID
-        ),
-        "identityProviderConfigured": bool(
-            PERSONA_API_KEY
-            and PERSONA_TEMPLATE_ID
-        ),
-        "identityRequiredForRegistration": REQUIRE_IDENTITY_FOR_REGISTRATION,
-    }
-
+    # Public health is intentionally minimal; integration and database details
+    # remain available only through authenticated administrator diagnostics.
+    return {"ok": True}
 
 # ============================================================
 # AUTH
