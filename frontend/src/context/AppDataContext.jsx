@@ -136,7 +136,15 @@ export function AppDataProvider({ children, adminMode = false }) {
         });
     };
     useEffect(() => {
-        if (!adminMode) refreshServerData();
+        if (adminMode) return undefined;
+        // Defer the initial customer-data fetch until after the effect commits.
+        let active = true;
+        Promise.resolve().then(() => {
+            if (active) refreshServerData();
+        });
+        return () => { active = false; };
+        // refreshServerData intentionally runs once when the provider changes modes.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [adminMode]);
 
     useEffect(() => {
