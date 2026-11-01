@@ -37,7 +37,7 @@ const es = {
         bookingSearchKicker: "Búsqueda de alquiler",
         bookingInvalid: "Selecciona la ubicación y ambas fechas para consultar disponibilidad.",
         bookingDateError: "La fecha de devolución debe ser posterior a la fecha de recogida.",
-        setupEyebrow: "CUENTA ECOFUSION",
+        setupEyebrow: "CUENTA FRANKEY",
         setupTitle: "Completa tu cuenta",
         setupDescription: "Antes de utilizar funciones de alquiler, necesitamos confirmar tus datos básicos y registrar tu aceptación de las condiciones de uso.",
         setupFullName: "Nombre completo",
@@ -273,7 +273,7 @@ const es = {
     },
 
     benefits: {
-        eyebrow: "POR QUÉ ECOFUSION",
+        eyebrow: "POR QUÉ FRANKEY",
         title: "Alquilar nunca fue tan sencillo",
         description:
             "Todo está diseñado para que tu experiencia de alquiler sea más fácil, clara y cómoda.",
@@ -500,7 +500,7 @@ const es = {
     },
 
     about: {
-        eyebrow: "SOBRE ECOFUSION",
+        eyebrow: "SOBRE FRANKEY",
         title: "Creado para ofrecer mejores experiencias de alquiler",
         description:
             "FRANKEY Rentals Car combina vehículos Toyota confiables, tecnología sencilla y una experiencia de alquiler centrada en el cliente.",
@@ -560,7 +560,7 @@ const es = {
     },
 
     account: {
-        authEyebrow: "CUENTA ECOFUSION",
+        authEyebrow: "CUENTA FRANKEY",
         registerTitle: "Bienvenido a FRANKEY",
         registerHeroDescription: "Crea tu cuenta para reservar vehículos, gestionar tus datos y acceder a tus reservas.",
         registrationStepsTitle: "Después del registro",
@@ -683,7 +683,7 @@ const es = {
         transmission: "Transmisión",
         capacity: "Capacidad",
         efficiency: "Eficiencia",
-        introEyebrow: "FLOTA ECOFUSION",
+        introEyebrow: "FLOTA FRANKEY",
         categoriesLabel: "Categorías de vehículos",
         searchPlaceholder: "Buscar en la flota",
         filters: "Filtros",
@@ -721,7 +721,7 @@ const es = {
     },
 
     signinExtra: {
-        eyebrow: "CUENTA ECOFUSION",
+        eyebrow: "CUENTA FRANKEY",
         openDemo: "Abrir cuenta demo",
         enterEmail: "Ingresa tu correo para continuar.",
     },
