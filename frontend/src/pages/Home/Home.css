@@ -128,3 +128,20 @@
 .home-hero__grid,.home-hero__copy,.home-hero__visual { min-width:0; }
 .home-hero__visual { width:100%; }
 .home-hero__image { width:100%; max-width:100%; }
+
+
+/* Home first fold: separate the search panel from the sticky header without pushing the hero too far down. */
+.home-booking-wrap {
+    margin-top: 0;
+    padding: 24px 0 30px;
+}
+.booking-search {
+    margin-top: 0;
+    padding: 28px 30px 24px;
+}
+.home-hero { padding-top: 58px; }
+@media (max-width: 680px) {
+    .home-booking-wrap { padding: 16px 0 24px; }
+    .booking-search { padding: 20px 18px; }
+    .home-hero { padding-top: 46px; }
+}
