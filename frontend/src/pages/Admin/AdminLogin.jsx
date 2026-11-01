@@ -90,7 +90,7 @@ export default function AdminLogin() {
         <div className="auth-screen">
             <div className="auth-card admin-login-card">
                 <div className="auth-brand">
-                    <img src="/ecofusion-logo.png" alt="EcoFusion Rental Cars" />
+                    <img src="/frankey-rentals-logo.svg" alt="FRANKEY Rentals Car" />
                     <div><small>Acceso privado de administración</small></div>
                 </div>
                 <span className="page-hero__eyebrow">PANEL PROTEGIDO</span>
