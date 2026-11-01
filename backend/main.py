@@ -1244,12 +1244,20 @@ class FirebaseExchange(BaseModel):
 
 
 class AdminLoginPayload(BaseModel):
-    username: str = Field(min_length=3, max_length=80)
-    password: str = Field(min_length=1, max_length=128)
+    username: str = Field(
+        min_length=3,
+        max_length=80,
+        pattern=r"^[A-Za-z0-9._-]{3,80}$",
+    )
+    password: str = Field(min_length=14, max_length=128)
 
 
 class AdminRecoveryPayload(BaseModel):
-    username: str = Field(min_length=3, max_length=80)
+    username: str = Field(
+        min_length=3,
+        max_length=80,
+        pattern=r"^[A-Za-z0-9._-]{3,80}$",
+    )
     recovery_code: str = Field(min_length=20, max_length=160)
     new_password: str = Field(min_length=14, max_length=128)
 
@@ -1287,11 +1295,11 @@ class VehicleIn(BaseModel):
 
 
 class ReservationIn(BaseModel):
-    vehicle_id: int
+    vehicle_id: int = Field(gt=0)
     pickup_at: datetime
     return_at: datetime
-    notes: str = ""
-    currency: str = "USD"
+    notes: str = Field(default="", max_length=1000)
+    currency: Literal["USD"] = "USD"
 
 
 class ProfilePatch(BaseModel):
@@ -2535,6 +2543,15 @@ def availability(
 # SQUARE
 # ============================================================
 
+def square_checkout_idempotency_key(reservation_public_id: str, attempt_number: int = 1) -> str:
+    """Return a stable Square idempotency key for one reservation attempt."""
+    attempt = max(1, int(attempt_number))
+    return uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        f"frankey-rentals-square-checkout:{reservation_public_id}:{attempt}",
+    ).hex
+
+
 async def square_headers():
     return {
         "Authorization": f"Bearer {SQUARE_TOKEN}",
@@ -2618,12 +2635,10 @@ async def create_checkout(
         )
     )
 
-    # Stable per-reservation idempotency key: a network retry after Square
-    # accepted a request cannot create a second payment link for this booking.
-    idem = uuid.uuid5(
-        uuid.NAMESPACE_URL,
-        f"frankey-rentals-square-checkout:{r.public_id}",
-    ).hex
+    # Distinct key for each persisted payment attempt, but stable when a
+    # network retry happens before this payment record is committed.
+    attempt_number = latest_payment.id + 1 if latest_payment else 1
+    idem = square_checkout_idempotency_key(r.public_id, attempt_number)
 
     body = {
         "idempotency_key": idem,
