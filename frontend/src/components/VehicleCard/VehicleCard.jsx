@@ -38,13 +38,11 @@ function VehicleCard({ vehicle, compact = false, index = 0 }) {
                         }}
                     />
                     <span className={`vehicle-card__badge vehicle-card__badge--${vehicle.accent || "green"}`}>
-                        <i>✦</i> {vehicle.categoryLabel?.toLowerCase().includes("hybrid") ? t.vehiclesPage.badgeHybrid : t.vehiclesPage.badgeFleet}
+                        {vehicle.categoryLabel?.toLowerCase().includes("hybrid") ? t.vehiclesPage.badgeHybrid : t.vehiclesPage.badgeFleet}
                     </span>
                     <button type="button" className={`vehicle-card__favorite ${favorite ? "is-active" : ""}`} onClick={(event) => { event.preventDefault(); event.stopPropagation(); toggleFavorite(); }} aria-label={favorite ? `${t.vehiclesPage.removeFavorite}: ${translated.name || vehicle.name}` : `${t.vehiclesPage.addFavorite}: ${translated.name || vehicle.name}`} aria-pressed={favorite}>
                         {favorite ? "♥" : "♡"}
                     </button>
-                    <span className="vehicle-card__zoom">＋</span>
-                    <span className="vehicle-card__media-glow" />
                 </div>
             </Link>
 
