@@ -1,5 +1,4 @@
 const BACKEND_ORIGIN = "https://ecofusion-rentalcars2-0.onrender.com";
-const PUBLIC_SITE_URL = "https://ecofusion-rentalcars2-0.ecofusionrentalcars.workers.dev/";
 
 // Apply the same browser security headers to admin HTML, assets and API responses.
 function secureResponse(response, { noStore = false } = {}) {
@@ -77,6 +76,6 @@ export default {
         assetUrl.pathname = assetPath;
         const assetRequest = new Request(assetUrl.toString(), request);
         const response = await env.ASSETS.fetch(assetRequest);
-        return secureResponse(response);
+        return secureResponse(response, { noStore: assetPath === "/admin.html" });
     },
 };
