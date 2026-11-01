@@ -164,3 +164,14 @@ html[data-theme="dark"] .admin-app {
 .admin-brand img,.auth-brand img {
  width:166px; height:94px; object-fit:contain; object-position:center; background:#fff;
 }
+
+
+/* Use the supplied original wordmark without stretching or hiding the white artwork. */
+.admin-brand img,
+.auth-brand img {
+    width: 174px;
+    height: 98px;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+}

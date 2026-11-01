@@ -10,7 +10,7 @@ function Footer() {
             <div className="container footer__main">
                 <div className="footer__brand">
                     <Link to="/" className="footer__logo-link" aria-label="FRANKEY Rentals Car home">
-                        <img src="/frankey-rentals-logo-vector.svg" alt="FRANKEY Rentals Car" className="footer__logo-image" />
+                        <img src="/frankey-official-logo.webp" alt="FRANKEY Rentals Car" className="footer__logo-image" />
                     </Link>
                     <p>{t.footer.description}</p>
                 </div>

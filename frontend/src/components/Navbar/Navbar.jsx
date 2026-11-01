@@ -72,8 +72,8 @@ export default function Navbar() {
         <header className={`navbar ${scrolled ? "navbar--scrolled" : ""}`}>
             <div className="container navbar__container">
                 <Link to="/" className="navbar__brand" onClick={closeMenu} aria-label="FRANKEY Rentals Car">
-                    <img src="/frankey-rentals-logo-vector.svg" alt="FRANKEY Rentals Car" className="navbar__logo-image navbar__logo-image--full" />
-                    <img src="/frankey-rentals-mark-vector.svg" alt="" aria-hidden="true" className="navbar__logo-image navbar__logo-image--compact" />
+                    <img src="/frankey-official-logo.webp" alt="FRANKEY Rentals Car" className="navbar__logo-image navbar__logo-image--full" />
+                    <img src="/frankey-official-logo.webp" alt="" aria-hidden="true" className="navbar__logo-image navbar__logo-image--compact" />
                 </Link>
 
                 <button type="button" className="navbar__mobile-toggle" onClick={() => setMenuOpen((value) => !value)} aria-label={t.common.menu} aria-expanded={menuOpen}>

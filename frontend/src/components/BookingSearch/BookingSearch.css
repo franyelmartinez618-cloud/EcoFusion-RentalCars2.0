@@ -236,3 +236,40 @@
 .booking-search__fleet-link span { transition:transform .18s ease; }
 .booking-search__fleet-link:hover span { transform:translateX(3px); }
 @media(max-width:680px){.booking-search__fleet-link{min-height:42px;width:100%;}}
+
+
+/* High-specificity button reset prevents the browser's default white button appearance. */
+.booking-search__meta > button.booking-search__fleet-link {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 9px !important;
+    min-height: 42px !important;
+    padding: 0 17px !important;
+    border: 1px solid #28c981 !important;
+    border-radius: 999px !important;
+    background: rgba(40, 201, 129, .10) !important;
+    color: #49df9a !important;
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+}
+.booking-search__meta > button.booking-search__fleet-link:hover {
+    border-color: #49df9a !important;
+    background: rgba(40, 201, 129, .18) !important;
+    color: #8af2bd !important;
+}
+.booking-search__meta > button.booking-search__fleet-link span {
+    display: inline-block;
+    transition: transform .18s ease;
+}
+.booking-search__meta > button.booking-search__fleet-link:hover span { transform: translateX(3px); }
+@media (max-width: 680px) {
+    .booking-search__meta > button.booking-search__fleet-link { width: 100% !important; }
+}
