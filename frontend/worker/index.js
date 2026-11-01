@@ -102,7 +102,7 @@ export default {
       }
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       const rateKey = await getRequestRateKey(request);
-      const isAdminCredentialAction = /^\/api\/v1\/admin\/auth\/(login|recover)$/i.test(pathname);
+      const isAdminCredentialAction = /^\/api\/v1\/admin\/(?:auth\/)?(login|recover)$/i.test(pathname);
       const isCustomerAuthAction = /^\/api\/v1\/auth\//i.test(pathname);
 
       try {
