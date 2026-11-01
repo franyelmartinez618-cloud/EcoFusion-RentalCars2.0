@@ -34,7 +34,7 @@ async function allowRequest(env, bindingName, key) {
 // Fail closed if the Cloudflare limiter itself cannot be reached.\n// Use the HTTP-only session as the key after login; anonymous traffic falls back to the edge IP.
 function getRequestRateKey(request) {
   const cookie = request.headers.get("Cookie") || "";
-  const session = cookie.match(/(?:^|;\\s*)ef_session=([^;]+)/i)?.[1];
+  const session = cookie.match(/(?:^|;\s*)ef_session=([^;]+)/i)?.[1];
   if (session) return `session:${session}`;
   return `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
 }
