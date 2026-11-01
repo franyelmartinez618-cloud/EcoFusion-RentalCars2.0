@@ -37,7 +37,7 @@ const en = {
         bookingSearchKicker: "Rental search",
         bookingInvalid: "Select a pickup location and both dates to check availability.",
         bookingDateError: "The return date must be after the pickup date.",
-        setupEyebrow: "ECOFUSION ACCOUNT",
+        setupEyebrow: "FRANKEY ACCOUNT",
         setupTitle: "Complete your account",
         setupDescription: "Before using rental features, we need to confirm your basic details and record your acceptance of the service terms.",
         setupFullName: "Full name",
@@ -273,7 +273,7 @@ const en = {
     },
 
     benefits: {
-        eyebrow: "WHY ECOFUSION",
+        eyebrow: "WHY FRANKEY",
         title: "Rental made simple",
         description:
             "Everything is designed to make your rental experience easier, clearer and more comfortable.",
@@ -496,7 +496,7 @@ const en = {
     },
 
     about: {
-        eyebrow: "ABOUT ECOFUSION",
+        eyebrow: "ABOUT FRANKEY",
         title: "Built around better rental experiences",
         description:
             "FRANKEY Rentals Car brings together reliable Toyota vehicles, simple technology and a customer-focused rental experience.",
@@ -556,7 +556,7 @@ const en = {
     },
 
     account: {
-        authEyebrow: "ECOFUSION ACCOUNT",
+        authEyebrow: "FRANKEY ACCOUNT",
         registerTitle: "Welcome to FRANKEY",
         registerHeroDescription: "Create your account to book vehicles, manage your details and access your reservations.",
         registrationStepsTitle: "After registration",
@@ -679,7 +679,7 @@ const en = {
         transmission: "Transmission",
         capacity: "Capacity",
         efficiency: "Efficiency",
-        introEyebrow: "ECOFUSION FLEET",
+        introEyebrow: "FRANKEY FLEET",
         categoriesLabel: "Vehicle categories",
         searchPlaceholder: "Search the fleet",
         filters: "Filters",
@@ -717,7 +717,7 @@ const en = {
     },
 
     signinExtra: {
-        eyebrow: "ECOFUSION ACCOUNT",
+        eyebrow: "FRANKEY ACCOUNT",
         openDemo: "Open demo account",
         enterEmail: "Enter your email to continue.",
     },
