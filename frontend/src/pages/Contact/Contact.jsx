@@ -1,5 +1,6 @@
 import PageShell from "../../components/PageShell/PageShell";
 import { useApp } from "../../context/AppContext";
+import "../SimplePages.css";
 import "./Contact.css";
 
 // Give visitors working call and WhatsApp routes instead of a form that only copied text.
