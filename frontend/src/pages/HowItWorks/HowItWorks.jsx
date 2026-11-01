@@ -3,10 +3,9 @@ import { useApp } from "../../context/AppContext";
 import { Link } from "../../utils/router";
 import "../SimplePages.css";
 
-const icons = ["⌁", "◉", "✓"];
-
 function HowItWorks() {
     const { translations: t } = useApp();
+    // Keep the journey focused on the three actions customers actually take.
     const steps = [t.howItWorks.step1, t.howItWorks.step2, t.howItWorks.step3];
 
     return (
@@ -24,10 +23,8 @@ function HowItWorks() {
                     <div className="steps-grid">
                         {steps.map((step, index) => (
                             <article className="step-card" key={step.title}>
-                                <div className="step-card__icon">{icons[index]}</div>
-                                <span className="how-it-works-steps__number">
-                                    Paso {String(index + 1).padStart(2, "0")}
-                                </span>
+                                <span className="step-card__number">{step.number}</span>
+                                <span className="how-it-works-steps__number">{t.howItWorks.eyebrow}</span>
                                 <h3>{step.title}</h3>
                                 <p>{step.description}</p>
                             </article>
@@ -40,30 +37,7 @@ function HowItWorks() {
                         </Link>
                     </div>
 
-                    <section className="how-it-works-prep">
-                        <div className="how-it-works-prep__heading">
-                            <span className="page-hero__eyebrow">{t.howItWorks.prepKicker}</span>
-                            <h2>{t.howItWorks.prepTitle}</h2>
-                            <p>{t.howItWorks.prepDescription}</p>
-                        </div>
-                        <div className="how-it-works-prep__grid">
-                            <article>
-                                <span>01</span>
-                                <h3>{t.howItWorks.prepAccountTitle}</h3>
-                                <p>{t.howItWorks.prepAccountText}</p>
-                            </article>
-                            <article>
-                                <span>02</span>
-                                <h3>{t.howItWorks.prepDetailsTitle}</h3>
-                                <p>{t.howItWorks.prepDetailsText}</p>
-                            </article>
-                            <article>
-                                <span>03</span>
-                                <h3>{t.howItWorks.prepReviewTitle}</h3>
-                                <p>{t.howItWorks.prepReviewText}</p>
-                            </article>
-                        </div>
-                    </section>
+
                 </div>
             </section>
         </PageShell>
