@@ -22,7 +22,7 @@ async function allowRequest(env, bindingName, key) {
     return result?.success === true;
 }
 
-function rateLimitResponse() {
+// Keep credential brute-force responses small and non-cacheable.\nfunction rateLimitResponse() {
     return secureResponse(new Response(JSON.stringify({
         detail: "Demasiadas solicitudes. Espera un momento y vuelve a intentarlo.",
     }), {
@@ -38,6 +38,12 @@ export default {
         const pathname = url.pathname;
 
         if (pathname.startsWith("/api/")) {
+            // The admin Worker may call admin endpoints and read/clear its own server session only.
+            const isAdminRoute = pathname.startsWith("/api/v1/admin/");
+            const isAdminSessionRoute = pathname === "/api/v1/auth/me" || pathname === "/api/v1/auth/logout";
+            if (!isAdminRoute && !isAdminSessionRoute) {
+                return secureResponse(new Response("Not Found", { status: 404 }), { noStore: true });
+            }
             const ip = request.headers.get("CF-Connecting-IP") || "unknown";
             try {
                 if (!(await allowRequest(env, "ADMIN_API_LIMITER", ip))) return rateLimitResponse();
