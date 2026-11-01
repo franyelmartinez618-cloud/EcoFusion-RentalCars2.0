@@ -23,12 +23,25 @@ export async function api(path, options = {}) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const detail = data?.detail;
-    const message = typeof detail === "string"
-      ? detail
-      : detail?.message || data?.message || "Request failed";
+    const detailMessage = typeof detail === "string" ? detail : detail?.message;
+    const code = detail?.code || data?.code || "";
+    const internalDetail = /sql|database|mysql|sqlite|postgres|traceback|exception|stack|internal server|not configured|connection|constraint|table|column|firebase|square|persona|webhook|redis|backend|api/i;
+    const message = response.status >= 500 || (detailMessage && internalDetail.test(detailMessage))
+      ? "No pudimos completar la operación. Inténtalo de nuevo más tarde."
+      : response.status === 429
+        ? "Has realizado demasiadas solicitudes. Espera un momento y vuelve a intentarlo."
+        : response.status === 401
+          ? "Tu sesión no está activa. Inicia sesión para continuar."
+          : response.status === 403
+            ? "No tienes permiso para realizar esta acción."
+            : response.status === 404
+              ? "No encontramos el recurso solicitado."
+              : code === "REGISTRATION_REQUIRED" && detailMessage
+                ? detailMessage
+                : detailMessage || "No se pudo completar la solicitud.";
     const error = new Error(message);
     error.status = response.status;
-    error.code = detail?.code || data?.code || "";
+    error.code = code;
     error.data = typeof detail === "object" ? detail : data;
     throw error;
   }

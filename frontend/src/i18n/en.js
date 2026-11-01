@@ -37,7 +37,7 @@ const en = {
         bookingSearchKicker: "Rental search",
         bookingInvalid: "Select a pickup location and both dates to check availability.",
         bookingDateError: "The return date must be after the pickup date.",
-        setupEyebrow: "ECOFUSION ACCOUNT",
+        setupEyebrow: "FRANKEY ACCOUNT",
         setupTitle: "Complete your account",
         setupDescription: "Before using rental features, we need to confirm your basic details and record your acceptance of the service terms.",
         setupFullName: "Full name",
@@ -63,9 +63,9 @@ const en = {
         phoneVerificationFailure: "We could not verify this phone number. Check it and try again.",
         changePhone: "Change number",
         registrationStepIdentity: "Identity",
-        registrationProfileDescription: "Confirm your name, email and phone before continuing. These details will be tied to your EcoFusion account.",
+        registrationProfileDescription: "Confirm your name, email and phone before continuing. These details will be tied to your FRANKEY account.",
         registrationConsentDescription: "Explicitly accept the conditions required to continue creating your customer profile.",
-        registrationIdentityDescription: "To enable rental features, EcoFusion may request document-based identity verification through a specialized provider.",
+        registrationIdentityDescription: "To enable rental features, FRANKEY may request document-based identity verification through a specialized provider.",
         savingProfile: "Saving…",
         savingConsent: "Saving…",
         continueRegistration: "Continue",
@@ -75,7 +75,7 @@ const en = {
         identityStatusValue: { not_started: "Not started", pending: "Under review", review: "Manual review", verified: "Verified", failed: "Not approved" },
         identitySecurityItem1: "Document reviewed by a specialized provider.",
         identitySecurityItem2: "The review is controlled by the backend.",
-        identitySecurityItem3: "EcoFusion keeps only the information needed from the result.",
+        identitySecurityItem3: "FRANKEY keeps only the information needed from the result.",
         identityStart: "Verify identity",
         identityStarting: "Preparing…",
         identityOpened: "Identity verification opened in a new window.",
@@ -98,9 +98,9 @@ const en = {
         setupPhoneError: "Add a valid phone number for your rental profile.",
         setupSuccess: "Account completed. You can continue with your reservation.",
         setupFailure: "We could not complete the account setup.",
-        legalIntro: "Transparency and protection information for using EcoFusion Rental Cars.",
+        legalIntro: "Transparency and protection information for using FRANKEY Rentals Car.",
         legalOperational: "Operational document. Complete the controller details and obtain professional review before using this as final compliance text.",
-        legalBack: "Back to EcoFusion",
+        legalBack: "Back to FRANKEY",
 
     },
     hero: {
@@ -273,7 +273,7 @@ const en = {
     },
 
     benefits: {
-        eyebrow: "WHY ECOFUSION",
+        eyebrow: "WHY FRANKEY",
         title: "Rental made simple",
         description:
             "Everything is designed to make your rental experience easier, clearer and more comfortable.",
@@ -333,7 +333,7 @@ const en = {
         prepTitle: "Have the essentials ready",
         prepDescription: "A little preparation helps you move through the process with fewer interruptions.",
         prepAccountTitle: "Prepare your account",
-        prepAccountText: "Sign in or create an EcoFusion account. If you register, follow the prompts to complete your profile.",
+        prepAccountText: "Sign in or create an FRANKEY account. If you register, follow the prompts to complete your profile.",
         prepDetailsTitle: "Review dates and location",
         prepDetailsText: "Double-check the pickup location, pickup and return dates, and the vehicle you selected.",
         prepReviewTitle: "Check the details",
@@ -415,7 +415,7 @@ const en = {
         eyebrow: "DRIVE CALIFORNIA",
         title: "More than a rental. Your California journey.",
         description:
-            "From coastal highways to city lights, EcoFusion gives you the freedom to experience California your way.",
+            "From coastal highways to city lights, FRANKEY gives you the freedom to experience California your way.",
 
         explore: "Explore California",
         planTrip: "Plan your trip",
@@ -463,7 +463,7 @@ const en = {
         eyebrow: "FAQ",
         title: "Frequently asked questions",
         description:
-            "Find quick answers to common questions about renting with EcoFusion.",
+            "Find quick answers to common questions about renting with FRANKEY.",
 
         question1: "What documents do I need to rent a vehicle?",
         answer1:
@@ -481,7 +481,7 @@ const en = {
         answer4:
             "Your final price depends on the selected vehicle, dates, location, protection options, fees and applicable taxes.",
 
-        question5: "How do I contact EcoFusion support?",
+        question5: "How do I contact FRANKEY support?",
         answer5:
             "You can contact our support team through the available support channels shown on the website.",
     },
@@ -496,10 +496,10 @@ const en = {
     },
 
     about: {
-        eyebrow: "ABOUT ECOFUSION",
+        eyebrow: "ABOUT FRANKEY",
         title: "Built around better rental experiences",
         description:
-            "EcoFusion RentalCars brings together reliable Toyota vehicles, simple technology and a customer-focused rental experience.",
+            "FRANKEY Rentals Car brings together reliable Toyota vehicles, simple technology and a customer-focused rental experience.",
         missionTitle: "Our mission",
         missionDescription:
             "Make vehicle rental easier, more transparent and more enjoyable for every journey.",
@@ -513,7 +513,7 @@ const en = {
         promiseDescription: "We want you to compare options, understand the steps and manage your details in one place without getting lost in the process.",
         exploreProcess: "Explore the process",
         valuesKicker: "OUR APPROACH",
-        valuesDescription: "Practical principles that guide the EcoFusion experience.",
+        valuesDescription: "Practical principles that guide the FRANKEY experience.",
         reliabilityText: "Organized information so you can review vehicle details before moving forward.",
         simplicityText: "Clear steps to explore the fleet, create your account and begin a reservation.",
         transparencyText: "We present the information available and keep important steps visible throughout the process.",
@@ -556,8 +556,8 @@ const en = {
     },
 
     account: {
-        authEyebrow: "ECOFUSION ACCOUNT",
-        registerTitle: "Welcome to EcoFusion",
+        authEyebrow: "FRANKEY ACCOUNT",
+        registerTitle: "Welcome to FRANKEY",
         registerHeroDescription: "Create your account to book vehicles, manage your details and access your reservations.",
         registrationStepsTitle: "After registration",
         registrationStepsDescription: "Verify your email when required, complete your details and accept the privacy policy and terms before booking.",
@@ -588,7 +588,7 @@ const en = {
         sendCode: "Send SMS code",
         verifyCode: "Verify code",
         alreadyAccount: "Already have an account?",
-        registrationRequiredNotice: "This identity does not have an EcoFusion account yet. Register to continue; you have not been signed in.",
+        registrationRequiredNotice: "This identity does not have an FRANKEY account yet. Register to continue; you have not been signed in.",
         emailVerificationNotice: "Account created. Check your email to verify it before signing in.",
         clientOnly: "This account is not available in the customer area.",
         authHelper: "Email accounts must be verified before sign-in. Phone authentication uses an SMS code and reCAPTCHA protection.",
@@ -603,7 +603,7 @@ const en = {
             quota: "SMS quota exceeded for this project.",
             invalidCode: "The verification code is invalid.",
             generic: "Authentication failed.",
-            accountExists: "This account is already registered with EcoFusion. Sign in to continue.",
+            accountExists: "This account is already registered with FRANKEY. Sign in to continue.",
             unauthorizedDomain: "This domain is not authorized in Firebase.",
             environment: "Google sign-in is not supported in this browser environment.",
             invalidApiKey: "The Firebase API key is invalid.",
@@ -679,7 +679,7 @@ const en = {
         transmission: "Transmission",
         capacity: "Capacity",
         efficiency: "Efficiency",
-        introEyebrow: "ECOFUSION FLEET",
+        introEyebrow: "FRANKEY FLEET",
         categoriesLabel: "Vehicle categories",
         searchPlaceholder: "Search the fleet",
         filters: "Filters",
@@ -717,7 +717,7 @@ const en = {
     },
 
     signinExtra: {
-        eyebrow: "ECOFUSION ACCOUNT",
+        eyebrow: "FRANKEY ACCOUNT",
         openDemo: "Open demo account",
         enterEmail: "Enter your email to continue.",
     },
@@ -725,7 +725,7 @@ const en = {
     notFound: {
         title: "Page not found",
         description: "The route you requested does not exist.",
-        back: "Back to EcoFusion",
+        back: "Back to FRANKEY",
     },
 
     accountPage: {
@@ -754,7 +754,7 @@ const en = {
         viewAccountTabs: "View account tabs",
         paymentSecurity: "PAYMENT SECURITY",
         squareHandled: "Checkout is handled by Square",
-        squareDescription: "When the backend is connected, EcoFusion will create a unique Square checkout for each reservation. Your frontend never stores card credentials.",
+        squareDescription: "When the backend is connected, FRANKEY will create a unique Square checkout for each reservation. Your frontend never stores card credentials.",
         signedInAs: "Signed in as",
         reservationsKicker: "RESERVATIONS",
         bookVehicle: "Book vehicle",
@@ -788,7 +788,7 @@ const en = {
         resume: "Continue verification",
         starting: "Starting verification…",
         verified: "Identity verified",
-        privacy: "Identity documents are processed by the verification provider; EcoFusion stores the verification status and provider reference, not raw document images.",
+        privacy: "Identity documents are processed by the verification provider; FRANKEY stores the verification status and provider reference, not raw document images.",
         statuses: { not_started: "Not started", pending: "Verification in progress", review: "Under review", verified: "Verified", failed: "Verification failed" },
     },
 
@@ -895,11 +895,11 @@ const en = {
 
         newsletterTitle: "Stay in the loop",
         newsletterDescription:
-            "Get updates, offers and travel inspiration from EcoFusion.",
+            "Get updates, offers and travel inspiration from FRANKEY.",
         newsletterPlaceholder: "Your email address",
         newsletterButton: "Subscribe",
 
-        copyright: "EcoFusion RentalCars. All rights reserved.",
+        copyright: "FRANKEY Rentals Car. All rights reserved.",
 
         tagline: "Drive better. Travel further.",
     },

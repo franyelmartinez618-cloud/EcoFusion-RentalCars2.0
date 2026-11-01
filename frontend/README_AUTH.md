@@ -1,4 +1,4 @@
-# EcoFusion — autenticación real local
+# FRANKEY Rentals Car — autenticación real local
 
 ## Inicio rápido Windows
 1. Instala Node.js 20+ y Python 3.11+.
@@ -7,12 +7,8 @@
 
 El backend queda en `http://localhost:8000` y crea `backend/ecofusion_auth.sqlite3` automáticamente.
 
-## Admin demo inicial
-- URL: `http://localhost:5173/admin`
-- Email: `admin@ecofusionrentalcars.com`
-- Password: `EcoFusionAdmin!2026`
-
-El admin inicial es solo para desarrollo local. En producción se debe cambiar por un secreto/flujo de creación de administrador fuera del código.
+## Administración local
+El acceso administrativo debe crearse desde `backend/setup_admin.py` en una consola confiable. No hay credenciales predeterminadas válidas para producción; nunca reutilices contraseñas de ejemplo publicadas en documentación.
 
 ## Cliente
 Abre `http://localhost:5173/register`, crea tu cuenta y serás redirigido a `/account`.

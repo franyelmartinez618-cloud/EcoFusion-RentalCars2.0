@@ -22,6 +22,8 @@ import "./styles/variables.css";
 import "./styles/global.css";
 import "./App.css";
 import "./styles/compact-layout.css";
+import "./styles/typography.css";
+import "./styles/responsive-polish.css";
 
 
 class AppErrorBoundary extends Component {
@@ -33,7 +35,7 @@ class AppErrorBoundary extends Component {
         if (this.state.hasError) {
             return (
                 <div className="route-loading" role="alert">
-                    <strong>EcoFusion</strong>
+                    <strong>FRANKEY Rentals Car</strong>
                     <p>Something went wrong loading this page.</p>
                     <button type="button" onClick={() => window.location.reload()}>Reload</button>
                 </div>

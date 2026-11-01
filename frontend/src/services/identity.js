@@ -11,11 +11,11 @@ async function request(path, options = {}) {
     ...options,
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.detail || "Request failed");
+  if (!response.ok) throw new Error(response.status >= 500 ? "No pudimos completar la verificación. Inténtalo de nuevo más tarde." : response.status === 401 ? "Inicia sesión para continuar." : "No se pudo completar la verificación.");
   return data;
 }
 
 export const identityApi = {
-  status: () => request("/identity/status"),
-  start: () => request("/identity/start", { method: "POST", headers: { "X-CSRF-Token": csrf() } }),
+  status: () => request("/account/identity"),
+  start: () => request("/account/identity/start", { method: "POST", headers: { "X-CSRF-Token": csrf() } }),
 };

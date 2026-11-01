@@ -873,7 +873,7 @@ def verify_admin_secret(secret: str, encoded: str) -> bool:
 
 
 # Equal-work hash for unknown usernames/recovery attempts, to reduce timing leaks.
-_ADMIN_DUMMY_HASH = hash_admin_secret("EcoFusion-invalid-admin-credential-dummy-value")
+_ADMIN_DUMMY_HASH = hash_admin_secret("FRANKEY-invalid-admin-credential-dummy-value")
 
 
 def enforce_admin_ip_rate_limit(request: Request) -> None:
@@ -905,8 +905,11 @@ Base.metadata.create_all(engine)
 # ============================================================
 
 app = FastAPI(
-    title="EcoFusion RentalCars API",
+    title="FRANKEY Rentals Car API",
     version="4.0.0",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
 )
 
 app.add_middleware(
@@ -1191,7 +1194,7 @@ def require_rental_ready(
 ):
     customer = s.query(Customer).filter_by(user_id=u.id).first()
     if not customer:
-        raise HTTPException(409, "Complete your EcoFusion registration before making a reservation.")
+        raise HTTPException(409, "Complete your FRANKEY registration before making a reservation.")
     if customer.status != "ACTIVE":
         raise HTTPException(403, "Your account verification must be completed before making a reservation.")
     if u.identity_status != "verified":
@@ -1244,12 +1247,20 @@ class FirebaseExchange(BaseModel):
 
 
 class AdminLoginPayload(BaseModel):
-    username: str = Field(min_length=3, max_length=80)
-    password: str = Field(min_length=1, max_length=128)
+    username: str = Field(
+        min_length=3,
+        max_length=80,
+        pattern=r"^[A-Za-z0-9._-]{3,80}$",
+    )
+    password: str = Field(min_length=14, max_length=128)
 
 
 class AdminRecoveryPayload(BaseModel):
-    username: str = Field(min_length=3, max_length=80)
+    username: str = Field(
+        min_length=3,
+        max_length=80,
+        pattern=r"^[A-Za-z0-9._-]{3,80}$",
+    )
     recovery_code: str = Field(min_length=20, max_length=160)
     new_password: str = Field(min_length=14, max_length=128)
 
@@ -1287,11 +1298,11 @@ class VehicleIn(BaseModel):
 
 
 class ReservationIn(BaseModel):
-    vehicle_id: int
+    vehicle_id: int = Field(gt=0)
     pickup_at: datetime
     return_at: datetime
-    notes: str = ""
-    currency: str = "USD"
+    notes: str = Field(default="", max_length=1000)
+    currency: Literal["USD"] = "USD"
 
 
 class ProfilePatch(BaseModel):
@@ -1319,26 +1330,9 @@ class IdentityStart(BaseModel):
 
 @app.get("/api/v1/health")
 def health():
-    return {
-        "ok": True,
-        "database": (
-            "mysql"
-            if DATABASE_URL.startswith("mysql")
-            else "sqlite-dev"
-        ),
-        "firebaseConfigured": firebase_ready(),
-        "appCheckRequired": FIREBASE_APPCHECK_REQUIRED,
-        "squareConfigured": bool(
-            SQUARE_TOKEN
-            and SQUARE_LOCATION_ID
-        ),
-        "identityProviderConfigured": bool(
-            PERSONA_API_KEY
-            and PERSONA_TEMPLATE_ID
-        ),
-        "identityRequiredForRegistration": REQUIRE_IDENTITY_FOR_REGISTRATION,
-    }
-
+    # Public health is intentionally minimal; integration and database details
+    # remain available only through authenticated administrator diagnostics.
+    return {"ok": True}
 
 # ============================================================
 # AUTH
@@ -1487,7 +1481,7 @@ def _find_user_for_firebase_identity(
             409,
             {
                 "code": "ACCOUNT_AMBIGUOUS",
-                "message": "More than one EcoFusion account matches this verified identity. Contact support before linking the account.",
+                "message": "More than one FRANKEY account matches this verified identity. Contact support before linking the account.",
             },
         )
 
@@ -1568,7 +1562,7 @@ def exchange_firebase(
             409,
             {
                 "code": "REGISTRATION_REQUIRED",
-                "message": "This identity is authenticated with Firebase but does not have an EcoFusion customer account yet.",
+                "message": "This identity is authenticated with Firebase but does not have an FRANKEY customer account yet.",
                 "email": email,
             },
         )
@@ -1673,7 +1667,7 @@ def exchange_firebase(
                 409,
                 {
                     "code": "ACCOUNT_EXISTS",
-                    "message": "This identity is already linked to an active EcoFusion account.",
+                    "message": "This identity is already linked to an active FRANKEY account.",
                 },
             )
     else:
@@ -1684,7 +1678,7 @@ def exchange_firebase(
                 409,
                 {
                     "code": "REGISTRATION_REQUIRED",
-                    "message": "Complete your EcoFusion registration before signing in.",
+                    "message": "Complete your FRANKEY registration before signing in.",
                     "email": email,
                 },
             )
@@ -1760,7 +1754,7 @@ def verify_phone(
         .first()
     )
     if linked is None and uid != u.firebase_uid:
-        raise HTTPException(403, "This phone identity is not linked to the current EcoFusion account")
+        raise HTTPException(403, "This phone identity is not linked to the current FRANKEY account")
 
     u.phone = phone[:40]
     u.phone_verified = True
@@ -2382,9 +2376,13 @@ def create_reservation(
             "Return date must be after pickup date",
         )
 
-    vehicle = s.get(
-        Vehicle,
-        payload.vehicle_id,
+    # Lock the selected vehicle row until this booking transaction commits.
+    # This serializes competing reservations for the same vehicle on MySQL/TiDB.
+    vehicle = (
+        s.query(Vehicle)
+        .filter(Vehicle.id == payload.vehicle_id)
+        .with_for_update()
+        .first()
     )
 
     if (
@@ -2531,6 +2529,15 @@ def availability(
 # SQUARE
 # ============================================================
 
+def square_checkout_idempotency_key(reservation_public_id: str, attempt_number: int = 1) -> str:
+    """Return a stable Square idempotency key for one reservation attempt."""
+    attempt = max(1, int(attempt_number))
+    return uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        f"frankey-rentals-square-checkout:{reservation_public_id}:{attempt}",
+    ).hex
+
+
 async def square_headers():
     return {
         "Authorization": f"Bearer {SQUARE_TOKEN}",
@@ -2574,6 +2581,7 @@ async def create_checkout(
                 else -1
             ),
         )
+        .with_for_update()
         .first()
     )
 
@@ -2582,6 +2590,27 @@ async def create_checkout(
             404,
             "Reservation not found",
         )
+
+    # Reuse an existing pending checkout instead of creating one on every
+    # retry. The reservation row lock prevents two requests from racing here.
+    latest_payment = (
+        s.query(Payment)
+        .filter(Payment.reservation_id == r.id)
+        .order_by(Payment.id.desc())
+        .first()
+    )
+    if latest_payment and latest_payment.status == "PAID":
+        raise HTTPException(409, "Reservation has already been paid")
+    if (
+        latest_payment
+        and latest_payment.status == "PENDING"
+        and latest_payment.checkout_url
+    ):
+        return {
+            "paymentId": latest_payment.public_id,
+            "checkoutUrl": latest_payment.checkout_url,
+            "reused": True,
+        }
 
     amount = int(
         (
@@ -2592,7 +2621,10 @@ async def create_checkout(
         )
     )
 
-    idem = secrets.token_hex(16)
+    # Distinct key for each persisted payment attempt, but stable when a
+    # network retry happens before this payment record is committed.
+    attempt_number = latest_payment.id + 1 if latest_payment else 1
+    idem = square_checkout_idempotency_key(r.public_id, attempt_number)
 
     body = {
         "idempotency_key": idem,
@@ -2620,7 +2652,7 @@ async def create_checkout(
             ),
         },
         "description": (
-            "EcoFusion RentalCars reservation "
+            "FRANKEY RentalCars reservation "
             f"{reservation_id}"
         ),
     }
@@ -2672,11 +2704,21 @@ async def create_checkout(
     )
 
     s.add(p)
+    audit(
+        s,
+        request,
+        u.id,
+        "create",
+        "payments",
+        p.public_id,
+        {"reservation_id": r.public_id, "provider": "square"},
+    )
     s.commit()
 
     return {
         "paymentId": p.public_id,
         "checkoutUrl": p.checkout_url,
+        "reused": False,
     }
 
 

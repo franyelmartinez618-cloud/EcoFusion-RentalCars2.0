@@ -37,7 +37,7 @@ const seedPayments = [];
 const seedAccount = { currentUser: null, favoriteVehicleIds: [] };
 
 const seedSettings = {
-    companyName: "EcoFusion RentalCars",
+    companyName: "FRANKEY Rentals Car",
     defaultLanguage: "en",
     country: "US",
     currency: "USD",
@@ -81,7 +81,13 @@ function getInitialData() {
             locations: stored.locations || seedLocations,
             offers: stored.offers || seedOffers,
             support: stored.support || seedSupport,
-            settings: { ...seedSettings, ...(stored.settings || {}) },
+            settings: {
+                ...seedSettings,
+                ...(stored.settings || {}),
+                companyName: ["EcoFusion RentalCars", "EcoFusion Rental Cars"].includes(stored.settings?.companyName)
+                    ? seedSettings.companyName
+                    : (stored.settings?.companyName || seedSettings.companyName),
+            },
             reservations: stored.reservations || [],
             payments: stored.payments || seedPayments,
             account: { ...seedAccount, ...(stored.account || {}) },
@@ -114,13 +120,18 @@ export function AppDataProvider({ children }) {
     const [data, setData] = useState(getInitialData);
     const [serverData, setServerData] = useState({ vehicles: [], reservations: [], payments: [], customers: [], invoices: [] });
     const refreshServerData = async () => {
-        const results = await Promise.allSettled([apiClient.vehicles(), apiClient.myReservations(), apiClient.myPayments(), apiClient.adminCustomers(), apiClient.adminInvoices()]);
+        // App-wide data loading must never call administrator-only endpoints.
+        const results = await Promise.allSettled([
+            apiClient.vehicles(),
+            apiClient.myReservations(),
+            apiClient.myPayments(),
+        ]);
         setServerData({
             vehicles: results[0].status === "fulfilled" ? results[0].value : [],
             reservations: results[1].status === "fulfilled" ? results[1].value : [],
             payments: results[2].status === "fulfilled" ? results[2].value : [],
-            customers: results[3].status === "fulfilled" ? results[3].value : [],
-            invoices: results[4].status === "fulfilled" ? results[4].value : [],
+            customers: [],
+            invoices: [],
         });
     };
     useEffect(() => {
