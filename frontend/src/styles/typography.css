@@ -1,0 +1,81 @@
+:root {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --text-caption: .8125rem;
+  --text-small: .875rem;
+  --text-body: 1rem;
+  --text-lead: 1.125rem;
+  --heading-section: clamp(1.75rem, 2.6vw, 2.375rem);
+  --heading-page: clamp(2.25rem, 4.6vw, 4rem);
+}
+html { font-size: 16px; }
+body { font-family: var(--font-sans); font-size: 1rem; line-height: 1.6; }
+button, input, select, textarea { font-family: inherit; }
+
+/* Main navigation and page typography */
+.navbar__nav a, .navbar__actions a, .navbar__control { font-size: .875rem; }
+.home-hero__copy h1 { font-size: clamp(2.5rem, 4.6vw, 4rem); line-height: 1.06; letter-spacing: -.045em; }
+.home-hero__copy > p { font-size: clamp(1rem, 1.2vw, 1.125rem); line-height: 1.65; max-width: 42rem; }
+.home-kicker, .home-hero__trust strong, .home-hero__trust span,
+.home-hero__price span, .home-hero__price small,
+.home-fleet-tile__content > span, .home-fleet-tile__content small { font-size: .8125rem; }
+.home-section-head h2, .home-process__intro h2 { font-size: var(--heading-section); line-height: 1.15; }
+.home-process__intro p, .home-process__cards p { font-size: .9375rem; line-height: 1.6; }
+
+/* Booking fields: readable without expanding the form excessively */
+.booking-search__heading h2 { font-size: 1.5rem; }
+.booking-search__heading p { font-size: .875rem; }
+.booking-field > span, .booking-search__meta label { font-size: .8125rem; }
+.booking-field input, .booking-field select { font-size: .9375rem; min-height: 48px; }
+.booking-search__button { font-size: .9375rem; }
+
+/* Vehicle listings and details */
+.vehicles-page__hero-pills span, .vehicle-filters button, .vehicle-filter-toggle,
+.vehicles-advanced-filters label, .active-filter-chips button { font-size: .8125rem; }
+.vehicles-search input { font-size: .9375rem; }
+.vehicle-card__eyebrow, .vehicle-card__category,
+.vehicle-card__top p, .vehicle-card__specs span,
+.vehicle-card__specs em, .vehicle-card__price small,
+.vehicle-card__price span, .vehicle-card__button { font-size: .8125rem; }
+.vehicle-card__top h3 { font-size: 1.25rem; line-height: 1.25; }
+.vehicle-card__price strong { font-size: 1.75rem; }
+.detail-specs small, .detail-specs strong { font-size: .875rem; }
+.vehicle-detail__copy > p { font-size: 1rem; line-height: 1.65; }
+
+/* Customer forms and supporting pages */
+.simple-form label, .simple-form input, .simple-form select,
+.simple-form textarea, .simple-form button { font-size: .9375rem; }
+.page-shell p { line-height: 1.65; }
+.page-hero h1 { font-size: var(--heading-page); line-height: 1.08; letter-spacing: -.035em; }
+.page-hero p { font-size: 1rem; }
+
+/* Admin: replace tiny metadata with a readable minimum at 100% zoom. */
+.admin-app { font-size: .9375rem; }
+.admin-sidebar nav button { font-size: .875rem; }
+.admin-topbar>div:first-child>span, .admin-brand small,
+.admin-stat span, .admin-stat small, .admin-toolbar>span,
+.admin-table-wrap th, .admin-row-actions button,
+.admin-modal__form label, .admin-search input,
+.admin-button, .admin-notice strong, .admin-notice span { font-size: .8125rem; }
+.admin-topbar h1 { font-size: clamp(1.5rem, 2vw, 2rem); }
+.admin-panel__header h2 { font-size: 1.375rem; }
+.admin-panel__header p, .admin-table-wrap td { font-size: .875rem; line-height: 1.5; }
+.admin-stat strong { font-size: 2rem; }
+.admin-modal__form input, .admin-modal__form textarea { font-size: .9375rem; min-height: 44px; }
+.auth-brand small, .admin-login-card .simple-form label { font-size: .875rem; }
+
+@media (max-width: 760px) {
+  html { font-size: 15.5px; }
+  .home-hero__copy h1 { font-size: clamp(2.25rem, 8vw, 3.25rem); }
+  .home-hero__copy > p { font-size: 1rem; }
+  .home-section-head h2, .home-process__intro h2 { font-size: clamp(1.75rem, 7vw, 2.25rem); }
+  .booking-search__heading h2 { font-size: 1.375rem; }
+  .vehicles-toolbar { gap: 14px; }
+  .vehicle-card__top h3 { font-size: 1.2rem; }
+}
+@media (max-width: 420px) {
+  .home-hero__copy h1 { font-size: 2.25rem; }
+  .home-hero__actions { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
