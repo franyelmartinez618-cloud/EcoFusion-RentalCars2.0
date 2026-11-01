@@ -22,7 +22,8 @@ async function allowRequest(env, bindingName, key) {
   return result?.success === true;
 }
 
-// Return a small, cache-proof response when a client exceeds its traffic budget.\nfunction rateLimitedResponse() {
+// Return a small, cache-proof response when a client exceeds its traffic budget.
+function rateLimitedResponse() {
   return withSecurityHeaders(new Response(JSON.stringify({
     detail: "Demasiadas solicitudes. Espera un momento y vuelve a intentarlo.",
   }), {
@@ -31,7 +32,7 @@ async function allowRequest(env, bindingName, key) {
   }), { noStore: true });
 }
 
-// Fail closed if the Cloudflare limiter itself cannot be reached.\n// Hash limit keys so session tokens and administrator names are never stored in clear text.
+// Hash limit keys so session tokens and administrator names are never stored in clear text.
 async function digestRateKey(value) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
@@ -40,7 +41,7 @@ async function digestRateKey(value) {
 // Use the HTTP-only session after login; anonymous traffic falls back to the edge IP.
 async function getRequestRateKey(request) {
   const cookie = request.headers.get("Cookie") || "";
-  const session = cookie.match(/(?:^|;\s*)ef_session=([^;]+)/i)?.[1];
+  const session = cookie.match(/(?:^|;\\s*)ef_session=([^;]+)/i)?.[1];
   const identity = session
     ? `session:${session}`
     : `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
@@ -76,9 +77,9 @@ function notFound() {
   });
 }
 
-// Reject all admin entry guesses before the public SPA fallback can run.\nfunction isPublicAdminPath(pathname) {
-  // Paths are checked case-insensitively so /ADMIN, /Admin/Login, etc.
-  // are blocked just like their lowercase equivalents.
+// Reject all admin entry guesses before the public SPA fallback can run.
+function isPublicAdminPath(pathname) {
+  // Paths are checked case-insensitively so /ADMIN, /Admin/Login, etc. are blocked.
   const path = pathname.toLowerCase();
   return path === "/admin"
     || path.startsWith("/admin/")
@@ -93,28 +94,18 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname;
 
-    // Keep API calls on the backend. Admin API operations must still enforce
-    // valid server-side admin sessions and roles; hiding UI paths is not auth.
+    // Keep API calls on the backend; server-side session and role guards remain authoritative.
     if (pathname.startsWith("/api/")) {
-      // The public Worker never proxies administrative API routes; those belong to the admin host.
+      // The public Worker never proxies administrative API routes.
       if (pathname.startsWith("/api/v1/admin/")) {
         return withSecurityHeaders(notFound(), { noStore: true, noIndex: true });
       }
-      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       const rateKey = await getRequestRateKey(request);
-      const isAdminCredentialAction = /^\/api\/v1\/admin\/(?:auth\/)?(login|recover)$/i.test(pathname);
-      const isCustomerAuthAction = /^\/api\/v1\/auth\//i.test(pathname);
+      const isCustomerAuthAction = /^\\/api\\/v1\\/auth\\//i.test(pathname);
 
       try {
-        // One per-IP ceiling protects the API from burst traffic across all routes.
         if (!(await allowRequest(env, "API_RATE_LIMITER", rateKey))) return rateLimitedResponse();
-        // Authentication and admin recovery use tighter per-IP ceilings.
         if (isCustomerAuthAction && !(await allowRequest(env, "AUTH_RATE_LIMITER", rateKey))) return rateLimitedResponse();
-        if (isAdminCredentialAction) {
-          const identity = await getAdminCredentialKey(request);
-          if (!(await allowRequest(env, "ADMIN_IP_RATE_LIMITER", identity.ip))) return rateLimitedResponse();
-          if (!(await allowRequest(env, "ADMIN_AUTH_RATE_LIMITER", identity.usernameKey))) return rateLimitedResponse();
-        }
       } catch {
         return rateLimitUnavailableResponse();
       }
@@ -133,7 +124,7 @@ export default {
       return withSecurityHeaders(upstream, { noStore: true });
     }
 
-    // Public guesses such as /admin, /admin/login and /login never reach SPA.
+    // Public guesses such as /admin and /login never reach the SPA fallback.
     if (isPublicAdminPath(pathname)) {
       return withSecurityHeaders(notFound(), { noStore: true, noIndex: true });
     }
