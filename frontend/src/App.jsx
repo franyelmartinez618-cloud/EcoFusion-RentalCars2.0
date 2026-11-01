@@ -7,13 +7,11 @@ import Contact from "./pages/Contact/Contact";
 import SignIn from "./pages/SignIn/SignIn";
 import Booking from "./pages/Booking/Booking";
 import Account from "./pages/Account/Account";
-import Admin from "./pages/Admin/Admin";
 import { AppProvider, useApp } from "./context/AppContext";
 import { AppDataProvider } from "./context/AppDataContext";
 import { ToastProvider } from "./context/ToastContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Register from "./pages/Auth/Register";
-import AdminLogin from "./pages/Admin/AdminLogin";
 import AccountSetup from "./pages/Auth/AccountSetup";
 import LegalPage from "./pages/Legal/LegalPage";
 import { normalizePath, useLocation, Link, navigate } from "./utils/router";
@@ -24,6 +22,8 @@ import "./App.css";
 import "./styles/compact-layout.css";
 import "./styles/typography.css";
 import "./styles/responsive-polish.css";
+
+const ADMIN_PORTAL_URL = "https://frankey-rentals-admin.ecofusionrentalcars.workers.dev/";
 
 
 class AppErrorBoundary extends Component {
@@ -58,7 +58,12 @@ function GuardedRoute({ role, children, loginPath, allowSetup = false }) {
             return;
         }
         if (!loading && user && role && user.role !== role) {
-            navigate(user.role === "admin" ? "/admin" : "/account");
+            // Administrators use the separate host; customer routes never render the admin bundle.
+            if (user.role === "admin") {
+                window.location.assign(ADMIN_PORTAL_URL);
+                return;
+            }
+            navigate("/account");
             return;
         }
         if (!loading && user?.role === "client" && user.registrationRequired && !allowSetup) {
@@ -83,10 +88,8 @@ function RouterView() {
     if (path === "/terms") return <LegalPage type="terms" />;
     if (path === "/cookies") return <LegalPage type="cookies" />;
     if (path === "/complete-account") return <GuardedRoute role="client" loginPath="/sign-in" allowSetup><AccountSetup /></GuardedRoute>;
-    if (path === "/admin/login") return <AdminLogin />;
     if (path === "/book") return <Booking />;
     if (path === "/account" || path.startsWith("/account/")) return <GuardedRoute role="client" loginPath="/sign-in"><Account /></GuardedRoute>;
-    if (path === "/admin" || path === "/admin/") return <GuardedRoute role="admin" loginPath="/admin/login"><Admin /></GuardedRoute>;
     return <NotFound />;
 }
 
