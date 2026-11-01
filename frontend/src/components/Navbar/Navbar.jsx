@@ -71,9 +71,35 @@ export default function Navbar() {
     return (
         <header className={`navbar ${scrolled ? "navbar--scrolled" : ""}`}>
             <div className="container navbar__container">
-                <Link to="/" className="navbar__brand" onClick={closeMenu} aria-label="FRANKEY Rentals Car">
-                    <img src="/frankey-official-logo.webp" alt="FRANKEY Rentals Car" className="navbar__logo-image navbar__logo-image--full" />
-                    
+                <Link
+                    to="/"
+                    className="navbar__brand"
+                    onClick={closeMenu}
+                    aria-label="FRANKEY Rentals Car"
+                    style={{
+                        flex: "0 1 clamp(136px, 14vw, 220px)",
+                        width: "clamp(136px, 14vw, 220px)",
+                        minWidth: "136px",
+                        height: "auto",
+                        overflow: "visible",
+                    }}
+                >
+                    <img
+                        src="/frankey-official-logo.webp"
+                        alt="FRANKEY Rentals Car"
+                        className="navbar__logo-image navbar__logo-image--full"
+                        width={320}
+                        height={160}
+                        style={{
+                            display: "block",
+                            width: "100%",
+                            height: "auto",
+                            maxWidth: "100%",
+                            maxHeight: "none",
+                            aspectRatio: "2 / 1",
+                            objectFit: "contain",
+                        }}
+                    />
                 </Link>
 
                 <button type="button" className="navbar__mobile-toggle" onClick={() => setMenuOpen((value) => !value)} aria-label={t.common.menu} aria-expanded={menuOpen}>
