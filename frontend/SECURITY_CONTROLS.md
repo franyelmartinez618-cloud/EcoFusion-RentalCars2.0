@@ -7,14 +7,14 @@ This document records the controls currently implemented in the public and admin
 - Production browser API calls use the same origin (/api/v1) so requests pass through the public Cloudflare Worker.
 - The public Worker rejects /admin, /admin.html, /login and all /api/v1/admin/* paths.
 - The Worker sets browser security headers, disables caching for API responses, and adds noindex to blocked private paths.
-- Cloudflare rate-limit bindings apply a shared API ceiling of 120 requests per IP per 60-second window and a tighter 10-per-minute limit to customer authentication routes.
+- Cloudflare rate-limit bindings apply a shared API ceiling of 120 requests per IP per 60-second window and a 20-per-minute limit to customer authentication routes.
 
 ## Separate administrator portal
 
 - The admin application is a separate Vite entry (admin.html) and a separate Worker configured by wrangler.admin.jsonc.
 - Its Worker hostname is frankey-rentals-admin.ecofusionrentalcars.workers.dev.
 - The admin Worker serves only the admin entry, its assets and an allowlist of admin/session API routes. It does not proxy customer API routes.
-- Admin login and recovery are limited to 5 requests per IP per 60-second window. The admin and public Workers share the admin-auth and general API rate-limit namespaces.
+- Admin login and recovery are limited to 12 attempts per IP and 5 attempts per IP/account name per 60-second window. The admin and public Workers share the admin-auth and general API rate-limit namespaces.
 - The admin site sends X-Robots-Tag: noindex, nofollow; this is an indexing instruction, not an authentication mechanism.
 - Access to admin data must continue to be checked by backend session and role guards. The separate URL and hidden UI are not substitutes for server authorization.
 
