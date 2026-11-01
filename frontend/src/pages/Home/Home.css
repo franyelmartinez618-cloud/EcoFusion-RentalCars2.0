@@ -99,3 +99,11 @@
     .home-fleet-tile,
     .home-fleet-tile--large { min-height: 300px; }
 }
+
+/* Landscape tiles match the original vehicle photos and give each car more visual scale. */
+.home-fleet-tile,
+.home-fleet-tile--large {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+}
+.home-fleet-tile__link { min-height: 0; }
