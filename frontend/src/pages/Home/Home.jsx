@@ -55,7 +55,7 @@ function Home() {
                         </div>
                     </div>
                     <div className="home-hero__visual">
-                        <img src="/hero-prius-temporary.jpg" alt="Toyota Prius rental" className="home-hero__image" />
+                        <img src={heroVehicle ? getVehicleImage(heroVehicle) : "/hero-prius-temporary.jpg"} alt={heroVehicle?.name || "FRANKEY Rentals Car vehicle"} className="home-hero__image" />
                         <div className="home-hero__image-glow" />
                         {heroVehicle && <div className="home-hero__price"><span>{t.homeUi.featuredFleet}</span><strong>{heroVehicle.name}</strong><small>${Number(heroVehicle.price || 0).toFixed(0)} {t.homeUi.perDay}</small></div>}
                     </div>
