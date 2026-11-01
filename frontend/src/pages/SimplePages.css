@@ -160,3 +160,22 @@ html[data-theme="dark"] .vehicle-detail__price strong{
 .contact-page__form-note.is-copied{border-color:color-mix(in srgb,var(--color-primary) 35%,var(--color-border));color:var(--color-primary)}
 @media(max-width:950px){.about-page__values{grid-template-columns:repeat(2,minmax(0,1fr))}.contact-page__content{grid-template-columns:1fr}.about-page__intro{grid-template-columns:1fr}}
 @media(max-width:760px){.how-it-works-prep__grid,.contact-page__help-grid{grid-template-columns:1fr}.about-page__section-heading{margin-top:44px}.about-page__values{grid-template-columns:1fr}.contact-page__help-grid{gap:11px}.contact-page__content{gap:16px}}
+
+
+/* Legal documents: readable measures, numbered sections and comfortable line length. */
+.legal-page { max-width: 960px; padding-bottom: 28px; }
+.legal-page__header { max-width: 820px; margin-bottom: 28px; }
+.legal-page__header h1 { margin: 8px 0 15px; font-size: clamp(35px, 4.5vw, 54px); line-height: 1.04; letter-spacing: -.045em; }
+.legal-intro { color: var(--color-text-secondary); font-size: 15px; line-height: 1.8; }
+.legal-page__sections { display: grid; gap: 0; border-top: 1px solid var(--color-border); }
+.legal-section { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 16px; padding: 22px 0; border-bottom: 1px solid var(--color-border); }
+.legal-section__number { padding-top: 3px; color: var(--color-primary); font-size: 11px; font-weight: 950; letter-spacing: .12em; }
+.legal-section h2 { margin-bottom: 7px; font-size: 17px; letter-spacing: -.02em; }
+.legal-section p { max-width: 780px; color: var(--color-text-secondary); font-size: 13px; line-height: 1.8; }
+.legal-note { margin-top: 22px; padding: 17px 19px; border: 1px solid var(--color-border); border-left: 3px solid var(--color-primary); border-radius: 13px; background: var(--color-chip); color: var(--color-text-secondary); font-size: 12px; line-height: 1.75; }
+.legal-back { margin-top: 22px; color: var(--color-primary); font-size: 12px; font-weight: 850; }
+@media (max-width: 560px) {
+    .legal-section { grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 18px 0; }
+    .legal-section h2 { font-size: 15px; }
+    .legal-section p { font-size: 12px; line-height: 1.75; }
+}
