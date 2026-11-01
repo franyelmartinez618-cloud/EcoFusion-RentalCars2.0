@@ -231,3 +231,52 @@ html[data-theme="dark"] .navbar__logo-image--compact.navbar__logo-image--dark { 
  .navbar__logo-image--full { display:none !important; }
  .navbar__logo-image--compact { display:block; width:108px; height:42px; object-fit:contain; object-position:center; }
 }
+
+
+/* Exact owner-supplied artwork. New filename deliberately bypasses the damaged cached logo. */
+.navbar__container { min-height: 96px; }
+.navbar__brand {
+    display: flex;
+    flex: 0 0 178px;
+    width: 178px;
+    min-width: 178px;
+    height: 96px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
+    box-shadow: none;
+}
+.navbar__logo-image--full {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+.navbar__logo-image--compact { display: none; }
+@media (max-width: 1120px) and (min-width: 861px) {
+    .navbar__brand { flex-basis: 158px; width: 158px; min-width: 158px; height: 88px; }
+}
+@media (max-width: 860px) {
+    .navbar__container { min-height: 78px; }
+    .navbar__brand {
+        flex: 0 0 138px;
+        width: 138px;
+        min-width: 138px;
+        height: 76px;
+        padding: 0;
+        background: #fff;
+    }
+    .navbar__logo-image--full { display: none !important; }
+    .navbar__logo-image--compact {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+    }
+}
