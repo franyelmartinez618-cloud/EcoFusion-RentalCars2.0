@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 132" role="img" aria-labelledby="title desc">
+  <title id="title">FRANKEY Rentals Car</title>
+  <desc id="desc">Emblema automotriz de líneas rojas y grafito junto al nombre FRANKEY Rentals Car.</desc>
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#66717d"/><stop offset=".48" stop-color="#f1f4f7"/><stop offset="1" stop-color="#535e6b"/></linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a90f19"/><stop offset=".55" stop-color="#ed1c2a"/><stop offset="1" stop-color="#ff5962"/></linearGradient>
+  </defs>
+  <g transform="translate(5 10)">
+    <path d="M9 79 23 56c8-13 20-22 36-28l44-15c13-4 27-4 40 0l31 12c13 5 24 15 31 28l11 20-3 17H17Z" fill="#111820" stroke="url(#metal)" stroke-width="4" stroke-linejoin="round"/>
+    <path d="m53 51 16-25 38-10c10-3 21-3 31 0l25 10 20 25Z" fill="#1d2a36" stroke="#aeb8c2" stroke-width="2"/>
+    <path d="m79 26 30-8c8-2 16-2 24 0l19 8 14 22H65Z" fill="#31485c"/>
+    <path d="M16 73c28-7 49-9 74-8 30 1 57 6 92 1l16 7" fill="none" stroke="url(#red)" stroke-width="7" stroke-linecap="round"/>
+    <path d="m10 87 17 0m165 0 19 0" stroke="#dbe1e7" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="58" cy="86" r="17" fill="#10151b" stroke="url(#metal)" stroke-width="5"/>
+    <circle cx="163" cy="86" r="17" fill="#10151b" stroke="url(#metal)" stroke-width="5"/>
+    <circle cx="58" cy="86" r="6" fill="#8793a0"/><circle cx="163" cy="86" r="6" fill="#8793a0"/>
+    <path d="M2 105c55 9 142 9 207-2" fill="none" stroke="url(#red)" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(250 0)">
+    <text x="0" y="65" fill="#111820" font-family="Inter,Arial,sans-serif" font-size="55" font-style="italic" font-weight="900" letter-spacing="-2">FRANKEY</text>
+    <text x="4" y="105" fill="#d71924" font-family="Inter,Arial,sans-serif" font-size="27" font-weight="800" letter-spacing="4">RENTALS CAR</text>
+  </g>
+</svg>
