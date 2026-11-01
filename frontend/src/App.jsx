@@ -22,6 +22,8 @@ import "./styles/variables.css";
 import "./styles/global.css";
 import "./App.css";
 import "./styles/compact-layout.css";
+import "./styles/typography.css";
+import "./styles/responsive-polish.css";
 
 
 class AppErrorBoundary extends Component {
