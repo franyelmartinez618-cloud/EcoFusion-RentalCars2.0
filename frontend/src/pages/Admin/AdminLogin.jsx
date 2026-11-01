@@ -97,7 +97,14 @@ export default function AdminLogin() {
         <div className="auth-screen">
             <div className="auth-card admin-login-card">
                 <div className="auth-brand">
-                    <img className="admin-login-logo" src="/frankey-official-logo.webp" alt="FRANKEY Rentals Car" />
+                    <img
+                        className="admin-login-logo"
+                        src="/frankey-official-logo.webp"
+                        alt="FRANKEY Rentals Car"
+                        width={320}
+                        height={160}
+                        style={{ width: "min(100%, 184px)", height: "auto", maxHeight: "none", aspectRatio: "2 / 1", objectFit: "contain" }}
+                    />
                     <div><small>Acceso privado de administración</small></div>
                 </div>
                 <span className="page-hero__eyebrow">PANEL PROTEGIDO</span>
