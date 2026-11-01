@@ -23,7 +23,7 @@
       "name": "AUTH_RATE_LIMITER",
       "namespace_id": "1002",
       "simple": {
-        "limit": 10,
+        "limit": 20,
         "period": 60
       }
     },
@@ -32,6 +32,14 @@
       "namespace_id": "1003",
       "simple": {
         "limit": 5,
+        "period": 60
+      }
+    },
+    {
+      "name": "ADMIN_IP_RATE_LIMITER",
+      "namespace_id": "1004",
+      "simple": {
+        "limit": 12,
         "period": 60
       }
     }
