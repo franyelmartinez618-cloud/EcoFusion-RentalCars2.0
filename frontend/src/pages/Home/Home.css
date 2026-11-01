@@ -107,3 +107,24 @@
     aspect-ratio: 16 / 9;
 }
 .home-fleet-tile__link { min-height: 0; }
+
+
+/* Keep the search panel below the sticky navigation instead of underlapping it. */
+.home-booking-wrap {
+    margin-top: 0;
+    padding: 28px 0 38px;
+}
+.booking-search { margin-top: 0; }
+.home-hero__grid,
+.home-hero__copy,
+.home-hero__visual { min-width: 0; }
+.home-hero__visual { width: 100%; }
+.home-hero__image { width: 100%; max-width: 100%; }
+
+
+/* Keep the search panel below the sticky navigation instead of underlapping it. */
+.home-booking-wrap { margin-top:0; padding:28px 0 38px; }
+.booking-search { margin-top:0; }
+.home-hero__grid,.home-hero__copy,.home-hero__visual { min-width:0; }
+.home-hero__visual { width:100%; }
+.home-hero__image { width:100%; max-width:100%; }

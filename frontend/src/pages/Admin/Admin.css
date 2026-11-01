@@ -143,3 +143,24 @@ html[data-theme="dark"] .admin-app {
     object-position: center;
     background: #fff;
 }
+
+/* Crisp, properly scaled vector brand in the standalone admin. */
+.admin-brand img {
+    width: 166px;
+    height: 94px;
+    object-fit: contain;
+    object-position: left center;
+    background: #fff;
+}
+.auth-brand img {
+    width: 166px;
+    height: 94px;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+}
+
+/* Crisp vector identity in the independent administrator console. */
+.admin-brand img,.auth-brand img {
+ width:166px; height:94px; object-fit:contain; object-position:center; background:#fff;
+}
