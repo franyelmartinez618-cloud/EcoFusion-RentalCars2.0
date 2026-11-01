@@ -56,3 +56,15 @@
     .vehicles-page { padding: 28px 0 60px; }
     .vehicles-page__heading { align-items: flex-start; }
 }
+
+/* Clean fleet surface: remove the oversized decorative ring and keep the cars central. */
+.vehicles-page {
+    background: var(--color-background);
+    overflow: visible;
+}
+.vehicles-page::before { display: none; }
+.vehicles-grid {
+    align-items: stretch;
+    grid-auto-rows: auto;
+    gap: clamp(16px, 1.8vw, 24px);
+}
