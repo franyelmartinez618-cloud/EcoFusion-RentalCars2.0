@@ -22,7 +22,7 @@ async function allowRequest(env, bindingName, key) {
   return result?.success === true;
 }
 
-function rateLimitedResponse() {
+// Return a small, cache-proof response when a client exceeds its traffic budget.\nfunction rateLimitedResponse() {
   return withSecurityHeaders(new Response(JSON.stringify({
     detail: "Demasiadas solicitudes. Espera un momento y vuelve a intentarlo.",
   }), {
@@ -31,7 +31,7 @@ function rateLimitedResponse() {
   }), { noStore: true });
 }
 
-function rateLimitUnavailableResponse() {
+// Fail closed if the Cloudflare limiter itself cannot be reached.\nfunction rateLimitUnavailableResponse() {
   return withSecurityHeaders(new Response(JSON.stringify({
     detail: "La protección de solicitudes no está disponible temporalmente.",
   }), {
@@ -40,7 +40,7 @@ function rateLimitUnavailableResponse() {
   }), { noStore: true });
 }
 
-function notFound() {
+// Keep private routes and missing resources from revealing application details.\nfunction notFound() {
   return new Response("Not Found", {
     status: 404,
     headers: {
@@ -51,7 +51,7 @@ function notFound() {
   });
 }
 
-function isPublicAdminPath(pathname) {
+// Reject all admin entry guesses before the public SPA fallback can run.\nfunction isPublicAdminPath(pathname) {
   // Paths are checked case-insensitively so /ADMIN, /Admin/Login, etc.
   // are blocked just like their lowercase equivalents.
   const path = pathname.toLowerCase();
@@ -71,6 +71,10 @@ export default {
     // Keep API calls on the backend. Admin API operations must still enforce
     // valid server-side admin sessions and roles; hiding UI paths is not auth.
     if (pathname.startsWith("/api/")) {
+      // The public Worker never proxies administrative API routes; those belong to the admin host.
+      if (pathname.startsWith("/api/v1/admin/")) {
+        return withSecurityHeaders(notFound(), { noStore: true, noIndex: true });
+      }
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       const isAdminCredentialAction = /^\/api\/v1\/admin\/auth\/(login|recover)$/i.test(pathname);
       const isCustomerAuthAction = /^\/api\/v1\/auth\//i.test(pathname);
