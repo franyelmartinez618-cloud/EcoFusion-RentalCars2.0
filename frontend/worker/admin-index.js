@@ -22,20 +22,26 @@ async function allowRequest(env, bindingName, key) {
     return result?.success === true;
 }
 
-// Keep credential brute-force responses small and non-cacheable.\n// Reuse the HTTP-only server session for authenticated traffic; anonymous requests use the edge IP.
-function getRequestRateKey(request) {
-    const cookie = request.headers.get("Cookie") || "";
-    const session = cookie.match(/(?:^|;\s*)ef_session=([^;]+)/i)?.[1];
-    if (session) return `session:${session}`;
-    return `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
+// Keep credential brute-force responses small and non-cacheable.\n// Hash limit keys so session tokens and administrator names are never stored in clear text.
+async function digestRateKey(value) {
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
-// Separate administrator login attempts by both source IP and account name.
+// Reuse the HTTP-only server session for authenticated traffic; anonymous requests use the edge IP.
+async function getRequestRateKey(request) {
+    const cookie = request.headers.get("Cookie") || "";
+    const session = cookie.match(/(?:^|;\s*)ef_session=([^;]+)/i)?.[1];
+    const identity = session ? `session:${session}` : `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
+    return digestRateKey(identity);
+}
+
+// Separate administrator login attempts by source IP and a hashed account name.
 async function getAdminCredentialKey(request) {
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
     const payload = await request.clone().json().catch(() => ({}));
-    const username = String(payload?.username || "unknown").trim().toLowerCase().slice(0, 120) || "unknown";
-    return { ip, username };
+    const username = String(payload?.username || "unknown").trim().toLowerCase().slice(0, 64) || "unknown";
+    return { ip, usernameKey: await digestRateKey(`${ip}:${username}`) };
 }
 
 // Return a small response when the admin traffic budget is exceeded.
@@ -62,7 +68,7 @@ export default {
                 return secureResponse(new Response("Not Found", { status: 404 }), { noStore: true });
             }
             const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-            const rateKey = getRequestRateKey(request);
+            const rateKey = await getRequestRateKey(request);
             try {
                 if (!(await allowRequest(env, "ADMIN_API_LIMITER", rateKey))) return rateLimitResponse();
 
@@ -70,7 +76,7 @@ export default {
                 if (isCredentialAction) {
                     const identity = await getAdminCredentialKey(request);
                     if (!(await allowRequest(env, "ADMIN_IP_LIMITER", identity.ip))) return rateLimitResponse();
-                    if (!(await allowRequest(env, "ADMIN_LOGIN_LIMITER", identity.ip + ":" + identity.username))) return rateLimitResponse();
+                    if (!(await allowRequest(env, "ADMIN_LOGIN_LIMITER", identity.usernameKey))) return rateLimitResponse();
                 }
             } catch {
                 return secureResponse(new Response(JSON.stringify({
