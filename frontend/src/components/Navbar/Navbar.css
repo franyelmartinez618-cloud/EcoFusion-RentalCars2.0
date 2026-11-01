@@ -282,36 +282,43 @@ html[data-theme="dark"] .navbar__logo-image--compact.navbar__logo-image--dark { 
 }
 
 
-/* FINAL LOGO FIX — preserve the source image's intrinsic aspect ratio at every viewport. */
+/* FINAL LOGO LAYOUT — render one source image only, keeping its intrinsic ratio. */
 .navbar__container { min-height: 82px; }
 .navbar__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 184px;
   width: 184px;
   min-width: 184px;
   height: auto;
   min-height: 0;
-  max-height: 70px;
-  overflow: visible;
   padding: 0;
+  overflow: visible;
   background: transparent;
 }
-.navbar__logo-image--full,
-.navbar__logo-image--compact {
-  display: block;
-  width: 100%;
+.navbar__logo-image--full {
+  display: block !important;
+  flex: 0 1 auto;
+  width: auto;
   height: auto;
+  max-width: 184px;
   max-height: 66px;
-  aspect-ratio: auto;
   object-fit: contain;
   object-position: center;
 }
+.navbar__logo-image--compact { display: none !important; }
+
 @media (max-width: 1120px) and (min-width: 861px) {
   .navbar__brand { flex-basis: 158px; width: 158px; min-width: 158px; }
-  .navbar__logo-image--full { max-height: 60px; }
+  .navbar__logo-image--full { max-width: 158px; max-height: 60px; }
 }
 @media (max-width: 860px) {
   .navbar__container { min-height: 68px; }
-  .navbar__brand { flex: 0 0 126px; width: 126px; min-width: 126px; max-height: 48px; }
-  .navbar__logo-image--full { display: none !important; }
-  .navbar__logo-image--compact { display: block; width: 126px; max-height: 44px; }
+  .navbar__brand { flex-basis: 126px; width: 126px; min-width: 126px; }
+  .navbar__logo-image--full {
+    display: block !important;
+    max-width: 126px;
+    max-height: 44px;
+  }
 }
