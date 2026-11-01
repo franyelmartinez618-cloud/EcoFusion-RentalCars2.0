@@ -46,7 +46,7 @@ export default function AdminLogin() {
             if (loggedInUser?.role !== "admin") {
                 throw new Error("No se pudo confirmar una sesión administrativa válida.");
             }
-            navigate("/admin");
+            navigate(adminPanelPath());
         } catch (err) {
             setError(err?.message || "No se pudo iniciar sesión. Revisa tus datos.");
         } finally {
