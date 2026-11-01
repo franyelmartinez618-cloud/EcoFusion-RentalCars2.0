@@ -10,7 +10,14 @@ function Footer() {
             <div className="container footer__main">
                 <div className="footer__brand">
                     <Link to="/" className="footer__logo-link" aria-label="FRANKEY Rentals Car home">
-                        <img src="/frankey-official-logo.webp" alt="FRANKEY Rentals Car" className="footer__logo-image" />
+                        <img
+                            src="/frankey-official-logo.webp"
+                            alt="FRANKEY Rentals Car"
+                            className="footer__logo-image"
+                            width={320}
+                            height={160}
+                            style={{ width: "min(100%, 190px)", height: "auto", maxHeight: "none", aspectRatio: "2 / 1", objectFit: "contain" }}
+                        />
                     </Link>
                     <p>{t.footer.description}</p>
                 </div>
