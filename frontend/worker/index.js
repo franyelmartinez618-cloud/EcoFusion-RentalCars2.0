@@ -1,5 +1,4 @@
 const BACKEND_ORIGIN = "https://ecofusion-rentalcars2-0.onrender.com";
-const ADMIN_PATH_SETTING = "ADMIN_ENTRY_PATH";
 
 // Add browser-side protections without changing cache headers for fingerprinted assets.
 function withSecurityHeaders(response, { noStore = false, noIndex = false } = {}) {
@@ -41,17 +40,6 @@ function rateLimitUnavailableResponse() {
   }), { noStore: true });
 }
 
-// ADMIN_ENTRY_PATH must be configured as a Cloudflare Worker secret/variable,
-// for example: /<a-cryptographically-random-token>. It must never be committed
-// to this public repository. The browser only receives it on private admin pages.
-function getAdminEntryPath(env) {
-  const value = typeof env?.[ADMIN_PATH_SETTING] === "string"
-    ? env[ADMIN_PATH_SETTING].trim()
-    : "";
-
-  return /^\/[A-Za-z0-9_-]{24,128}$/.test(value) ? value : "";
-}
-
 function notFound() {
   return new Response("Not Found", {
     status: 404,
@@ -75,44 +63,10 @@ function isPublicAdminPath(pathname) {
     || path.startsWith("/login/");
 }
 
-async function servePrivateAdminAsset(request, env, adminEntryPath) {
-  // Fetch the SPA entry file directly so the secret path works even if the
-  // asset binding does not apply the SPA fallback to this arbitrary URL.
-  const sourceUrl = new URL("/index.html", request.url);
-  const sourceRequest = new Request(sourceUrl.toString(), {
-    method: "GET",
-    headers: request.headers,
-  });
-  const response = await env.ASSETS.fetch(sourceRequest);
-  const contentType = response.headers.get("content-type") || "";
-
-  if (!contentType.toLowerCase().includes("text/html")) {
-    return response;
-  }
-
-  const html = await response.text();
-  const bootstrap = `<script>window.__ECOFUSION_ADMIN_BASE__=${JSON.stringify(adminEntryPath)};</script>`;
-  const updatedHtml = /<head[^>]*>/i.test(html)
-    ? html.replace(/<head([^>]*)>/i, `<head$1>${bootstrap}`)
-    : `${bootstrap}${html}`;
-
-  const headers = new Headers(response.headers);
-  headers.set("Cache-Control", "no-store");
-  headers.set("X-Robots-Tag", "noindex, nofollow");
-  headers.delete("Content-Length");
-
-  return new Response(updatedHtml, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
-}
-
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const pathname = url.pathname;
-    const adminEntryPath = getAdminEntryPath(env);
 
     // Keep API calls on the backend. Admin API operations must still enforce
     // valid server-side admin sessions and roles; hiding UI paths is not auth.
@@ -147,18 +101,7 @@ export default {
 
     // Public guesses such as /admin, /admin/login and /login never reach SPA.
     if (isPublicAdminPath(pathname)) {
-      return notFound();
-    }
-
-    // The private entry point is enabled only after it is configured in Cloudflare.
-    // Without it, public pages still work while all guessed admin paths remain 404.
-    const isPrivateAdminRequest = adminEntryPath && (
-      pathname === adminEntryPath
-      || pathname === `${adminEntryPath}/panel`
-    );
-
-    if (isPrivateAdminRequest) {
-      return withSecurityHeaders(await servePrivateAdminAsset(request, env, adminEntryPath), { noStore: true, noIndex: true });
+      return withSecurityHeaders(notFound(), { noStore: true, noIndex: true });
     }
 
     return withSecurityHeaders(await env.ASSETS.fetch(request));
