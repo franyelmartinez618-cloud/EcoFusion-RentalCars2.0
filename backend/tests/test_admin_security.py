@@ -2,7 +2,10 @@ import unittest
 from pydantic import ValidationError
 
 from main import (
+    AdminLoginPayload,
     AdminRecoveryPayload,
+    ReservationIn,
+    app,
     hash_admin_secret,
     square_checkout_idempotency_key,
     verify_admin_secret,
@@ -43,6 +46,30 @@ class AdminCredentialSecurityTests(unittest.TestCase):
         self.assertEqual(first, retry)
         self.assertNotEqual(first, next_attempt)
         self.assertEqual(len(first), 32)
+
+    def test_public_api_docs_are_disabled(self):
+        self.assertIsNone(app.openapi_url)
+        self.assertIsNone(app.docs_url)
+        self.assertIsNone(app.redoc_url)
+
+    def test_admin_login_validation_rejects_weak_or_invalid_input(self):
+        with self.assertRaises(ValidationError):
+            AdminLoginPayload(username="bad username", password="A" * 20)
+        with self.assertRaises(ValidationError):
+            AdminLoginPayload(username="operator", password="short")
+
+    def test_reservation_validation_rejects_invalid_vehicle_currency_and_long_notes(self):
+        base = {
+            "vehicle_id": 1,
+            "pickup_at": "2026-11-02T10:00:00",
+            "return_at": "2026-11-04T10:00:00",
+        }
+        with self.assertRaises(ValidationError):
+            ReservationIn(**{**base, "vehicle_id": 0})
+        with self.assertRaises(ValidationError):
+            ReservationIn(**{**base, "currency": "EUR"})
+        with self.assertRaises(ValidationError):
+            ReservationIn(**{**base, "notes": "x" * 1001})
 
 
 if __name__ == "__main__":
