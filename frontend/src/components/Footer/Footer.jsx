@@ -3,14 +3,14 @@ import { Link } from "../../utils/router";
 import "./Footer.css";
 
 function Footer() {
-    const { translations: t } = useApp();
+    const { translations: t, language } = useApp();
 
     return (
         <footer className="footer">
             <div className="container footer__main">
                 <div className="footer__brand">
                     <Link to="/" className="footer__logo-link" aria-label="FRANKEY Rentals Car home">
-                        <img src="/frankey-rentals-logo.svg" alt="FRANKEY Rentals Car" className="footer__logo-image" />
+                        <img src="/frankey-rentals-logo-inverse.svg" alt="FRANKEY Rentals Car" className="footer__logo-image" />
                     </Link>
                     <p>{t.footer.description}</p>
                 </div>
@@ -31,6 +31,7 @@ function Footer() {
                     <Link to="/privacy">{t.footer.privacyPolicy}</Link>
                     <Link to="/terms">{t.footer.termsAndConditions}</Link>
                     <Link to="/cookies">Cookies</Link>
+                    <a href="https://frankey-rentals-admin.ecofusionrentalcars.workers.dev/" target="_blank" rel="noopener noreferrer">{language === "es" ? "Acceso del equipo" : "Team access"}</a>
                 </div>
             </div>
 

@@ -116,7 +116,8 @@ function getInitialData() {
     };
 }
 
-export function AppDataProvider({ children }) {
+// The standalone admin portal skips customer-only requests and loads only what its screens need.
+export function AppDataProvider({ children, adminMode = false }) {
     const [data, setData] = useState(getInitialData);
     const [serverData, setServerData] = useState({ vehicles: [], reservations: [], payments: [], customers: [], invoices: [] });
     const refreshServerData = async () => {
@@ -135,8 +136,16 @@ export function AppDataProvider({ children }) {
         });
     };
     useEffect(() => {
-        refreshServerData();
-    }, []);
+        if (adminMode) return undefined;
+        // Defer the initial customer-data fetch until after the effect commits.
+        let active = true;
+        Promise.resolve().then(() => {
+            if (active) refreshServerData();
+        });
+        return () => { active = false; };
+        // refreshServerData intentionally runs once when the provider changes modes.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [adminMode]);
 
     useEffect(() => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));

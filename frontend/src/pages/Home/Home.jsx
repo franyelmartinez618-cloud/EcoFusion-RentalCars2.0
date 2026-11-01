@@ -26,7 +26,7 @@ function FeaturedTile({ vehicle, large = false }) {
 }
 
 function Home() {
-    const { translations:t } = useApp();
+    const { translations:t, language } = useApp();
     const { vehicles } = useAppData();
     const featured = vehicles.slice(0, 3);
     const heroVehicle = featured[0];
@@ -74,13 +74,26 @@ function Home() {
                 </div>
             </section>
 
+            {/* Three clear steps explain the rental journey without decorative placeholder symbols. */}
             <section className="home-section home-section--muted">
                 <div className="container home-process">
-                    <div className="home-process__intro"><span className="home-kicker">{t.homeUi.homeHow}</span><h2>{t.homeUi.homeHowTitle}</h2><p>{t.homeUi.homeHowText}</p><Link to="/how-it-works" className="home-text-link">{t.homeUi.homeSeeProcess} <span>→</span></Link></div>
+                    <div className="home-process__intro">
+                        <span className="home-kicker">{t.homeUi.homeHow}</span>
+                        <h2>{t.homeUi.homeHowTitle}</h2>
+                        <p>{t.homeUi.homeHowText}</p>
+                        <Link to="/how-it-works" className="home-text-link">{t.homeUi.homeSeeProcess} <span>→</span></Link>
+                    </div>
                     <div className="home-process__cards">
-                        <article><div className="home-process__icon">⌁</div><h3>{t.homeUi.homeChooseDates}</h3><p>{t.homeUi.homeChooseDatesText}</p></article>
-                        <article><div className="home-process__icon">◉</div><h3>{t.homeUi.homePickVehicle}</h3><p>{t.homeUi.homePickVehicleText}</p></article>
-                        <article><div className="home-process__icon">✓</div><h3>{t.homeUi.homeReserveSecurely}</h3><p>{t.homeUi.homeReserveSecurelyText}</p></article>
+                        {[t.howItWorks.step1, t.howItWorks.step2, t.howItWorks.step3].map((step) => (
+                            <article key={step.number}>
+                                <div className="home-process__card-top">
+                                    <span className="home-process__number">{step.number}</span>
+                                    <span className="home-process__label">{language === "es" ? "PASO" : "STEP"} {step.number}</span>
+                                </div>
+                                <h3>{step.title}</h3>
+                                <p>{step.description}</p>
+                            </article>
+                        ))}
                     </div>
                 </div>
             </section>

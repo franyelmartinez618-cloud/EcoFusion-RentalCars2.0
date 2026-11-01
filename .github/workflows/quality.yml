@@ -44,13 +44,28 @@ jobs:
           src/components/Navbar/Navbar.jsx
           src/components/Footer/Footer.jsx
           src/pages/Admin/AdminLogin.jsx
+          src/pages/About/About.jsx
           src/pages/Contact/Contact.jsx
           src/pages/Home/Home.jsx
+          src/pages/HowItWorks/HowItWorks.jsx
+          src/pages/Legal/LegalPage.jsx
+          src/pages/Vehicles/Vehicles.jsx
+          src/pages/VehicleDetails/VehicleDetails.jsx
+          src/admin-entry.jsx
           src/services/api.js
           src/services/identity.js
       - name: Build production bundle
         working-directory: frontend
         run: npm run build
+      - name: Build the independent administrator application
+        working-directory: frontend
+        run: npm run build:admin
+      - name: Verify the independent admin entry was emitted
+        working-directory: frontend
+        run: test -s dist-admin/admin.html
+      - name: Validate the standalone admin Worker configuration
+        working-directory: frontend
+        run: npx wrangler deploy --dry-run --config wrangler.admin.jsonc
 
   backend:
     name: Backend compile and security unit tests

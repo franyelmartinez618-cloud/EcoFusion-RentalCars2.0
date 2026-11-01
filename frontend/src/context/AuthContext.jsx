@@ -19,7 +19,7 @@ import { getToken } from "firebase/app-check";
 import { useApp } from "./AppContext";
 
 const AuthContext = createContext(null);
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+const API = import.meta.env.PROD ? "/api/v1" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1");
 const TAB_AUTH_MARKER = "ecofusion-tab-auth";
 
 class ApiRequestError extends Error {
@@ -194,8 +194,24 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         if (!firebaseConfigured || !auth) {
-            setLoading(false);
-            return undefined;
+            // The standalone administrator session is server-owned and does not require Firebase.
+            let mounted = true;
+            const restoreAdminSession = async () => {
+                try {
+                    const server = await req("/auth/me");
+                    if (mounted && server?.authenticated && server.user?.role === "admin") {
+                        userRef.current = server.user;
+                        setUser(server.user);
+                        markTabAuthenticated();
+                    }
+                } catch {
+                    // A missing or expired admin session simply leaves the portal at its login screen.
+                } finally {
+                    if (mounted) setLoading(false);
+                }
+            };
+            restoreAdminSession();
+            return () => { mounted = false; };
         }
 
         let mounted = true;

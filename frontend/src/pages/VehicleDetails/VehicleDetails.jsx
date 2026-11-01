@@ -4,6 +4,7 @@ import { getVehicleSlug, Link } from "../../utils/router";
 import PageShell from "../../components/PageShell/PageShell";
 import VehicleViewer from "../../components/VehicleViewer/VehicleViewer";
 import "../SimplePages.css";
+import "./VehicleDetails.css";
 
 function VehicleDetails({ path }) {
     const { translations: t } = useApp();

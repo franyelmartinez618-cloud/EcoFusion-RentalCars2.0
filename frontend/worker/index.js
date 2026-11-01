@@ -1,17 +1,69 @@
 const BACKEND_ORIGIN = "https://ecofusion-rentalcars2-0.onrender.com";
-const ADMIN_PATH_SETTING = "ADMIN_ENTRY_PATH";
 
-// ADMIN_ENTRY_PATH must be configured as a Cloudflare Worker secret/variable,
-// for example: /<a-cryptographically-random-token>. It must never be committed
-// to this public repository. The browser only receives it on private admin pages.
-function getAdminEntryPath(env) {
-  const value = typeof env?.[ADMIN_PATH_SETTING] === "string"
-    ? env[ADMIN_PATH_SETTING].trim()
-    : "";
-
-  return /^\/[A-Za-z0-9_-]{24,128}$/.test(value) ? value : "";
+// Add browser-side protections without changing cache headers for fingerprinted assets.
+function withSecurityHeaders(response, { noStore = false, noIndex = false } = {}) {
+  const headers = new Headers(response.headers);
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  headers.set("Content-Security-Policy", "frame-ancestors 'none'; object-src 'none'; base-uri 'self'");
+  if (noStore) headers.set("Cache-Control", "no-store");
+  if (noIndex) headers.set("X-Robots-Tag", "noindex, nofollow");
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
+// Ask Cloudflare's edge limiter before forwarding requests to the application server.
+async function allowRequest(env, bindingName, key) {
+  const limiter = env[bindingName];
+  if (!limiter || typeof limiter.limit !== "function") throw new Error("Missing rate limit binding: " + bindingName);
+  const result = await limiter.limit({ key });
+  return result?.success === true;
+}
+
+// Return a small, cache-proof response when a client exceeds its traffic budget.
+function rateLimitedResponse() {
+  return withSecurityHeaders(new Response(JSON.stringify({
+    detail: "Demasiadas solicitudes. Espera un momento y vuelve a intentarlo.",
+  }), {
+    status: 429,
+    headers: { "Content-Type": "application/json; charset=utf-8", "Retry-After": "60" },
+  }), { noStore: true });
+}
+
+// Hash limit keys so session tokens and administrator names are never stored in clear text.
+async function digestRateKey(value) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+// Use the HTTP-only session after login; anonymous traffic falls back to the edge IP.
+async function getRequestRateKey(request) {
+  const cookie = request.headers.get("Cookie") || "";
+  const sessionCookie = cookie.split(";").map(part => part.trim()).find(part => part.toLowerCase().startsWith("ef_session="));
+  const identity = session ? `session:${session}` : `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
+  return digestRateKey(identity);
+}
+
+// Keep repeated administrator credential attempts distinct without exposing the account name.
+async function getAdminCredentialKey(request) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const payload = await request.clone().json().catch(() => ({}));
+  const username = String(payload?.username || "unknown").trim().toLowerCase().slice(0, 64) || "unknown";
+  return { ip, usernameKey: await digestRateKey(`${ip}:${username}`) };
+}
+
+function rateLimitUnavailableResponse() {
+  return withSecurityHeaders(new Response(JSON.stringify({
+    detail: "La protección de solicitudes no está disponible temporalmente.",
+  }), {
+    status: 503,
+    headers: { "Content-Type": "application/json; charset=utf-8", "Retry-After": "30" },
+  }), { noStore: true });
+}
+
+// Keep private routes and missing resources from revealing application details.
 function notFound() {
   return new Response("Not Found", {
     status: 404,
@@ -23,58 +75,39 @@ function notFound() {
   });
 }
 
+// Reject all admin entry guesses before the public SPA fallback can run.
 function isPublicAdminPath(pathname) {
-  // Paths are checked case-insensitively so /ADMIN, /Admin/Login, etc.
-  // are blocked just like their lowercase equivalents.
+  // Paths are checked case-insensitively so /ADMIN, /Admin/Login, etc. are blocked.
   const path = pathname.toLowerCase();
   return path === "/admin"
     || path.startsWith("/admin/")
+    || path === "/admin.html"
+    || path.startsWith("/admin.")
     || path === "/login"
     || path.startsWith("/login/");
-}
-
-async function servePrivateAdminAsset(request, env, adminEntryPath) {
-  // Fetch the SPA entry file directly so the secret path works even if the
-  // asset binding does not apply the SPA fallback to this arbitrary URL.
-  const sourceUrl = new URL("/index.html", request.url);
-  const sourceRequest = new Request(sourceUrl.toString(), {
-    method: "GET",
-    headers: request.headers,
-  });
-  const response = await env.ASSETS.fetch(sourceRequest);
-  const contentType = response.headers.get("content-type") || "";
-
-  if (!contentType.toLowerCase().includes("text/html")) {
-    return response;
-  }
-
-  const html = await response.text();
-  const bootstrap = `<script>window.__ECOFUSION_ADMIN_BASE__=${JSON.stringify(adminEntryPath)};</script>`;
-  const updatedHtml = /<head[^>]*>/i.test(html)
-    ? html.replace(/<head([^>]*)>/i, `<head$1>${bootstrap}`)
-    : `${bootstrap}${html}`;
-
-  const headers = new Headers(response.headers);
-  headers.set("Cache-Control", "no-store");
-  headers.set("X-Robots-Tag", "noindex, nofollow");
-  headers.delete("Content-Length");
-
-  return new Response(updatedHtml, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
 }
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const pathname = url.pathname;
-    const adminEntryPath = getAdminEntryPath(env);
 
-    // Keep API calls on the backend. Admin API operations must still enforce
-    // valid server-side admin sessions and roles; hiding UI paths is not auth.
+    // Keep API calls on the backend; server-side session and role guards remain authoritative.
     if (pathname.startsWith("/api/")) {
+      // The public Worker never proxies administrative API routes.
+      if (pathname.startsWith("/api/v1/admin/")) {
+        return withSecurityHeaders(notFound(), { noStore: true, noIndex: true });
+      }
+      const rateKey = await getRequestRateKey(request);
+      const isCustomerAuthAction = pathname.startsWith("/api/v1/auth/");
+
+      try {
+        if (!(await allowRequest(env, "API_RATE_LIMITER", rateKey))) return rateLimitedResponse();
+        if (isCustomerAuthAction && !(await allowRequest(env, "AUTH_RATE_LIMITER", rateKey))) return rateLimitedResponse();
+      } catch {
+        return rateLimitUnavailableResponse();
+      }
+
       const target = new URL(pathname + url.search, BACKEND_ORIGIN);
       const headers = new Headers(request.headers);
       headers.set("X-Forwarded-Host", url.host);
@@ -86,32 +119,14 @@ export default {
         body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
         redirect: "manual",
       }));
-
-      const responseHeaders = new Headers(upstream.headers);
-      responseHeaders.set("Cache-Control", "no-store");
-      return new Response(upstream.body, {
-        status: upstream.status,
-        statusText: upstream.statusText,
-        headers: responseHeaders,
-      });
+      return withSecurityHeaders(upstream, { noStore: true });
     }
 
-    // Public guesses such as /admin, /admin/login and /login never reach SPA.
+    // Public guesses such as /admin and /login never reach the SPA fallback.
     if (isPublicAdminPath(pathname)) {
-      return notFound();
+      return withSecurityHeaders(notFound(), { noStore: true, noIndex: true });
     }
 
-    // The private entry point is enabled only after it is configured in Cloudflare.
-    // Without it, public pages still work while all guessed admin paths remain 404.
-    const isPrivateAdminRequest = adminEntryPath && (
-      pathname === adminEntryPath
-      || pathname === `${adminEntryPath}/panel`
-    );
-
-    if (isPrivateAdminRequest) {
-      return servePrivateAdminAsset(request, env, adminEntryPath);
-    }
-
-    return env.ASSETS.fetch(request);
+    return withSecurityHeaders(await env.ASSETS.fetch(request));
   },
 };

@@ -1,7 +1,7 @@
 import { appCheck } from "./firebase";
 import { getToken } from "firebase/app-check";
 
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+const API = import.meta.env.PROD ? "/api/v1" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1");
 
 function csrf() {
   return document.cookie.split("; ").find((v) => v.startsWith("ef_csrf="))?.split("=")[1] || "";

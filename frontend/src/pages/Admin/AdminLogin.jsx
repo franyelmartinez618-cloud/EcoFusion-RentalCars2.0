@@ -5,6 +5,13 @@ import { api } from "../../services/api";
 import { navigate } from "../../utils/router";
 import "../SimplePages.css";
 
+const PUBLIC_SITE_URL = "https://ecofusion-rentalcars2-0.ecofusionrentalcars.workers.dev/";
+
+// Use the panel route on the independent host, while preserving the legacy private route.
+function adminPanelPath() {
+    return window.__FRANKEY_ADMIN_STANDALONE__ === true ? "/panel" : "/admin";
+}
+
 export default function AdminLogin() {
     const { translations: t } = useApp();
     const { user, refreshSession, logout } = useAuth();
@@ -20,7 +27,7 @@ export default function AdminLogin() {
     const [busy, setBusy] = useState(false);
 
     useEffect(() => {
-        if (user?.role === "admin") navigate("/admin");
+        if (user?.role === "admin") navigate(adminPanelPath());
     }, [user]);
 
     const submitLogin = async (event) => {
@@ -39,7 +46,7 @@ export default function AdminLogin() {
             if (loggedInUser?.role !== "admin") {
                 throw new Error("No se pudo confirmar una sesión administrativa válida.");
             }
-            navigate("/admin");
+            navigate(adminPanelPath());
         } catch (err) {
             setError(err?.message || "No se pudo iniciar sesión. Revisa tus datos.");
         } finally {
@@ -90,7 +97,7 @@ export default function AdminLogin() {
         <div className="auth-screen">
             <div className="auth-card admin-login-card">
                 <div className="auth-brand">
-                    <img src="/frankey-rentals-logo.svg" alt="FRANKEY Rentals Car" />
+                    <img className="admin-login-logo-light" src="/frankey-rentals-logo.svg" alt="FRANKEY Rentals Car" /><img className="admin-login-logo-dark" src="/frankey-rentals-logo-inverse.svg" alt="" aria-hidden="true" />
                     <div><small>Acceso privado de administración</small></div>
                 </div>
                 <span className="page-hero__eyebrow">PANEL PROTEGIDO</span>
@@ -145,7 +152,7 @@ export default function AdminLogin() {
                         <button type="button" onClick={() => { navigator.clipboard?.writeText(rotatedRecoveryCode).catch(() => {}); }}>Copiar código</button>
                     </div>
                 )}
-                <p className="auth-footer"><a href="/">← {t.common.viewSite}</a></p>
+                <p className="auth-footer"><a href={PUBLIC_SITE_URL}>← {t.common.viewSite}</a></p>
             </div>
         </div>
     );
