@@ -109,7 +109,7 @@ export default {
         // One per-IP ceiling protects the API from burst traffic across all routes.
         if (!(await allowRequest(env, "API_RATE_LIMITER", rateKey))) return rateLimitedResponse();
         // Authentication and admin recovery use tighter per-IP ceilings.
-        if (isCustomerAuthAction && !(await allowRequest(env, "AUTH_RATE_LIMITER", rateKey + ":" + pathname))) return rateLimitedResponse();
+        if (isCustomerAuthAction && !(await allowRequest(env, "AUTH_RATE_LIMITER", rateKey))) return rateLimitedResponse();
         if (isAdminCredentialAction) {
           const identity = await getAdminCredentialKey(request);
           if (!(await allowRequest(env, "ADMIN_IP_RATE_LIMITER", identity.ip))) return rateLimitedResponse();
