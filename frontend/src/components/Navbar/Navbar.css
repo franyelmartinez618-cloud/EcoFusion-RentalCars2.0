@@ -119,3 +119,8 @@ html[data-theme="dark"] .navbar__logo-image--dark { display: block; }
     html[data-theme="dark"] .navbar__logo-image--full.navbar__logo-image--dark { display: none; }
     html[data-theme="dark"] .navbar__logo-image--compact.navbar__logo-image--dark { display: block; }
 }
+
+@media (max-width: 860px) {
+    html[data-theme="dark"] .navbar__logo-image--full.navbar__logo-image--dark { display: none; }
+    html[data-theme="dark"] .navbar__logo-image--compact.navbar__logo-image--dark { display: block; }
+}
