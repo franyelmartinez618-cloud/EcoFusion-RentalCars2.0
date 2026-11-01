@@ -245,3 +245,7 @@
     .vehicle-card__bottom { align-items: flex-start; flex-direction: column; }
     .vehicle-card__button { width: 100%; }
 }
+
+/* Crop the unused white margin in the source photos while keeping the full car visible. */
+.vehicle-card__media { aspect-ratio: 16 / 9; }
+.vehicle-card__media img { object-position: center 53%; }
