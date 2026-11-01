@@ -194,8 +194,24 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         if (!firebaseConfigured || !auth) {
-            setLoading(false);
-            return undefined;
+            // The standalone administrator session is server-owned and does not require Firebase.
+            let mounted = true;
+            const restoreAdminSession = async () => {
+                try {
+                    const server = await req("/auth/me");
+                    if (mounted && server?.authenticated && server.user?.role === "admin") {
+                        userRef.current = server.user;
+                        setUser(server.user);
+                        markTabAuthenticated();
+                    }
+                } catch {
+                    // A missing or expired admin session simply leaves the portal at its login screen.
+                } finally {
+                    if (mounted) setLoading(false);
+                }
+            };
+            restoreAdminSession();
+            return () => { mounted = false; };
         }
 
         let mounted = true;
