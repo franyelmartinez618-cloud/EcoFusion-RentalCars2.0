@@ -160,3 +160,53 @@ html[data-theme="dark"] .navbar__logo-image--compact.navbar__logo-image--dark { 
         object-position: center;
     }
 }
+
+
+/* Final header repair: serve the crisp vector mark on a clean white field. */
+.navbar__container { min-height: 94px; }
+.navbar__brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 168px;
+    width: 168px;
+    min-width: 168px;
+    height: 94px;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 2px;
+    background: #fff;
+    box-shadow: none;
+}
+.navbar__logo-image--full {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+.navbar__logo-image--compact { display: none; }
+.navbar__logo-image--dark { display: none !important; }
+
+@media (max-width: 1120px) and (min-width: 861px) {
+    .navbar__brand { flex-basis: 150px; width: 150px; min-width: 150px; height: 84px; }
+}
+@media (max-width: 860px) {
+    .navbar__container { min-height: 70px; }
+    .navbar__brand {
+        flex: 0 0 108px;
+        width: 108px;
+        min-width: 108px;
+        height: 42px;
+        padding: 0;
+        background: #fff;
+    }
+    .navbar__logo-image--full { display: none !important; }
+    .navbar__logo-image--compact {
+        display: block;
+        width: 108px;
+        height: 42px;
+        object-fit: contain;
+        object-position: center;
+    }
+}
