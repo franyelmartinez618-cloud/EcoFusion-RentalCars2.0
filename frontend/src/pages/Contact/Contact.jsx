@@ -71,7 +71,7 @@ function Contact() {
                                 <li>{t.contact.detailAccount}</li>
                             </ul>
                             <div className="contact-page__location">
-                                <strong>EcoFusion RentalCars</strong>
+                                <strong>FRANKEY Rentals Car</strong>
                                 <span>{t.common.californiaUSA}</span>
                                 <small>{t.contact.locationNote}</small>
                             </div>
