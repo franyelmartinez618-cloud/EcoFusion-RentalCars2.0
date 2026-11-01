@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 84" role="img" aria-labelledby="title">
+  <title id="title">FRANKEY Rentals Car</title>
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#263442"/>
+      <stop offset=".48" stop-color="#9aa7b2"/>
+      <stop offset="1" stop-color="#e5ebef"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(3 8)">
+    <path d="M5 48h73" fill="none" stroke="#149653" stroke-width="3.8" stroke-linecap="round"/>
+    <path d="M11 44c5-2 8-7 12-13 5-8 13-12 24-12h7c9 0 15 6 19 17l4 8H11Z" fill="none" stroke="url(#metal)" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M25 32h34M36 21v26M36 21h23M36 32h16" fill="none" stroke="#263442" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M16 44h48" fill="none" stroke="#149653" stroke-width="2.4" stroke-linecap="round"/>
+    <circle cx="22" cy="48" r="4" fill="#263442" stroke="#dce4e9" stroke-width="1.5"/>
+    <circle cx="62" cy="48" r="4" fill="#263442" stroke="#dce4e9" stroke-width="1.5"/>
+  </g>
+  <text x="94" y="47" fill="#f3f6f4" font-family="Inter,Arial,sans-serif" font-size="39" font-weight="900" letter-spacing="-1.9">FRANKEY</text>
+  <text x="97" y="68" fill="#149653" font-family="Inter,Arial,sans-serif" font-size="11" font-weight="900" letter-spacing="5.2">RENTALS CAR</text>
+</svg>
