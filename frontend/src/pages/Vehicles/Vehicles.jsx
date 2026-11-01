@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import PageShell from "../../components/PageShell/PageShell";
-import SectionHeading from "../../components/SectionHeading/SectionHeading";
 import VehicleCard from "../../components/VehicleCard/VehicleCard";
 import { useApp } from "../../context/AppContext";
 import { useAppData } from "../../context/AppDataContext";
@@ -8,7 +7,7 @@ import "../SimplePages.css";
 import "./Vehicles.css";
 
 function Vehicles() {
-    const { translations: t } = useApp();
+    const { translations: t, language } = useApp();
     const { vehicles } = useAppData();
     const [category, setCategory] = useState("all");
     const [search, setSearch] = useState("");
@@ -40,24 +39,16 @@ function Vehicles() {
 
     return (
         <PageShell>
-            <section className="page-hero page-hero--vehicles">
-                <div className="container page-hero__inner">
-                    <span className="page-hero__eyebrow">{t.fleet.eyebrow}</span>
-                    <h1>{t.fleet.title}</h1>
-                    <p>{t.fleet.description}</p>
-                    <div className="vehicles-page__hero-pills">
-                        <span>{t.vehiclesPage.fleetReady}</span>
-                        <span>{t.vehiclesPage.hybridOptions}</span>
-                        <span>{vehicles.length} {t.vehiclesPage.vehicleCount}</span>
-                    </div>
-                </div>
-            </section>
-
             <section className="vehicles-page">
                 <div className="container">
-                    <div className="vehicles-page__intro">
-                        <SectionHeading eyebrow={t.vehiclesPage.introEyebrow} title={t.fleet.viewAll} description={t.fleet.description} />
-                    </div>
+                    {/* Compact fleet heading keeps the filters and available cars in view without a second hero. */}
+                    <header className="vehicles-page__heading">
+                        <div>
+                            <span className="page-hero__eyebrow">{language === "es" ? "DISPONIBLES PARA TU VIAJE" : "READY FOR YOUR TRIP"}</span>
+                            <h1>{language === "es" ? "Vehículos disponibles" : "Available vehicles"}</h1>
+                        </div>
+                        <span className="vehicles-page__count">{vehicles.length} {language === "es" ? "vehículos" : "vehicles"}</span>
+                    </header>
 
                     <div className="vehicles-toolbar">
                         <div className="vehicle-filters" role="tablist" aria-label={t.vehiclesPage.categoriesLabel}>
