@@ -43,7 +43,6 @@ jobs:
           src/App.jsx
           src/components/Navbar/Navbar.jsx
           src/components/Footer/Footer.jsx
-          src/pages/Admin/Admin.jsx
           src/pages/Admin/AdminLogin.jsx
           src/pages/About/About.jsx
           src/pages/Contact/Contact.jsx
@@ -53,8 +52,6 @@ jobs:
           src/pages/Vehicles/Vehicles.jsx
           src/pages/VehicleDetails/VehicleDetails.jsx
           src/admin-entry.jsx
-          src/context/AppDataContext.jsx
-          src/context/AuthContext.jsx
           src/services/api.js
           src/services/identity.js
       - name: Build production bundle
