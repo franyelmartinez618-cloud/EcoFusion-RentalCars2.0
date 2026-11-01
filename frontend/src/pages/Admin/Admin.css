@@ -175,3 +175,30 @@ html[data-theme="dark"] .admin-app {
     object-position: center;
     background: #fff;
 }
+
+
+/* FINAL LOGO FIX — use natural dimensions; never force the wordmark into a fixed rectangle. */
+.admin-brand,
+.auth-brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.admin-brand img,
+.auth-brand img {
+  display: block;
+  flex: 0 1 auto;
+  width: auto;
+  height: auto;
+  max-width: min(100%, 184px);
+  max-height: 66px;
+  aspect-ratio: auto;
+  object-fit: contain;
+  object-position: center;
+  background: transparent;
+}
+.admin-brand img { max-width: min(100%, 174px); max-height: 58px; }
+@media (max-width: 620px) {
+  .admin-brand img,
+  .auth-brand img { max-width: min(100%, 160px); max-height: 54px; }
+}
