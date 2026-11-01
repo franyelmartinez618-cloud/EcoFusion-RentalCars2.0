@@ -1,0 +1,44 @@
+/* Contact page: make both supplied phone numbers actionable without a fake message form. */
+.contact-hero {
+    padding: clamp(42px, 6vw, 70px) 0 36px;
+    background: radial-gradient(circle at 80% 5%, color-mix(in srgb, var(--color-primary) 11%, transparent), transparent 34%), var(--color-background);
+}
+.contact-hero__inner { max-width: 850px; }
+.contact-hero h1 { margin: 8px 0 12px; font-size: clamp(40px, 5.2vw, 66px); line-height: 1; letter-spacing: -.05em; }
+.contact-hero p { max-width: 620px; color: var(--color-text-secondary); font-size: 15px; line-height: 1.7; }
+.contact-channel-section { padding: 22px 0 clamp(58px, 7vw, 88px); }
+.contact-channel-section__heading { display: flex; justify-content: space-between; margin-bottom: 22px; }
+.contact-channel-section__heading h2 { margin: 7px 0 8px; font-size: clamp(25px, 3vw, 35px); letter-spacing: -.035em; }
+.contact-channel-section__heading p { max-width: 640px; color: var(--color-text-secondary); font-size: 13px; line-height: 1.7; }
+.contact-channel-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.contact-channel-card {
+    min-width: 0; padding: clamp(24px, 3vw, 34px);
+    border: 1px solid var(--color-border); border-radius: 24px;
+    background: radial-gradient(circle at 100% 0, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 42%), var(--color-card);
+    box-shadow: var(--shadow-card);
+}
+.contact-channel-card__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.contact-channel-card__top > span:first-child { color: var(--color-primary); font-size: 10px; font-weight: 950; letter-spacing: .15em; }
+.contact-channel-card__index { color: var(--color-text-secondary); font-size: 12px; font-weight: 850; }
+.contact-channel-card__number { display: block; margin: 22px 0 9px; font-size: clamp(27px, 3.2vw, 39px); letter-spacing: -.045em; font-variant-numeric: tabular-nums; }
+.contact-channel-card p { min-height: 46px; max-width: 420px; color: var(--color-text-secondary); font-size: 13px; line-height: 1.65; }
+.contact-channel-card__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 25px; }
+.contact-channel-card__actions a {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 46px; padding: 0 15px;
+    border: 1px solid var(--color-border); border-radius: 12px; font-size: 11px; font-weight: 900;
+    transition: transform var(--motion-fast), background var(--motion-fast), border-color var(--motion-fast);
+}
+.contact-channel-card__actions a:hover { transform: translateY(-2px); border-color: var(--color-primary); }
+.contact-channel-card__actions svg { width: 18px; height: 18px; flex: none; }
+.contact-channel-card__call { background: var(--color-primary); border-color: var(--color-primary) !important; color: #fff; }
+.contact-channel-card__call:hover { background: var(--color-primary-dark); }
+.contact-channel-card__whatsapp { color: var(--color-text); background: var(--color-surface); }
+.contact-channel-card__whatsapp:hover { background: var(--color-primary-light); color: var(--color-primary); }
+.contact-channel-note {
+    display: flex; align-items: flex-start; gap: 10px; max-width: 760px; margin-top: 20px; padding: 14px 16px;
+    border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-chip);
+    color: var(--color-text-secondary); font-size: 11px; line-height: 1.65;
+}
+.contact-channel-note span { color: var(--color-primary); font-weight: 900; }
+@media (max-width: 760px) { .contact-channel-grid { grid-template-columns: 1fr; } .contact-channel-card p { min-height: 0; } }
+@media (max-width: 460px) { .contact-channel-card__actions { display: grid; grid-template-columns: 1fr; } .contact-channel-card__actions a { width: 100%; } }
