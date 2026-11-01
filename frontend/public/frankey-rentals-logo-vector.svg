@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">FRANKEY Rentals Car</title>
+  <desc id="desc">Logotipo de FRANKEY Rentals Car con automóvil estilizado en verde y azul marino.</desc>
+  <rect width="640" height="360" fill="#ffffff"/>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M112 105 C92 85 91 60 103 34 C117 56 137 66 142 91 C145 109 136 125 126 137 C121 124 118 114 112 105Z" fill="#25a982"/>
+    <path d="M122 118 C114 91 108 72 101 48" fill="none" stroke="#0a4262" stroke-width="5"/>
+    <path d="M132 162 C145 124 179 105 223 98 L268 66 C302 40 356 34 402 48 L464 86 C511 88 548 104 568 126 C580 139 572 151 555 157 L526 161 C520 128 495 113 468 117 C443 121 430 141 425 163 L245 163 C237 134 214 119 188 124 C164 129 150 146 146 164Z" fill="#22a783"/>
+    <path d="M274 70 C303 48 344 43 381 52 L418 83 L289 83Z" fill="#ffffff"/>
+    <path d="M431 88 L462 94 C483 98 497 106 508 116 L447 116 C444 105 439 96 431 88Z" fill="#ffffff"/>
+    <path d="M245 164 C275 160 301 172 334 180 C372 190 412 184 440 164 C456 153 467 142 486 140 C510 138 529 148 539 162 L562 162 C548 181 523 190 495 191 C463 192 445 181 419 183 C378 186 351 201 311 192 C280 185 264 174 245 164Z" fill="#0a4262"/>
+    <path d="M146 164 C168 137 194 135 217 143 C238 150 260 174 291 180 C331 188 359 204 407 199 C441 196 461 176 479 169" fill="none" stroke="#ffffff" stroke-width="9"/>
+    <path d="M154 174 C178 154 200 153 221 161 C249 173 273 194 311 201 C350 209 383 213 421 203 C446 196 464 181 482 175" fill="none" stroke="#0a4262" stroke-width="8"/>
+    <path d="M140 181 C181 174 207 176 234 190 C272 210 308 222 359 222 C411 222 455 208 489 184" fill="none" stroke="#0a4262" stroke-width="7"/>
+    <circle cx="195" cy="161" r="28" fill="#ffffff" stroke="#0a4262" stroke-width="13"/>
+    <circle cx="195" cy="161" r="13" fill="#ffffff"/>
+    <circle cx="480" cy="160" r="30" fill="#ffffff" stroke="#0a4262" stroke-width="13"/>
+    <circle cx="480" cy="160" r="14" fill="#ffffff"/>
+  </g>
+  <text x="320" y="278" text-anchor="middle" fill="#0a4262" font-family="Arial, Helvetica, sans-serif" font-size="80" font-weight="900" letter-spacing="1">FRANKEY</text>
+  <text x="320" y="326" text-anchor="middle" fill="#0a4262" font-family="Arial, Helvetica, sans-serif" font-size="39" font-weight="500" letter-spacing="7">RENTALS CAR</text>
+</svg>
