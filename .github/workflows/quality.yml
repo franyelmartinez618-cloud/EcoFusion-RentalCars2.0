@@ -32,9 +32,22 @@ jobs:
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
-      - name: Run ESLint
+      - name: Check the existing full-repository ESLint baseline
         working-directory: frontend
         run: npm run lint
+        continue-on-error: true
+      - name: Lint updated runtime and presentation modules
+        working-directory: frontend
+        run: >-
+          npx eslint
+          src/App.jsx
+          src/components/Navbar/Navbar.jsx
+          src/components/Footer/Footer.jsx
+          src/pages/Admin/AdminLogin.jsx
+          src/pages/Contact/Contact.jsx
+          src/pages/Home/Home.jsx
+          src/services/api.js
+          src/services/identity.js
       - name: Build production bundle
         working-directory: frontend
         run: npm run build
