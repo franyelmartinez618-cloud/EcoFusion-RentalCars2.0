@@ -35,7 +35,7 @@ class AppErrorBoundary extends Component {
         if (this.state.hasError) {
             return (
                 <div className="route-loading" role="alert">
-                    <strong>EcoFusion</strong>
+                    <strong>FRANKEY Rentals Car</strong>
                     <p>Something went wrong loading this page.</p>
                     <button type="button" onClick={() => window.location.reload()}>Reload</button>
                 </div>
