@@ -22,3 +22,37 @@
 /* Keep fleet cards aligned without changing their color, radius or hover language. */
 .vehicles-grid{align-items:stretch;grid-auto-rows:1fr}
 .vehicles-grid>.vehicle-card{min-width:0}
+
+
+/* Compact discovery header replaces the long fleet hero and its repeated badges. */
+.vehicles-page { padding: clamp(28px, 4vw, 44px) 0 clamp(58px, 7vw, 86px); }
+.vehicles-page::before,
+.vehicles-page__hero-pills,
+.vehicles-page__intro { display: none; }
+.vehicles-page__heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 22px;
+}
+.vehicles-page__heading h1 {
+    margin-top: 5px;
+    font-size: clamp(27px, 3.5vw, 39px);
+    line-height: 1.05;
+    letter-spacing: -.045em;
+}
+.vehicles-page__count {
+    flex: none;
+    margin-bottom: 4px;
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+}
+.vehicles-toolbar { margin-bottom: 22px; }
+.vehicles-grid { gap: clamp(14px, 1.7vw, 22px); }
+@media (max-width: 680px) {
+    .vehicles-page { padding: 28px 0 60px; }
+    .vehicles-page__heading { align-items: flex-start; }
+}
