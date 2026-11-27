@@ -1,4 +1,4 @@
-name: Deploy independent FRANKEY admin Worker
+name: Deploy independent EcoFusion admin Worker
 
 on:
   push:
@@ -12,12 +12,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: deploy-frankey-admin-${{ github.ref }}
+  group: deploy-ecofusion-admin-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   deploy-admin:
-    name: Build and deploy frankey-rentals-admin
+    name: Build and deploy ecofusion-rentals-admin
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
