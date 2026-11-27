@@ -77,9 +77,9 @@ export default function Navbar() {
                     onClick={closeMenu}
                     aria-label="EcoFusion RentalCars"
                     style={{
-                        flex: "0 1 clamp(136px, 14vw, 220px)",
-                        width: "clamp(136px, 14vw, 220px)",
-                        minWidth: "136px",
+                        flex: "0 1 clamp(166px, 16vw, 235px)",
+                        width: "clamp(166px, 16vw, 235px)",
+                        minWidth: "166px",
                         height: "auto",
                         overflow: "visible",
                     }}
@@ -92,9 +92,10 @@ export default function Navbar() {
                         height={323}
                         style={{
                             display: "block",
-                            width: "100%",
+                            width: "min(100%, 126px)",
                             height: "auto",
-                            maxWidth: "100%",
+                            maxWidth: "126px",
+                            flex: "0 1 126px",
                             maxHeight: "none",
                             aspectRatio: "900 / 323",
                             objectFit: "contain",
