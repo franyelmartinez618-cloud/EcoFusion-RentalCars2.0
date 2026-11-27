@@ -41,7 +41,7 @@ async function digestRateKey(value) {
 // Use the HTTP-only session after login; anonymous traffic falls back to the edge IP.
 async function getRequestRateKey(request) {
   const cookie = request.headers.get("Cookie") || "";
-  const session = cookie.match(/(?:^|;\\s*)ef_session=([^;]+)/i)?.[1];
+  const session = cookie.match(/(?:^|;\s*)ef_session=([^;]+)/i)?.[1];
   const identity = session ? `session:${session}` : `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
   return digestRateKey(identity);
 }
