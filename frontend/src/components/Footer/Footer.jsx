@@ -9,16 +9,17 @@ function Footer() {
         <footer className="footer">
             <div className="container footer__main">
                 <div className="footer__brand">
-                    <Link to="/" className="footer__logo-link" aria-label="FRANKEY Rentals Car home">
+                    <Link to="/" className="footer__logo-link" aria-label="EcoFusion RentalCars home">
                         <img
-                            src="/frankey-official-logo.webp"
-                            alt="FRANKEY Rentals Car"
+                            src="/ecofusion-logo.webp"
+                            alt="EcoFusion RentalCars"
                             className="footer__logo-image"
-                            width={320}
-                            height={160}
-                            style={{ width: "min(100%, 190px)", height: "auto", maxHeight: "none", aspectRatio: "2 / 1", objectFit: "contain" }}
+                            width={900}
+                            height={323}
+                            style={{ width: "min(100%, 190px)", height: "auto", maxHeight: "none", aspectRatio: "900 / 323", objectFit: "contain" }}
                         />
                     </Link>
+                    <strong className="footer__brand-name">EcoFusion</strong>
                     <p>{t.footer.description}</p>
                 </div>
 
@@ -38,7 +39,6 @@ function Footer() {
                     <Link to="/privacy">{t.footer.privacyPolicy}</Link>
                     <Link to="/terms">{t.footer.termsAndConditions}</Link>
                     <Link to="/cookies">Cookies</Link>
-                    <a href="https://frankey-rentals-admin.ecofusionrentalcars.workers.dev/" target="_blank" rel="noopener noreferrer">{language === "es" ? "Acceso del equipo" : "Team access"}</a>
                 </div>
             </div>
 
