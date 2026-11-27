@@ -105,6 +105,7 @@ export default function AdminLogin() {
                         height={323}
                         style={{ width: "min(100%, 184px)", height: "auto", maxHeight: "none", aspectRatio: "900 / 323", objectFit: "contain" }}
                     />
+                    <strong className="admin-login-brand-name">EcoFusion</strong>
                     <div><small>Acceso privado de administración</small></div>
                 </div>
                 <span className="page-hero__eyebrow">PANEL PROTEGIDO</span>
