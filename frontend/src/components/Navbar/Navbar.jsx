@@ -75,7 +75,7 @@ export default function Navbar() {
                     to="/"
                     className="navbar__brand"
                     onClick={closeMenu}
-                    aria-label="FRANKEY Rentals Car"
+                    aria-label="EcoFusion RentalCars"
                     style={{
                         flex: "0 1 clamp(136px, 14vw, 220px)",
                         width: "clamp(136px, 14vw, 220px)",
@@ -85,21 +85,22 @@ export default function Navbar() {
                     }}
                 >
                     <img
-                        src="/frankey-official-logo.webp"
-                        alt="FRANKEY Rentals Car"
+                        src="/ecofusion-logo.webp"
+                        alt="EcoFusion RentalCars"
                         className="navbar__logo-image navbar__logo-image--full"
-                        width={320}
-                        height={160}
+                        width={900}
+                        height={323}
                         style={{
                             display: "block",
                             width: "100%",
                             height: "auto",
                             maxWidth: "100%",
                             maxHeight: "none",
-                            aspectRatio: "2 / 1",
+                            aspectRatio: "900 / 323",
                             objectFit: "contain",
                         }}
                     />
+                    <span className="navbar__brand-name">EcoFusion</span>
                 </Link>
 
                 <button type="button" className="navbar__mobile-toggle" onClick={() => setMenuOpen((value) => !value)} aria-label={t.common.menu} aria-expanded={menuOpen}>
