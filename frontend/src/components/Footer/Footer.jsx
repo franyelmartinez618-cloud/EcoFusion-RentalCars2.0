@@ -3,7 +3,7 @@ import { Link } from "../../utils/router";
 import "./Footer.css";
 
 function Footer() {
-    const { translations: t, language } = useApp();
+    const { translations: t } = useApp();
 
     return (
         <footer className="footer">
