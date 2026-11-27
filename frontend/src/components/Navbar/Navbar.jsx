@@ -75,7 +75,7 @@ export default function Navbar() {
                     to="/"
                     className="navbar__brand"
                     onClick={closeMenu}
-                    aria-label="FRANKEY Rentals Car"
+                    aria-label="EcoFusion RentalCars"
                     style={{
                         flex: "0 1 clamp(136px, 14vw, 220px)",
                         width: "clamp(136px, 14vw, 220px)",
@@ -85,8 +85,8 @@ export default function Navbar() {
                     }}
                 >
                     <img
-                        src="/frankey-official-logo.webp"
-                        alt="FRANKEY Rentals Car"
+                        src="/ecofusion-logo.png"
+                        alt="EcoFusion RentalCars"
                         className="navbar__logo-image navbar__logo-image--full"
                         width={320}
                         height={160}

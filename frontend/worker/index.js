@@ -42,6 +42,7 @@ async function digestRateKey(value) {
 async function getRequestRateKey(request) {
   const cookie = request.headers.get("Cookie") || "";
   const sessionCookie = cookie.split(";").map(part => part.trim()).find(part => part.toLowerCase().startsWith("ef_session="));
+  const session = sessionCookie ? sessionCookie.slice(sessionCookie.indexOf("=") + 1) : "";
   const identity = session ? `session:${session}` : `ip:${request.headers.get("CF-Connecting-IP") || "unknown"}`;
   return digestRateKey(identity);
 }

@@ -249,3 +249,27 @@
 /* Crop the unused white margin in the source photos while keeping the full car visible. */
 .vehicle-card__media { aspect-ratio: 16 / 9; }
 .vehicle-card__media img { object-position: center 53%; }
+
+
+/* EcoFusion fleet-card normalization: fixed media ratio and consistent content flow. */
+.vehicle-card { display:flex; flex-direction:column; width:100%; min-width:0; height:100%; overflow:hidden; }
+.vehicle-card__media-link { display:block; flex:0 0 auto; min-width:0; }
+.vehicle-card__media { width:100%; height:auto; min-height:0; aspect-ratio:16 / 10; overflow:hidden; }
+.vehicle-card__media img { display:block; width:100%; height:100%; padding:0; object-fit:cover; object-position:center; }
+.vehicle-card__content { display:flex; flex:1 1 auto; flex-direction:column; min-width:0; }
+.vehicle-card__top { min-height:0; }
+.vehicle-card__top > div:first-child { min-width:0; }
+.vehicle-card__top h3 { min-height:0; overflow-wrap:anywhere; }
+.vehicle-card__top p { min-height:0; }
+.vehicle-card__specs, .vehicle-card__bottom { margin-top:auto; }
+@media (max-width:700px) {
+ .vehicle-card__media { aspect-ratio:16 / 10; }
+ .vehicle-card__bottom { align-items:center; flex-direction:row; }
+ .vehicle-card__button { width:auto; }
+}
+@media (max-width:420px) {
+ .vehicle-card__content { padding:16px; }
+ .vehicle-card__specs { gap:8px; }
+ .vehicle-card__bottom { align-items:flex-start; flex-direction:column; }
+ .vehicle-card__button { width:100%; }
+}

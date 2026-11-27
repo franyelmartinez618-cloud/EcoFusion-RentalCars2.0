@@ -30,6 +30,7 @@ function Home() {
     const { vehicles } = useAppData();
     const featured = vehicles.slice(0, 3);
     const heroVehicle = featured[0];
+    const heroImage = heroVehicle ? getVehicleImage(heroVehicle) : "/hero-prius-temporary.jpg";
 
     return <div className="home-page">
         <Navbar />
@@ -55,7 +56,7 @@ function Home() {
                         </div>
                     </div>
                     <div className="home-hero__visual">
-                        <img src="/frankey-rentals-hero.webp" alt="Vehículo Toyota de FRANKEY Rentals Car" className="home-hero__image" loading="eager" fetchPriority="high" decoding="async" />
+                        <img src={heroImage} alt={heroVehicle ? `Vehículo ${heroVehicle.name} de EcoFusion RentalCars` : "Vehículo de EcoFusion RentalCars"} className="home-hero__image" loading="eager" fetchPriority="high" decoding="async" />
                         <div className="home-hero__image-glow" />
                         {heroVehicle && <div className="home-hero__price"><span>{t.homeUi.featuredFleet}</span><strong>{heroVehicle.name}</strong><small>${Number(heroVehicle.price || 0).toFixed(0)} {t.homeUi.perDay}</small></div>}
                     </div>
