@@ -83,3 +83,6 @@
 }
 
 .footer__logo-image { width:190px; height:108px; object-fit:contain; object-position:left center; background:#fff; filter:none; }
+
+.footer__brand-name { display: block; margin: -7px 0 12px; color: #fff; font-size: 18px; font-weight: 950; letter-spacing: -.04em; }
+.footer__logo-image { width: min(100%, 210px); height: auto; max-height: none; aspect-ratio: 900 / 323; object-fit: contain; object-position: left center; background: transparent; }

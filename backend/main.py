@@ -905,7 +905,7 @@ Base.metadata.create_all(engine)
 # ============================================================
 
 app = FastAPI(
-    title="FRANKEY Rentals Car API",
+    title="EcoFusion RentalCars API",
     version="4.0.0",
     docs_url=None,
     redoc_url=None,
@@ -2652,7 +2652,7 @@ async def create_checkout(
             ),
         },
         "description": (
-            "FRANKEY RentalCars reservation "
+            "EcoFusion RentalCars reservation "
             f"{reservation_id}"
         ),
     }

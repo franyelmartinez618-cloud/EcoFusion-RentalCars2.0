@@ -322,3 +322,13 @@ html[data-theme="dark"] .navbar__logo-image--compact.navbar__logo-image--dark { 
     max-height: 44px;
   }
 }
+
+/* EcoFusion brand lockup: symbol + readable name at every breakpoint. */
+.navbar__brand { display: flex; align-items: center; gap: 8px; }
+.navbar__brand .navbar__logo-image--full { width: 112px !important; max-width: 112px !important; height: auto; flex: 0 1 112px !important; }
+.navbar__brand-name { flex: 0 0 auto; color: var(--color-text); font-size: 16px; font-weight: 950; letter-spacing: -.045em; white-space: nowrap; }
+@media (max-width: 860px) {
+  .navbar__brand { flex-basis: 154px !important; width: 154px !important; min-width: 154px !important; }
+  .navbar__brand .navbar__logo-image--full { display: block !important; width: 84px !important; max-width: 84px !important; flex-basis: 84px !important; }
+  .navbar__brand-name { font-size: 14px; }
+}

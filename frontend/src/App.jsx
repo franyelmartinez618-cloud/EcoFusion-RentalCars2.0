@@ -23,7 +23,7 @@ import "./styles/compact-layout.css";
 import "./styles/typography.css";
 import "./styles/responsive-polish.css";
 
-const ADMIN_PORTAL_URL = "https://frankey-rentals-admin.ecofusionrentalcars.workers.dev/";
+const ADMIN_PORTAL_URL = "https://ecofusion-rentals-admin.ecofusionrentalcars.workers.dev/";
 
 
 class AppErrorBoundary extends Component {
@@ -35,7 +35,7 @@ class AppErrorBoundary extends Component {
         if (this.state.hasError) {
             return (
                 <div className="route-loading" role="alert">
-                    <strong>FRANKEY Rentals Car</strong>
+                    <strong>EcoFusion RentalCars</strong>
                     <p>Something went wrong loading this page.</p>
                     <button type="button" onClick={() => window.location.reload()}>Reload</button>
                 </div>

@@ -7,10 +7,10 @@ import { Link } from "../../utils/router";
 import { getVehicleImage } from "../../utils/vehicleImage";
 import "./Home.css";
 
-function FeaturedTile({ vehicle, large = false }) {
+function FeaturedTile({ vehicle }) {
     const image = getVehicleImage(vehicle);
     return (
-        <article className={`home-fleet-tile ${large ? "home-fleet-tile--large" : ""}`}>
+        <article className="home-fleet-tile">
             <Link to={`/vehicles/${vehicle.slug}`} className="home-fleet-tile__link">
                 <img src={image} alt={vehicle.name} onError={(event) => { if (event.currentTarget.src !== "/hero-prius-temporary.jpg") event.currentTarget.src = "/hero-prius-temporary.jpg"; }} />
                 <div className="home-fleet-tile__veil" />
@@ -55,7 +55,7 @@ function Home() {
                         </div>
                     </div>
                     <div className="home-hero__visual">
-                        <img src="/frankey-rentals-hero.webp" alt="Vehículo Toyota de FRANKEY Rentals Car" className="home-hero__image" loading="eager" fetchPriority="high" decoding="async" />
+                        <img src="/frankey-rentals-hero.webp" alt="Vehículo Toyota de EcoFusion RentalCars" className="home-hero__image" loading="eager" fetchPriority="high" decoding="async" />
                         <div className="home-hero__image-glow" />
                         {heroVehicle && <div className="home-hero__price"><span>{t.homeUi.featuredFleet}</span><strong>{heroVehicle.name}</strong><small>${Number(heroVehicle.price || 0).toFixed(0)} {t.homeUi.perDay}</small></div>}
                     </div>
@@ -69,7 +69,7 @@ function Home() {
                         <Link to="/vehicles" className="home-text-link">{t.homeUi.homeViewAll} <span>→</span></Link>
                     </div>
                     <div className="home-fleet-grid">
-                        {featured.map((vehicle, index) => <FeaturedTile key={vehicle.id} vehicle={vehicle} large={index === 0} />)}
+                        {featured.map((vehicle) => <FeaturedTile key={vehicle.id} vehicle={vehicle} />)}
                     </div>
                 </div>
             </section>

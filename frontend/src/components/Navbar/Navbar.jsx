@@ -75,31 +75,33 @@ export default function Navbar() {
                     to="/"
                     className="navbar__brand"
                     onClick={closeMenu}
-                    aria-label="FRANKEY Rentals Car"
+                    aria-label="EcoFusion RentalCars"
                     style={{
-                        flex: "0 1 clamp(136px, 14vw, 220px)",
-                        width: "clamp(136px, 14vw, 220px)",
-                        minWidth: "136px",
+                        flex: "0 1 clamp(166px, 16vw, 235px)",
+                        width: "clamp(166px, 16vw, 235px)",
+                        minWidth: "166px",
                         height: "auto",
                         overflow: "visible",
                     }}
                 >
                     <img
-                        src="/frankey-official-logo.webp"
-                        alt="FRANKEY Rentals Car"
+                        src="/ecofusion-logo.svg"
+                        alt="EcoFusion RentalCars"
                         className="navbar__logo-image navbar__logo-image--full"
-                        width={320}
-                        height={160}
+                        width={900}
+                        height={323}
                         style={{
                             display: "block",
-                            width: "100%",
+                            width: "min(100%, 126px)",
                             height: "auto",
-                            maxWidth: "100%",
+                            maxWidth: "126px",
+                            flex: "0 1 126px",
                             maxHeight: "none",
-                            aspectRatio: "2 / 1",
+                            aspectRatio: "900 / 323",
                             objectFit: "contain",
                         }}
                     />
+                    <span className="navbar__brand-name">EcoFusion</span>
                 </Link>
 
                 <button type="button" className="navbar__mobile-toggle" onClick={() => setMenuOpen((value) => !value)} aria-label={t.common.menu} aria-expanded={menuOpen}>

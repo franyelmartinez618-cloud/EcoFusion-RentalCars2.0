@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+<title id="title">EcoFusion RentalCars</title>
+<rect width="128" height="128" rx="26" fill="#f7fbf7"/>
+<path d="M17 49c-2-15 7-28 22-32 1 15-7 28-22 32Z" fill="#72c943"/>
+<path d="M20 48c8-7 13-14 17-25" fill="none" stroke="#0b4761" stroke-width="3" stroke-linecap="round"/>
+<path d="M22 82c4-14 13-22 27-25l16-15c5-5 11-7 18-7h10c8 0 15 5 20 13l5 8c4 2 6 6 6 11v13c0 4-3 7-7 7h-5c-2-12-9-19-20-19s-18 7-20 19H53c-2-12-9-19-20-19-10 0-17 6-19 14h8Z" fill="#28a76c"/>
+<path d="M63 43h21c5 0 10 2 13 6l8 9H53l10-15Z" fill="#d9f6e7"/>
+<path d="M53 60h56" stroke="#0b4761" stroke-width="4" stroke-linecap="round"/>
+<path d="M22 83c8-13 19-17 31-10 10 6 20 12 35 12 13 0 22-5 31-13" fill="none" stroke="#0b4761" stroke-width="6" stroke-linecap="round"/>
+<circle cx="34" cy="87" r="11" fill="#f7fbf7" stroke="#0b4761" stroke-width="6"/>
+<circle cx="96" cy="87" r="11" fill="#f7fbf7" stroke="#0b4761" stroke-width="6"/>
+</svg>
