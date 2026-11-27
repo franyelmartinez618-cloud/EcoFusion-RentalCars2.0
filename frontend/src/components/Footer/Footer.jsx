@@ -11,7 +11,7 @@ function Footer() {
                 <div className="footer__brand">
                     <Link to="/" className="footer__logo-link" aria-label="EcoFusion RentalCars home">
                         <img
-                            src="/ecofusion-logo.webp"
+                            src="/ecofusion-logo.svg"
                             alt="EcoFusion RentalCars"
                             className="footer__logo-image"
                             width={900}
