@@ -12,7 +12,7 @@ This document records the controls currently implemented in the public and admin
 ## Separate administrator portal
 
 - The admin application is a separate Vite entry (admin.html) and a separate Worker configured by wrangler.admin.jsonc.
-- Its Worker hostname is frankey-rentals-admin.ecofusionrentalcars.workers.dev.
+- Its Worker hostname is ecofusion-rentals-admin.ecofusionrentalcars.workers.dev.
 - The admin Worker serves only the admin entry, its assets and an allowlist of admin/session API routes. It does not proxy customer API routes.
 - Admin login and recovery are limited to 12 attempts per IP and 5 attempts per IP/account name per 60-second window. Account names and session tokens are hashed before they are used as rate-limit keys. The admin and public Workers share the admin-auth and general API rate-limit namespaces.
 - The admin site sends X-Robots-Tag: noindex, nofollow; this is an indexing instruction, not an authentication mechanism.
