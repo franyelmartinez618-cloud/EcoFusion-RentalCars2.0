@@ -37,7 +37,7 @@ const seedPayments = [];
 const seedAccount = { currentUser: null, favoriteVehicleIds: [] };
 
 const seedSettings = {
-    companyName: "FRANKEY Rentals Car",
+    companyName: "EcoFusion RentalCars",
     defaultLanguage: "en",
     country: "US",
     currency: "USD",
