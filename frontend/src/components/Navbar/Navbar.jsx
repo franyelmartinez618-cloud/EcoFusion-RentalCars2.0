@@ -85,7 +85,7 @@ export default function Navbar() {
                     }}
                 >
                     <img
-                        src="/ecofusion-logo.webp"
+                        src="/ecofusion-logo.svg"
                         alt="EcoFusion RentalCars"
                         className="navbar__logo-image navbar__logo-image--full"
                         width={900}
