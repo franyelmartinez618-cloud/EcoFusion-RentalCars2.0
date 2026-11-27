@@ -99,7 +99,7 @@ export default function AdminLogin() {
                 <div className="auth-brand">
                     <img
                         className="admin-login-logo"
-                        src="/ecofusion-logo.webp"
+                        src="/ecofusion-logo.svg"
                         alt="EcoFusion Rentals Car"
                         width={900}
                         height={323}
