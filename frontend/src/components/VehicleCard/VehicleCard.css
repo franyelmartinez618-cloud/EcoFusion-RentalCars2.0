@@ -25,7 +25,7 @@
 .vehicle-card:hover {
     transform: translateY(-3px);
     border-color: color-mix(in srgb, var(--card-accent) 42%, var(--color-border));
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--shadow-hover, var(--shadow-lg));
 }
 .vehicle-card__media-link {
     position: relative;
@@ -221,7 +221,7 @@
 }
 .vehicle-card__button:hover {
     transform: translateY(-1px);
-    background: var(--color-primary-dark);
+    background: var(--color-primary-dark, var(--color-primary));
     color: #fff;
 }
 .vehicle-card--compact .vehicle-card__media { aspect-ratio: 16 / 9; }
