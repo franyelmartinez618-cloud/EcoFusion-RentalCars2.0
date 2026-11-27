@@ -9,7 +9,7 @@ const PUBLIC_SITE_URL = "https://ecofusion-rentalcars2-0.ecofusionrentalcars.wor
 
 // Use the panel route on the independent host, while preserving the legacy private route.
 function adminPanelPath() {
-    return window.__EcoFusion_ADMIN_STANDALONE__ === true ? "/panel" : "/admin";
+    return window.__ECOFUSION_ADMIN_STANDALONE__ === true ? "/panel" : "/admin";
 }
 
 export default function AdminLogin() {
@@ -100,7 +100,7 @@ export default function AdminLogin() {
                     <img
                         className="admin-login-logo"
                         src="/ecofusion-logo.svg"
-                        alt="EcoFusion Rentals Car"
+                        alt="EcoFusion RentalCars"
                         width={900}
                         height={323}
                         style={{ width: "min(100%, 184px)", height: "auto", maxHeight: "none", aspectRatio: "900 / 323", objectFit: "contain" }}
