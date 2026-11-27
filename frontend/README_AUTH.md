@@ -1,4 +1,4 @@
-# FRANKEY Rentals Car — autenticación real local
+# EcoFusion RentalCars — autenticación real local
 
 ## Inicio rápido Windows
 1. Instala Node.js 20+ y Python 3.11+.
