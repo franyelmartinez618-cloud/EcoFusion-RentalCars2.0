@@ -73,11 +73,11 @@ export default function Navbar() {
             <div className="container navbar__container">
                 <Link to="/" className="navbar__brand" onClick={closeMenu} aria-label="FRANKEY Rent a Car">
                     <img
-                        src="/frankey-rentals-logo.svg"
+                        src="/frankey-official-logo.webp"
                         alt="FRANKEY Rent a Car"
                         className="navbar__logo-image navbar__logo-image--full"
-                        width={390}
-                        height={84}
+                        width={320}
+                        height={160}
                         decoding="async"
                     />
                 </Link>
