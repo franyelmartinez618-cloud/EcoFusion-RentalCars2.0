@@ -84,7 +84,7 @@ function getInitialData() {
             settings: {
                 ...seedSettings,
                 ...(stored.settings || {}),
-                companyName: ["FRANKEY Rent a Car", "EcoFusion Rental Cars"].includes(stored.settings?.companyName)
+                companyName: ["FRANKEY Rent a Car", "EcoFusion RentalCars", "EcoFusion Rental Cars", "EcoFusion"].includes(stored.settings?.companyName)
                     ? seedSettings.companyName
                     : (stored.settings?.companyName || seedSettings.companyName),
             },
