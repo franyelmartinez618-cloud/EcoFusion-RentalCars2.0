@@ -99,11 +99,11 @@ export default function AdminLogin() {
                 <div className="auth-brand">
                     <img
                         className="admin-login-logo"
-                        src="/ecofusion-logo.png"
-                        alt="EcoFusion RentalCars"
-                        width={320}
-                        height={160}
-                        style={{ width: "min(100%, 184px)", height: "auto", maxHeight: "none", aspectRatio: "2 / 1", objectFit: "contain" }}
+                        src="/frankey-rentals-logo.svg"
+                        alt="FRANKEY Rent a Car"
+                        width={390}
+                        height={84}
+                        style={{ width: "min(100%, 184px)", height: "auto", maxHeight: "none", aspectRatio: "390 / 84", objectFit: "contain" }}
                     />
                     <div><small>Acceso privado de administración</small></div>
                 </div>
