@@ -71,34 +71,14 @@ export default function Navbar() {
     return (
         <header className={`navbar ${scrolled ? "navbar--scrolled" : ""}`}>
             <div className="container navbar__container">
-                <Link
-                    to="/"
-                    className="navbar__brand"
-                    onClick={closeMenu}
-                    aria-label="EcoFusion RentalCars"
-                    style={{
-                        flex: "0 1 clamp(136px, 14vw, 220px)",
-                        width: "clamp(136px, 14vw, 220px)",
-                        minWidth: "136px",
-                        height: "auto",
-                        overflow: "visible",
-                    }}
-                >
+                <Link to="/" className="navbar__brand" onClick={closeMenu} aria-label="FRANKEY Rent a Car">
                     <img
-                        src="/ecofusion-logo.png"
-                        alt="EcoFusion RentalCars"
+                        src="/frankey-official-logo.webp"
+                        alt="FRANKEY Rent a Car"
                         className="navbar__logo-image navbar__logo-image--full"
                         width={320}
                         height={160}
-                        style={{
-                            display: "block",
-                            width: "100%",
-                            height: "auto",
-                            maxWidth: "100%",
-                            maxHeight: "none",
-                            aspectRatio: "2 / 1",
-                            objectFit: "contain",
-                        }}
+                        decoding="async"
                     />
                 </Link>
 

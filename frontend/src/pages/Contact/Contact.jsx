@@ -8,7 +8,7 @@ function Contact() {
     const { translations: t, language } = useApp();
     const copy = language === "es" ? {
         eyebrow: "CONTACTO DIRECTO",
-        title: "Habla con EcoFusion",
+        title: "Habla con FRANKEY",
         description: "Elige la vía más cómoda. Las solicitudes urgentes deben ser fáciles.",
         sectionTitle: "Estamos a una llamada o un mensaje.",
         sectionText: "Para una conversación urgente en carretera, llama. Para consultas generales, puedes escribir por WhatsApp.",
@@ -21,7 +21,7 @@ function Contact() {
         privacy: "Por seguridad, no envíes contraseñas, códigos de acceso ni datos completos de tarjetas por WhatsApp.",
     } : {
         eyebrow: "DIRECT CONTACT",
-        title: "Talk to EcoFusion",
+        title: "Talk to FRANKEY",
         description: "Choose the channel that works best. Urgent requests should be easy to make.",
         sectionTitle: "One call or message away.",
         sectionText: "For urgent roadside conversations, call us. For general questions, you can message us on WhatsApp.",
@@ -36,8 +36,8 @@ function Contact() {
 
     // Both published numbers offer direct dialing and a pre-filled WhatsApp conversation.
     const channels = [
-        { number: "669-499-0584", tel: "+16694990584", whatsapp: "16694990584", label: copy.primaryLabel, description: copy.primaryText, message: language === "es" ? "Hola, necesito ayuda con EcoFusion RentalCars." : "Hello, I need help with EcoFusion RentalCars." },
-        { number: "408-722-4634", tel: "+14087224634", whatsapp: "14087224634", label: copy.alternativeLabel, description: copy.alternativeText, message: language === "es" ? "Hola, estoy contactando a EcoFusion por la línea alternativa." : "Hello, I am contacting EcoFusion through the alternate line." },
+        { number: "669-499-0584", tel: "+16694990584", whatsapp: "16694990584", label: copy.primaryLabel, description: copy.primaryText, message: language === "es" ? "Hola, necesito ayuda con FRANKEY Rent a Car." : "Hello, I need help with FRANKEY Rent a Car." },
+        { number: "408-722-4634", tel: "+14087224634", whatsapp: "14087224634", label: copy.alternativeLabel, description: copy.alternativeText, message: language === "es" ? "Hola, estoy contactando a FRANKEY por la línea alternativa." : "Hello, I am contacting FRANKEY through the alternate line." },
     ];
 
     return (

@@ -6,7 +6,7 @@ import { getVehicleImage } from "../../utils/vehicleImage";
 import "./VehicleCard.css";
 
 function VehicleCard({ vehicle, compact = false, index = 0 }) {
-    const { translations: t } = useApp();
+    const { translations: t, language } = useApp();
     const { showToast } = useToast();
     const translationKey = vehicle.slug.replace("toyota-", "");
     const translated = t.fleet?.[translationKey] || {};
@@ -56,10 +56,12 @@ function VehicleCard({ vehicle, compact = false, index = 0 }) {
                     <div className="vehicle-card__category">{category}</div>
                 </div>
 
-                <div className="vehicle-card__specs">
-                    <span><b>◉</b><em>{t.vehiclesPage.transmission}</em>{vehicle.transmission}</span>
-                    <span><b>♧</b><em>{t.vehiclesPage.capacity}</em>{vehicle.seats} {vehicle.seats === 1 ? t.vehiclesPage.seatsOne : t.vehiclesPage.seatsMany}</span>
-                    <span><b>↗</b><em>{t.vehiclesPage.efficiency}</em>{vehicle.efficiency}</span>
+                <div className="vehicle-card__specs" aria-label={language === "es" ? "Características del vehículo" : "Vehicle features"}>
+                    <span><em>{t.vehicleDetails.capacity}</em><strong>{vehicle.seats} {t.vehicleDetails.seats}</strong></span>
+                    <span><em>{t.vehicleDetails.transmission}</em><strong>{/automatic/i.test(vehicle.transmission || "") ? (language === "es" ? "Automática" : "Automatic") : vehicle.transmission}</strong></span>
+                    <span><em>{t.vehicleDetails.luggage}</em><strong>{vehicle.luggage} {t.vehicleDetails.bags}</strong></span>
+                    <span><em>{t.vehicleDetails.efficiency}</em><strong>{vehicle.efficiency}</strong></span>
+                    {vehicle.airConditioning === true && <span><em>{language === "es" ? "Confort" : "Comfort"}</em><strong>{language === "es" ? "Aire acondicionado" : "Air conditioning"}</strong></span>}
                 </div>
 
                 <div className="vehicle-card__bottom">

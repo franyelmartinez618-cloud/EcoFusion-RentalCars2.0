@@ -37,7 +37,7 @@ const seedPayments = [];
 const seedAccount = { currentUser: null, favoriteVehicleIds: [] };
 
 const seedSettings = {
-    companyName: "EcoFusion RentalCars",
+    companyName: "FRANKEY Rent a Car",
     defaultLanguage: "en",
     country: "US",
     currency: "USD",
@@ -84,7 +84,7 @@ function getInitialData() {
             settings: {
                 ...seedSettings,
                 ...(stored.settings || {}),
-                companyName: ["EcoFusion RentalCars", "EcoFusion Rental Cars"].includes(stored.settings?.companyName)
+                companyName: ["FRANKEY Rent a Car", "EcoFusion RentalCars", "EcoFusion Rental Cars", "EcoFusion"].includes(stored.settings?.companyName)
                     ? seedSettings.companyName
                     : (stored.settings?.companyName || seedSettings.companyName),
             },

@@ -99,8 +99,8 @@ export default function AdminLogin() {
                 <div className="auth-brand">
                     <img
                         className="admin-login-logo"
-                        src="/ecofusion-logo.png"
-                        alt="EcoFusion RentalCars"
+                        src="/frankey-official-logo.webp"
+                        alt="FRANKEY Rent a Car"
                         width={320}
                         height={160}
                         style={{ width: "min(100%, 184px)", height: "auto", maxHeight: "none", aspectRatio: "2 / 1", objectFit: "contain" }}

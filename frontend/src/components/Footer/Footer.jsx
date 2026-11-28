@@ -9,10 +9,10 @@ function Footer() {
         <footer className="footer">
             <div className="container footer__main">
                 <div className="footer__brand">
-                    <Link to="/" className="footer__logo-link" aria-label="EcoFusion RentalCars home">
+                    <Link to="/" className="footer__logo-link" aria-label="FRANKEY Rent a Car home">
                         <img
-                            src="/ecofusion-logo.png"
-                            alt="EcoFusion RentalCars"
+                            src="/frankey-official-logo.webp"
+                            alt="FRANKEY Rent a Car"
                             className="footer__logo-image"
                             width={320}
                             height={160}

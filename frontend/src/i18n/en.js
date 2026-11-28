@@ -98,7 +98,7 @@ const en = {
         setupPhoneError: "Add a valid phone number for your rental profile.",
         setupSuccess: "Account completed. You can continue with your reservation.",
         setupFailure: "We could not complete the account setup.",
-        legalIntro: "Transparency and protection information for using FRANKEY Rentals Car.",
+        legalIntro: "Transparency and protection information for using FRANKEY Rent a Car.",
         legalOperational: "Operational document. Complete the controller details and obtain professional review before using this as final compliance text.",
         legalBack: "Back to FRANKEY",
 
@@ -499,7 +499,7 @@ const en = {
         eyebrow: "ABOUT FRANKEY",
         title: "Built around better rental experiences",
         description:
-            "FRANKEY Rentals Car brings together reliable Toyota vehicles, simple technology and a customer-focused rental experience.",
+            "FRANKEY Rent a Car brings together reliable Toyota vehicles, simple technology and a customer-focused rental experience.",
         missionTitle: "Our mission",
         missionDescription:
             "Make vehicle rental easier, more transparent and more enjoyable for every journey.",
@@ -899,7 +899,7 @@ const en = {
         newsletterPlaceholder: "Your email address",
         newsletterButton: "Subscribe",
 
-        copyright: "FRANKEY Rentals Car. All rights reserved.",
+        copyright: "FRANKEY Rent a Car. All rights reserved.",
 
         tagline: "Drive better. Travel further.",
     },
