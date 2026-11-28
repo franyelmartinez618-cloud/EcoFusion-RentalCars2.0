@@ -9,14 +9,14 @@ function Footer() {
         <footer className="footer">
             <div className="container footer__main">
                 <div className="footer__brand">
-                    <Link to="/" className="footer__logo-link" aria-label="EcoFusion RentalCars home">
+                    <Link to="/" className="footer__logo-link" aria-label="FRANKEY Rent a Car home">
                         <img
-                            src="/ecofusion-logo.png"
-                            alt="EcoFusion RentalCars"
+                            src="/frankey-rentals-logo.svg"
+                            alt="FRANKEY Rent a Car"
                             className="footer__logo-image"
-                            width={320}
-                            height={160}
-                            style={{ width: "min(100%, 190px)", height: "auto", maxHeight: "none", aspectRatio: "2 / 1", objectFit: "contain" }}
+                            width={390}
+                            height={84}
+                            style={{ width: "min(100%, 190px)", height: "auto", maxHeight: "none", aspectRatio: "390 / 84", objectFit: "contain" }}
                         />
                     </Link>
                     <p>{t.footer.description}</p>
