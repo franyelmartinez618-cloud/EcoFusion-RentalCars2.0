@@ -4,7 +4,7 @@ import { Link } from "../../utils/router";
 import "../SimplePages.css";
 import "./About.css";
 
-// Present EcoFusion's purpose and service principles through a more editorial layout.
+// Present FRANKEY's purpose and service principles through a more editorial layout.
 function About() {
     const { translations: t, language } = useApp();
 
@@ -30,9 +30,9 @@ function About() {
                         </Link>
                     </div>
                     <figure className="about-hero__visual">
-                        <img src="/hero-prius-temporary.jpg" alt={language === "es" ? "Vehículo de la flota EcoFusion RentalCars" : "A vehicle from the EcoFusion RentalCars fleet"} loading="lazy" />
+                        <img src="/hero-prius-temporary.jpg" alt={language === "es" ? "Vehículo de la flota FRANKEY Rent a Car" : "A vehicle from the FRANKEY Rent a Car fleet"} loading="lazy" />
                         <figcaption>
-                            <span>ECOFUSION RENTALCARS</span>
+                            <span>FRANKEY RENT A CAR</span>
                             <strong>{language === "es" ? "Cada detalle, más claro desde el inicio." : "A clearer experience from the start."}</strong>
                         </figcaption>
                     </figure>
